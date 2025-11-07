@@ -1,0 +1,2899 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Dashboard - Smart Classroom Platform</title>
+    <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
+    <script src="/static/js/i18n.js"></script>
+    <style>
+        /* General styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: "Inter", "PingFang SC", "Microsoft YaHei", sans-serif;
+        }
+
+        body {
+            background: #f5f6fa;
+            color: #222;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Top navigation bar */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background-color: #082f49;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+        }
+
+        .search-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .search-input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 8px 16px;
+            color: white;
+            width: 300px;
+            font-size: 14px;
+        }
+
+        .search-input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .header-icon:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 60px;
+            width: 80px;
+            height: calc(100vh - 60px);
+            background-color: #082f49;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 0;
+            z-index: 999;
+        }
+
+        .sidebar-icon {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 20px;
+        }
+        
+        .sidebar-icon svg {
+            width: 24px;
+            height: 24px;
+            stroke: currentColor;
+        }
+
+        .sidebar-icon:hover,
+        .sidebar-icon.active {
+            background: #0b4b70;
+            transform: scale(1.05);
+        }
+
+        /* Main content area */
+        main {
+            margin-left: 80px;
+            margin-top: 60px;
+            flex: 1;
+            padding: 30px 40px;
+            overflow-y: auto;
+            background: #f5f6fa;
+        }
+
+        .page-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: #082f49;
+            margin-bottom: 10px;
+        }
+
+        .welcome-text {
+            color: #0b4b70;
+            font-size: 16px;
+            margin-bottom: 30px;
+        }
+
+        /* Welcome banner */
+        .welcome-banner {
+            background: linear-gradient(135deg, #0b4b70 0%, #083d5d 100%);
+            color: white;
+            border-radius: 16px;
+            padding: 40px;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .welcome-banner::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 200px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+
+        .welcome-banner h2 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .welcome-banner p {
+            font-size: 16px;
+            opacity: 0.9;
+            line-height: 1.6;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Action cards */
+        .action-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .action-card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .action-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        }
+
+        .action-card h3 {
+            color: #082f49;
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .action-card p {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .create-form {
+            display: flex;
+            gap: 10px;
+        }
+
+        .create-input {
+            flex: 1;
+            padding: 10px 16px;
+            border: 1px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .create-btn {
+            background: #082f49;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.2s ease;
+        }
+
+        .create-btn:hover {
+            background: #0b4b70;
+        }
+
+        /* Content area */
+        .content-sections {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .section {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .section h3 {
+            color: #082f49;
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        
+        header h1 {
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        header h1::before {
+            content: "👨‍🏫";
+            font-size: 22px;
+        }
+
+        header .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .lang-switch {
+            background: #fff;
+            color: #082f49;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .logout-btn {
+            background: #d9534f;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 6px 16px;
+            cursor: pointer;
+        }
+
+
+        /* Metrics card layout */
+        .metrics {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .metric-card {
+            flex: 1;
+            background: #083d5d;
+            color: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+        }
+
+        .metric-card h3 {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .metric-card p {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        /* Section title */
+        section h2 {
+            font-size: 20px;
+            margin-bottom: 16px;
+            color: #082f49;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Card block */
+        .card {
+            background-color: #fff;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .card .loading {
+            color: #999;
+            text-align: center;
+            padding: 10px 0;
+        }
+
+        button.primary {
+            background-color: #083d5d;
+            color: #fff;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s ease;
+        }
+
+        button.primary:hover {
+            background-color: #0b4b70;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            font-size: 14px;
+        }
+        
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+        
+        .btn-success {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: #218838;
+        }
+        
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+
+        footer {
+            text-align: center;
+            padding: 15px;
+            color: #777;
+            font-size: 13px;
+        }
+
+        @media (max-width: 768px) {
+            main {
+                padding: 20px;
+            }
+
+            .metrics {
+                flex-direction: column;
+            }
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        /* Course card styles */
+        .course-card {
+            background: white;
+            border: 1px solid #e1e5e9;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .course-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #082f49;
+            margin-bottom: 10px;
+        }
+        
+        .course-meta {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e1e5e9;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+            transition: width 0.3s ease;
+        }
+        
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #4facfe;
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .table th,
+        .table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e1e5e9;
+        }
+        
+        .table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .close:hover {
+            color: #000;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .success {
+            background: #e8f5e8;
+            color: #2e7d32;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .activity-type-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .activity-type-card {
+            background: #f8f9fa;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .activity-type-card:hover,
+        .activity-type-card.selected {
+            border-color: #4facfe;
+            background: #e3f2fd;
+        }
+        
+        .activity-type-icon {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        
+        .ai-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .ai-section h3 {
+            margin-bottom: 15px;
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Top navigation bar -->
+    <header>
+        <div class="platform-logo" style="display: flex; align-items: center; margin-left: 20px;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 90" style="height:40px;">
+                <!-- Background hexagon outline (PolyU style) -->
+                <polygon points="30,45 50,15 90,15 110,45 90,75 50,75" fill="none" stroke="#ff6b6b" stroke-width="3"/>
+
+                <!-- Open book (education) -->
+                <path d="M60 40 Q75 25 90 40 Q105 55 120 40 Q135 25 150 40" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" />
+
+                <!-- Book spine -->
+                <line x1="105" y1="40" x2="105" y2="70" stroke="#ffffff" stroke-width="3"/>
+
+                <!-- Circuit nodes (technology connection lines) -->
+                <circle cx="75" cy="28" r="3" fill="#4facfe"/>
+                <circle cx="135" cy="28" r="3" fill="#4facfe"/>
+                <line x1="75" y1="28" x2="135" y2="28" stroke="#4facfe" stroke-width="2" stroke-dasharray="4 3"/>
+
+                <!-- Light bulb on book -->
+                <circle cx="105" cy="18" r="4" fill="#ffd54f"/>
+
+                <!-- Text section -->
+                <text x="160" y="42" font-size="18" font-family="Inter, PingFang SC, sans-serif" font-weight="700" fill="#ffffff">PolyLearn</text>
+                <text x="160" y="65" font-size="12" font-family="Inter, sans-serif" fill="#b0bec5">Smart Learning</text>
+            </svg>
+        </div>
+        <div class="header-actions" style="margin-left: auto;">
+        </div>
+    </header>
+
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="sidebar-icon active" onclick="showHome()" title="Home">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 9.5L12 3l9 6.5v11a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/>
+            </svg>
+        </div>
+        <div class="sidebar-icon" onclick="showCourses()" title="Courses">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 3h14a2 2 0 0 1 2 2v16l-7-3-7 3V5a2 2 0 0 1 2-2z"/>
+            </svg>
+        </div>
+        <div class="sidebar-icon" onclick="showActivities()" title="Activities">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 4h5l2 3h9a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/>
+            </svg>
+        </div>
+        <div class="sidebar-icon" onclick="showGeneralAIAssistant()" title="AI Assistant">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="8" width="18" height="8" rx="3" ry="3"/>
+                <circle cx="9" cy="12" r="1"/>
+                <circle cx="15" cy="12" r="1"/>
+                <path d="M12 3v3M12 18v3M5 12H2M22 12h-3M8 20l-1 2M16 20l1 2"/>
+            </svg>
+        </div>
+        <div class="sidebar-icon" onclick="logout()" title="Logout">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                <polyline points="16 17 21 12 16 7"/>
+                <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+        </div>
+    </nav>
+
+    <!-- Main content area -->
+    <main>
+        <h1 class="page-title">Teacher Portal</h1>
+        <p class="welcome-text">Welcome back, @user name</p>
+
+        <!-- Welcome banner -->
+        <div class="welcome-banner">
+            <h2>Welcome to your Teacher Portal</h2>
+            <p>Create and manage courses, design engaging activities, and track student progress. Empower your teaching with smart tools!</p>
+        </div>
+
+        <!-- Data metrics -->
+        <div class="metrics">
+            <div class="metric-card">
+                <h3>Total Courses</h3>
+                <p id="totalCourses">0</p>
+            </div>
+            <div class="metric-card">
+                <h3>Total Activities</h3>
+                <p id="totalActivities">0</p>
+            </div>
+            <div class="metric-card">
+                <h3>Active Activities</h3>
+                <p id="activeActivities">0</p>
+            </div>
+            <div class="metric-card">
+                <h3>Completed Activities</h3>
+                <p id="completedActivities">0</p>
+            </div>
+        </div>
+
+        <!-- Action cards -->
+        <div class="action-cards">
+            <div class="action-card">
+                <h3>Course Management</h3>
+                <p>Create and manage your courses</p>
+                <button class="create-btn" onclick="showCreateCourseModal()">Create Course</button>
+            </div>
+            
+            <div class="action-card">
+                <h3>Activity Management</h3>
+                <p>Design engaging learning activities</p>
+                <button class="create-btn" onclick="showCreateActivityModal()">Create Activity</button>
+            </div>
+            
+            <div class="action-card">
+                <h3>Student Overview</h3>
+                <p>Monitor student progress and performance</p>
+                <div class="create-form">
+                    <input type="text" class="create-input" placeholder="Search students...">
+                    <button class="create-btn" onclick="searchStudents()">Search</button>
+                </div>
+            </div>
+            
+            <div class="action-card">
+                <h3>Import Students (Excel)</h3>
+                <p>Import students from Excel file</p>
+                <div style="padding: 15px; background: #f8f9fa; border-radius: 5px; border: 2px dashed #4facfe; margin-top: 10px;">
+                    <p style="margin-bottom: 10px; color: #666; font-size: 14px;">
+                        <strong>Excel File Format Requirements:</strong><br>
+                        • Required columns: student_id (Student ID), full_name (Name), email (Email)<br>
+                        • Optional columns: department (Department), course_code (Course Code, for auto-enrollment)<br>
+                        • Supported formats: .xlsx, .xls
+                    </p>
+                    <input type="file" id="excelFileInput" accept=".xlsx,.xls" style="margin-bottom: 10px; width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px;">
+                    <button class="create-btn" onclick="importStudentsFromExcel()" style="width: 100%;">
+                        Upload and Import Students
+                    </button>
+                    <div id="excelImportResult" style="margin-top: 10px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content area -->
+        <div class="content-sections">
+            <!-- Course Management -->
+            <div class="section">
+                <h3>Course Management</h3>
+                <div id="coursesList" class="loading">Loading...</div>
+            </div>
+
+            <!-- Activity Management -->
+            <div class="section">
+                <h3>Activity Management</h3>
+                <div id="activitiesList" class="loading">Loading...</div>
+            </div>
+        </div>
+
+        <!-- Recent Activities -->
+        <div class="section" style="margin-top: 30px;">
+            <h3>Recent Activities</h3>
+            <div id="recentActivities" class="loading">Loading...</div>
+        </div>
+    </main>
+
+    <footer>
+        Smart Classroom Platform © 2025
+    </footer>
+    
+    <!-- Create course modal -->
+    <div id="createCourseModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('createCourseModal')">&times;</span>
+            <h2>Create New Course</h2>
+            <form id="createCourseForm">
+                <div class="form-group">
+                    <label for="courseCode">Course Code:</label>
+                    <input type="text" id="courseCode" placeholder="e.g., COMP5241" required>
+                </div>
+                <div class="form-group">
+                    <label for="courseName">Course Name:</label>
+                    <input type="text" id="courseName" placeholder="Enter course name" required>
+                </div>
+                <div class="form-group">
+                    <label for="courseDescription">Course Description:</label>
+                    <textarea id="courseDescription" placeholder="Enter course description"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="semester">Semester:</label>
+                    <select id="semester" required>
+                        <option value="">Select Semester</option>
+                        <option value="Fall 2024">Fall 2024</option>
+                        <option value="Spring 2025">Spring 2025</option>
+                        <option value="Summer 2025">Summer 2025</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="academicYear">Academic Year:</label>
+                    <input type="text" id="academicYear" placeholder="e.g., 2024-25" required>
+                </div>
+                <button type="submit" class="btn">Create Course</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Create activity modal -->
+    <div id="createActivityModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('createActivityModal')">&times;</span>
+            <h2>Create New Activity</h2>
+            
+            <div class="ai-section">
+                <h3>🤖 AI Smart Generation</h3>
+                <p>Let AI automatically generate learning activities based on your teaching content</p>
+                <button class="btn btn-success" onclick="showAIGenerator()">Use AI Generation</button>
+            </div>
+            
+            <form id="createActivityForm">
+                <div class="form-group">
+                    <label for="activityCourse">Select Course:</label>
+                    <select id="activityCourse" required>
+                        <option value="">Select Course</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Activity Type:</label>
+                    <div class="activity-type-selector">
+                        <div class="activity-type-card" data-type="poll" onclick="selectActivityType('poll')">
+                            <div class="activity-type-icon">📊</div>
+                            <div>Poll</div>
+                        </div>
+                        <div class="activity-type-card" data-type="quiz" onclick="selectActivityType('quiz')">
+                            <div class="activity-type-icon">❓</div>
+                            <div>Quiz</div>
+                        </div>
+                        <div class="activity-type-card" data-type="word_cloud" onclick="selectActivityType('word_cloud')">
+                            <div class="activity-type-icon">☁️</div>
+                            <div>Word Cloud</div>
+                        </div>
+                        <div class="activity-type-card" data-type="short_answer" onclick="selectActivityType('short_answer')">
+                            <div class="activity-type-icon">✍️</div>
+                            <div>Short Answer</div>
+                        </div>
+                        <div class="activity-type-card" data-type="mini_game" onclick="selectActivityType('mini_game')">
+                            <div class="activity-type-icon">🎮</div>
+                            <div>Mini Game</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="activityTitle">Activity Title:</label>
+                    <input type="text" id="activityTitle" placeholder="Enter activity title" required>
+                </div>
+                <div class="form-group">
+                    <label for="activityDescription">Activity Description:</label>
+                    <textarea id="activityDescription" placeholder="Enter activity description"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="activityDuration">Duration (minutes):</label>
+                    <input type="number" id="activityDuration" value="10" min="1" max="120">
+                </div>
+                
+                <!-- Dynamic activity configuration area -->
+                <div id="activityConfigSection" style="display: none;">
+                    <hr style="margin: 20px 0; border: none; border-top: 1px solid #e1e5e9;">
+                    <h3 style="margin-bottom: 15px; color: #082f49;">Activity Configuration</h3>
+                    
+                    <!-- Poll activity configuration -->
+                    <div id="pollConfig" class="activity-config" style="display: none;">
+                        <div class="form-group">
+                            <label for="pollQuestion">Poll Question:</label>
+                            <input type="text" id="pollQuestion" placeholder="e.g., Which option do you think is most important?">
+                        </div>
+                        <div class="form-group">
+                            <label>Options:</label>
+                            <div id="pollOptions">
+                                <div class="option-item" style="display: flex; gap: 10px; margin-bottom: 10px;">
+                                    <input type="text" class="option-input" placeholder="Option 1">
+                                    <button type="button" class="btn btn-danger" onclick="removeOption(this)" style="padding: 5px 10px;">Delete</button>
+                                </div>
+                                <div class="option-item" style="display: flex; gap: 10px; margin-bottom: 10px;">
+                                    <input type="text" class="option-input" placeholder="Option 2">
+                                    <button type="button" class="btn btn-danger" onclick="removeOption(this)" style="padding: 5px 10px;">Delete</button>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-secondary" onclick="addPollOption()" style="margin-top: 10px;">Add Option</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Quiz activity configuration -->
+                    <div id="quizConfig" class="activity-config" style="display: none;">
+                        <div class="form-group">
+                            <label for="quizQuestion">Quiz Question:</label>
+                            <input type="text" id="quizQuestion" placeholder="e.g., Which of the following is correct?">
+                        </div>
+                        <div class="form-group">
+                            <label>Options:</label>
+                            <div id="quizOptions">
+                                <div class="option-item" style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
+                                    <input type="text" class="option-input" placeholder="Option A">
+                                    <label style="display: flex; align-items: center; gap: 5px;">
+                                        <input type="radio" name="correctAnswer" value="0"> Correct Answer
+                                    </label>
+                                    <button type="button" class="btn btn-danger" onclick="removeOption(this)" style="padding: 5px 10px;">Delete</button>
+                                </div>
+                                <div class="option-item" style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
+                                    <input type="text" class="option-input" placeholder="Option B">
+                                    <label style="display: flex; align-items: center; gap: 5px;">
+                                        <input type="radio" name="correctAnswer" value="1"> Correct Answer
+                                    </label>
+                                    <button type="button" class="btn btn-danger" onclick="removeOption(this)" style="padding: 5px 10px;">Delete</button>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-secondary" onclick="addQuizOption()" style="margin-top: 10px;">Add Option</button>
+                        </div>
+                        <div class="form-group">
+                            <label for="quizExplanation">Explanation:</label>
+                            <textarea id="quizExplanation" placeholder="Explain why this answer is correct" rows="3"></textarea>
+                        </div>
+                    </div>
+                    
+                    <!-- Word cloud activity configuration -->
+                    <div id="wordCloudConfig" class="activity-config" style="display: none;">
+                        <div class="form-group">
+                            <label for="wordCloudPrompt">Prompt:</label>
+                            <input type="text" id="wordCloudPrompt" placeholder="e.g., Please enter keywords related to the topic">
+                        </div>
+                        <div class="form-group">
+                            <label for="maxWords">Max Words:</label>
+                            <input type="number" id="maxWords" value="10" min="1" max="50">
+                        </div>
+                        <div class="form-group">
+                            <label for="minWordLength">Min Word Length:</label>
+                            <input type="number" id="minWordLength" value="2" min="1" max="10">
+                        </div>
+                    </div>
+                    
+                    <!-- Short answer activity configuration -->
+                    <div id="shortAnswerConfig" class="activity-config" style="display: none;">
+                        <div class="form-group">
+                            <label for="shortAnswerQuestion">Question:</label>
+                            <textarea id="shortAnswerQuestion" placeholder="e.g., Please briefly explain..." rows="3"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="maxLength">Max Length (characters):</label>
+                            <input type="number" id="maxLength" value="500" min="50" max="5000">
+                        </div>
+                        <div class="form-group">
+                            <label for="sampleAnswer">Sample Answer (optional):</label>
+                            <textarea id="sampleAnswer" placeholder="Sample answer..." rows="4"></textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn">Create Activity</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- AI generator modal -->
+    <div id="aiGeneratorModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('aiGeneratorModal')">&times;</span>
+            <h2>🤖 AI Activity Generator</h2>
+            
+            <form id="aiGeneratorForm">
+                <div class="form-group">
+                    <label for="aiCourse">Select Course:</label>
+                    <select id="aiCourse" required>
+                        <option value="">Select Course</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="aiActivityType">Activity Type:</label>
+                    <select id="aiActivityType" required>
+                        <option value="">Select Activity Type</option>
+                        <option value="poll">Poll</option>
+                        <option value="quiz">Quiz</option>
+                        <option value="word_cloud">Word Cloud</option>
+                        <option value="short_answer">Short Answer</option>
+                        <option value="mini_game">Mini Game</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="courseContent">Course Content:</label>
+                    <textarea id="courseContent" placeholder="Enter course content, AI will generate activities based on this" required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="webResources">Web Resources (optional):</label>
+                    <textarea id="webResources" placeholder="Enter relevant web resource links or content"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="additionalPrompt">Additional Requirements (optional):</label>
+                    <textarea id="additionalPrompt" placeholder="Enter special requirements or preferences"></textarea>
+                </div>
+                
+                <button type="submit" class="btn btn-success">Generate Activity</button>
+            </form>
+            
+            <div id="aiResult" style="margin-top: 20px;"></div>
+        </div>
+    </div>
+    
+    <!-- Course detail modal -->
+    <div id="courseDetailModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('courseDetailModal')">&times;</span>
+            <h2>Course Details</h2>
+            <div id="courseDetailContent" class="loading">Loading...</div>
+        </div>
+    </div>
+    
+    <!-- Activity detail modal -->
+    <div id="activityDetailModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('activityDetailModal')">&times;</span>
+            <h2>Activity Details</h2>
+            <div id="activityDetailContent" class="loading">Loading...</div>
+        </div>
+    </div>
+    
+    <!-- Activity results modal -->
+    <div id="activityResultsModal" class="modal">
+        <div class="modal-content" style="max-width: 900px;">
+            <span class="close" onclick="closeModal('activityResultsModal')">&times;</span>
+            <h2>Activity Results</h2>
+            <div id="activityResultsContent" class="loading">Loading...</div>
+        </div>
+    </div>
+    
+    <!-- Document management modal -->
+    <div id="documentManagementModal" class="modal">
+        <div class="modal-content" style="max-width: 900px;">
+            <span class="close" onclick="closeModal('documentManagementModal')">&times;</span>
+            <h2>Course Document Management</h2>
+            <div style="margin-bottom: 20px;">
+                <button class="btn btn-success" onclick="showUploadDocumentForm()">Upload Document</button>
+            </div>
+            <div id="documentUploadForm" style="display: none; padding: 20px; background: #f8f9fa; border-radius: 8px; margin-bottom: 20px;">
+                <h3 style="margin-bottom: 15px;">Upload New Document</h3>
+                <div class="form-group">
+                    <label>Document Title:</label>
+                    <input type="text" id="documentTitle" class="form-control" placeholder="Leave empty to use filename">
+                </div>
+                <div class="form-group">
+                    <label>Document Description:</label>
+                    <textarea id="documentDescription" class="form-control" rows="3" placeholder="Optional"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Select File:</label>
+                    <input type="file" id="documentFileInput" class="form-control" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.zip,.rar">
+                    <small style="color: #666;">Supported formats: PDF, DOC, DOCX, PPT, PPTX, XLS, XLSX, TXT, ZIP, RAR (max 50MB)</small>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-primary" onclick="uploadDocument()">Upload</button>
+                    <button class="btn btn-secondary" onclick="hideUploadDocumentForm()">Cancel</button>
+                </div>
+                <div id="documentUploadResult" style="margin-top: 10px;"></div>
+            </div>
+            <div id="documentsList" class="loading">Loading...</div>
+        </div>
+    </div>
+    
+    <!-- AI course assistant modal -->
+    <div id="aiAssistantModal" class="modal">
+        <div class="modal-content" style="max-width: 900px;">
+            <span class="close" onclick="closeModal('aiAssistantModal')">&times;</span>
+            <h2>🤖 AI Course Assistant</h2>
+            <div id="aiAssistantCourseInfo" style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                <p><strong>Course:</strong> <span id="aiAssistantCourseName">Loading...</span></p>
+            </div>
+            <div id="aiChatContainer" style="height: 400px; overflow-y: auto; border: 1px solid #e1e5e9; border-radius: 8px; padding: 15px; margin-bottom: 15px; background: #fff;">
+                <div id="aiChatMessages" style="min-height: 100%;">
+                    <div style="padding: 10px; background: #e3f2fd; border-radius: 8px; margin-bottom: 10px;">
+                        <strong>AI Assistant:</strong> Hello! I'm an AI course assistant, and I can help you answer questions about the course. I can provide assistance based on course materials, activity content, and other information. Please feel free to ask!
+                    </div>
+                </div>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="aiQuestionInput" class="form-control" placeholder="Please enter your question..." style="flex: 1;" onkeypress="if(event.key === 'Enter') askAIQuestion()">
+                <button class="btn btn-primary" onclick="askAIQuestion()">Send</button>
+            </div>
+            <div id="aiLoadingIndicator" style="display: none; margin-top: 10px; text-align: center; color: #666;">
+                AI is thinking...
+            </div>
+        </div>
+    </div>
+    
+    <!-- General AI assistant modal -->
+    <div id="generalAIAssistantModal" class="modal">
+        <div class="modal-content" style="max-width: 900px;">
+            <span class="close" onclick="closeModal('generalAIAssistantModal')">&times;</span>
+            <h2>🤖 General AI Assistant</h2>
+            <div style="margin-bottom: 20px; padding: 15px; background: #e3f2fd; border-radius: 8px;">
+                <p style="margin: 0; color: #666; font-size: 14px;">
+                    <strong>Tip:</strong> I can answer various questions. If you have questions about a specific course, I will guide you to use that course's AI assistant, which can provide more accurate answers based on course materials and activity information.
+                </p>
+            </div>
+            <div id="generalAIChatContainer" style="height: 400px; overflow-y: auto; border: 1px solid #e1e5e9; border-radius: 8px; padding: 15px; margin-bottom: 15px; background: #fff;">
+                <div id="generalAIChatMessages" style="min-height: 100%;">
+                    <div style="padding: 10px; background: #e3f2fd; border-radius: 8px; margin-bottom: 10px;">
+                        <strong>AI Assistant:</strong> Hello! I'm a general AI assistant, and I can help you answer various questions. If you have questions about a specific course, I will guide you to use that course's AI assistant. Please feel free to ask!
+                    </div>
+                </div>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="generalAIQuestionInput" class="form-control" placeholder="Please enter your question..." style="flex: 1;" onkeypress="if(event.key === 'Enter') askGeneralAIQuestion()">
+                <button class="btn btn-primary" onclick="askGeneralAIQuestion()">Send</button>
+            </div>
+            <div id="generalAILoadingIndicator" style="display: none; margin-top: 10px; text-align: center; color: #666;">
+                AI is thinking...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let selectedActivityType = '';
+        
+        // Initialize on page load
+        window.onload = async function() {
+            await checkAuth();
+            await loadDashboardData();
+            await loadCourses();
+            await loadActivities();
+            
+            // Ensure form event listeners are bound
+            console.log('Page loaded, form event listeners bound');
+        };
+        
+        // Ensure event listeners are bound after DOM is loaded
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+                console.log('DOM loaded');
+            });
+        } else {
+            console.log('DOM ready');
+        }
+        
+        // Check authentication status
+        async function checkAuth() {
+            try {
+                const response = await fetch('/api/auth/profile');
+                if (response.ok) {
+                    currentUser = await response.json();
+                    if (currentUser.role !== 'teacher') {
+                        window.location.href = '/login';
+                        return;
+                    }
+                    updateWelcomeMessage();
+                } else {
+                    window.location.href = '/';
+                }
+            } catch (error) {
+                window.location.href = '/';
+            }
+        }
+        
+        // Update welcome message
+        function updateWelcomeMessage() {
+            if (currentUser) {
+                const welcomeText = document.querySelector('.welcome-text');
+                welcomeText.textContent = `Welcome back, ${currentUser.full_name}`;
+            }
+        }
+        
+        // Sidebar navigation functions
+        function showHome() {
+            setActiveSidebar(0);
+            // Refresh home page content
+            location.reload();
+        }
+        
+        function showCourses() {
+            setActiveSidebar(1);
+            // Scroll to courses section
+            document.querySelector('.content-sections').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function showActivities() {
+            setActiveSidebar(2);
+            // Scroll to activities section
+            document.querySelector('.content-sections').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function logout() {
+            setActiveSidebar(4);
+            if (confirm('Are you sure you want to logout?')) {
+                // Call logout API
+                fetch('/api/auth/logout', { method: 'POST' })
+                    .then(() => {
+                        window.location.href = '/login';
+                    })
+                    .catch(() => {
+                        window.location.href = '/login';
+                    });
+            }
+        }
+        
+        // Set active sidebar icon
+        function setActiveSidebar(index) {
+            document.querySelectorAll('.sidebar-icon').forEach((icon, i) => {
+                icon.classList.toggle('active', i === index);
+            });
+        }
+        
+        // Search students function
+        function searchStudents() {
+            const input = document.querySelector('.create-input');
+            const searchTerm = input.value.trim();
+            if (searchTerm) {
+                // Add search students logic here
+                alert(`Searching for students: ${searchTerm}`);
+                input.value = '';
+            } else {
+                alert('Please enter a search term');
+            }
+        }
+        
+        // Load dashboard data
+        async function loadDashboardData() {
+            try {
+                const response = await fetch('/api/analytics/dashboard');
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('totalCourses').textContent = data.stats.total_courses;
+                    document.getElementById('totalActivities').textContent = data.stats.total_activities;
+                    document.getElementById('activeActivities').textContent = data.stats.active_activities;
+                    document.getElementById('completedActivities').textContent = data.stats.completed_activities;
+                    
+                    // Display recent activities
+                    displayRecentActivities(data.recent_activities);
+                }
+            } catch (error) {
+                console.error('Failed to load dashboard data:', error);
+            }
+        }
+        
+        // Display recent activities
+        function displayRecentActivities(activities) {
+            const container = document.getElementById('recentActivities');
+            if (activities.length === 0) {
+                container.innerHTML = '<p>No activities</p>';
+                return;
+            }
+            
+            const html = activities.map(activity => `
+                <div style="padding: 15px; border: 1px solid #e1e5e9; border-radius: 8px; margin-bottom: 10px;">
+                    <h4>${activity.title}</h4>
+                    <p>Course: ${activity.course_name || 'Unknown'}</p>
+                    <p>Type: ${getActivityTypeName(activity.activity_type)}</p>
+                    <p>Status: <span style="color: ${getStatusColor(activity.status)}">${getStatusName(activity.status)}</span></p>
+                    <p>Created: ${new Date(activity.created_at).toLocaleString()}</p>
+                </div>
+            `).join('');
+            
+            container.innerHTML = html;
+        }
+        
+        // Load courses list
+        async function loadCourses() {
+            try {
+                const response = await fetch('/api/courses/');
+                if (response.ok) {
+                    const courses = await response.json();
+                    displayCourses(courses);
+                    updateCourseSelectors(courses);
+                }
+            } catch (error) {
+                document.getElementById('coursesList').innerHTML = '<div class="error">Failed to load courses</div>';
+            }
+        }
+        
+        // Display courses list
+        function displayCourses(courses) {
+            const container = document.getElementById('coursesList');
+            if (courses.length === 0) {
+                container.innerHTML = '<p>No courses</p>';
+                return;
+            }
+            
+            const html = courses.map(course => `
+                <div class="course-card">
+                    <div class="course-title">${course.course_name} (${course.course_code})</div>
+                    <div class="course-meta">
+                        Semester: ${course.semester} ${course.academic_year}<br>
+                        Students: ${course.student_count || 0}<br>
+                        Activities: ${course.activity_count || 0}<br>
+                        Status: <span style="color: ${course.is_active ? '#28a745' : '#dc3545'}">${course.is_active ? 'Active' : 'Inactive'}</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${Math.min((course.activity_count || 0) * 10, 100)}%"></div>
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap;">
+                        <button class="btn btn-secondary" onclick="viewCourse(${course.id})">View Details</button>
+                        <button class="btn btn-primary" onclick="showDocumentManagement(${course.id})">Manage Documents</button>
+                        <button class="btn btn-success" onclick="showAIAssistant(${course.id})">🤖 AI Assistant</button>
+                    </div>
+                </div>
+            `).join('');
+            
+            container.innerHTML = html;
+        }
+        
+        // Update course selectors
+        function updateCourseSelectors(courses) {
+            const selectors = ['activityCourse', 'aiCourse'];
+            selectors.forEach(selectorId => {
+                const selector = document.getElementById(selectorId);
+                selector.innerHTML = '<option value="">Select Course</option>' + 
+                    courses.map(course => `<option value="${course.id}">${course.course_name} (${course.course_code})</option>`).join('');
+            });
+        }
+        
+        // Load activities list
+        async function loadActivities() {
+            try {
+                const response = await fetch('/api/activities/');
+                if (response.ok) {
+                    const activities = await response.json();
+                    displayActivities(activities);
+                }
+            } catch (error) {
+                document.getElementById('activitiesList').innerHTML = '<div class="error">Failed to load activities</div>';
+            }
+        }
+        
+        // Display activities list
+        function displayActivities(activities) {
+            const container = document.getElementById('activitiesList');
+            if (activities.length === 0) {
+                container.innerHTML = '<p>No activities</p>';
+                return;
+            }
+            
+            const html = activities.map(activity => `
+                <div style="padding: 15px; border: 1px solid #e1e5e9; border-radius: 8px; margin-bottom: 10px;">
+                    <h4>${activity.title}</h4>
+                    <p>Course: ${activity.course_name || 'Unknown'}</p>
+                    <p>Type: ${getActivityTypeName(activity.activity_type)}</p>
+                    <p>Status: <span style="color: ${getStatusColor(activity.status)}">${getStatusName(activity.status)}</span></p>
+                    <p>Responses: ${activity.response_count}</p>
+                    <div style="margin-top: 10px;">
+                        ${activity.status === 'draft' ? `<button class="btn btn-success" onclick="startActivity(${activity.id})">Start Activity</button>` : ''}
+                        ${activity.status === 'active' ? `<button class="btn btn-danger" onclick="stopActivity(${activity.id})">Stop Activity</button>` : ''}
+                        <button class="btn btn-secondary" onclick="viewActivity(${activity.id})">View Details</button>
+                    </div>
+                </div>
+            `).join('');
+            
+            container.innerHTML = html;
+        }
+        
+        // Show create course modal
+        function showCreateCourseModal() {
+            document.getElementById('createCourseModal').style.display = 'block';
+        }
+        
+        // Show create activity modal
+        function showCreateActivityModal() {
+            document.getElementById('createActivityModal').style.display = 'block';
+        }
+        
+        // Show AI generator
+        function showAIGenerator() {
+            document.getElementById('createActivityModal').style.display = 'none';
+            document.getElementById('aiGeneratorModal').style.display = 'block';
+        }
+        
+        // Close modal
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+            
+            // If it's the create activity modal, reset the form
+            if (modalId === 'createActivityModal') {
+                document.getElementById('createActivityForm').reset();
+                selectedActivityType = '';
+                document.querySelectorAll('.activity-type-card').forEach(card => {
+                    card.classList.remove('selected');
+                });
+                // Hide configuration area
+                document.getElementById('activityConfigSection').style.display = 'none';
+                document.querySelectorAll('.activity-config').forEach(config => {
+                    config.style.display = 'none';
+                });
+                // Reset option containers
+                resetActivityConfigs();
+            }
+        }
+        
+        // Reset activity configurations
+        function resetActivityConfigs() {
+            // Reset poll options
+            const pollOptions = document.getElementById('pollOptions');
+            if (pollOptions) {
+                pollOptions.innerHTML = `
+                    <div class="option-item" style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <input type="text" class="option-input" placeholder="Option 1">
+                        <button type="button" class="btn btn-danger" onclick="removeOption(this)" style="padding: 5px 10px;">Delete</button>
+                    </div>
+                    <div class="option-item" style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <input type="text" class="option-input" placeholder="Option 2">
+                        <button type="button" class="btn btn-danger" onclick="removeOption(this)" style="padding: 5px 10px;">Delete</button>
+                    </div>
+                `;
+            }
+            
+            // Reset quiz options
+            const quizOptions = document.getElementById('quizOptions');
+            if (quizOptions) {
+                quizOptions.innerHTML = `
+                    <div class="option-item" style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
+                        <input type="text" class="option-input" placeholder="Option A">
+                        <label style="display: flex; align-items: center; gap: 5px;">
+                            <input type="radio" name="correctAnswer" value="0"> Correct Answer
+                        </label>
+                        <button type="button" class="btn btn-danger" onclick="removeOption(this)" style="padding: 5px 10px;">Delete</button>
+                    </div>
+                    <div class="option-item" style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
+                        <input type="text" class="option-input" placeholder="Option B">
+                        <label style="display: flex; align-items: center; gap: 5px;">
+                            <input type="radio" name="correctAnswer" value="1"> Correct Answer
+                        </label>
+                        <button type="button" class="btn btn-danger" onclick="removeOption(this)" style="padding: 5px 10px;">Delete</button>
+                    </div>
+                `;
+            }
+        }
+        
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        }
+        
+        // Select activity type
+        function selectActivityType(type) {
+            selectedActivityType = type;
+            document.querySelectorAll('.activity-type-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            document.querySelector(`[data-type="${type}"]`).classList.add('selected');
+            
+            // Show/hide configuration area
+            const configSection = document.getElementById('activityConfigSection');
+            const allConfigs = document.querySelectorAll('.activity-config');
+            
+            // Hide all configurations
+            allConfigs.forEach(config => {
+                config.style.display = 'none';
+            });
+            
+            // Show corresponding configuration
+            if (type === 'poll') {
+                configSection.style.display = 'block';
+                document.getElementById('pollConfig').style.display = 'block';
+            } else if (type === 'quiz') {
+                configSection.style.display = 'block';
+                document.getElementById('quizConfig').style.display = 'block';
+            } else if (type === 'word_cloud') {
+                configSection.style.display = 'block';
+                document.getElementById('wordCloudConfig').style.display = 'block';
+            } else if (type === 'short_answer') {
+                configSection.style.display = 'block';
+                document.getElementById('shortAnswerConfig').style.display = 'block';
+            } else {
+                configSection.style.display = 'none';
+            }
+        }
+        
+        // Add poll option
+        function addPollOption() {
+            const optionsContainer = document.getElementById('pollOptions');
+            const optionCount = optionsContainer.children.length;
+            const optionDiv = document.createElement('div');
+            optionDiv.className = 'option-item';
+            optionDiv.style.cssText = 'display: flex; gap: 10px; margin-bottom: 10px;';
+            optionDiv.innerHTML = `
+                <input type="text" class="option-input" placeholder="Option ${optionCount + 1}">
+                <button type="button" class="btn btn-danger" onclick="removeOption(this)" style="padding: 5px 10px;">Delete</button>
+            `;
+            optionsContainer.appendChild(optionDiv);
+        }
+        
+        // Add quiz option
+        function addQuizOption() {
+            const optionsContainer = document.getElementById('quizOptions');
+            const optionCount = optionsContainer.children.length;
+            const optionDiv = document.createElement('div');
+            optionDiv.className = 'option-item';
+            optionDiv.style.cssText = 'display: flex; gap: 10px; margin-bottom: 10px; align-items: center;';
+            optionDiv.innerHTML = `
+                <input type="text" class="option-input" placeholder="Option ${String.fromCharCode(65 + optionCount)}">
+                <label style="display: flex; align-items: center; gap: 5px;">
+                    <input type="radio" name="correctAnswer" value="${optionCount}"> Correct Answer
+                </label>
+                <button type="button" class="btn btn-danger" onclick="removeOption(this)" style="padding: 5px 10px;">Delete</button>
+            `;
+            optionsContainer.appendChild(optionDiv);
+        }
+        
+        // Remove option
+        function removeOption(button) {
+            const optionItem = button.closest('.option-item');
+            if (optionItem) {
+                const container = optionItem.parentElement;
+                if (container.children.length > 2) {
+                    optionItem.remove();
+                    // Update quiz option indices and labels
+                    if (container.id === 'quizOptions') {
+                        updateQuizOptionIndices();
+                    }
+                } else {
+                    showMessage('At least two options must be kept', 'error');
+                }
+            }
+        }
+        
+        // Update quiz option indices
+        function updateQuizOptionIndices() {
+            const options = document.querySelectorAll('#quizOptions .option-item');
+            options.forEach((item, index) => {
+                const radio = item.querySelector('input[type="radio"]');
+                if (radio) {
+                    radio.value = index;
+                    const input = item.querySelector('.option-input');
+                    if (input) {
+                        input.placeholder = `Option ${String.fromCharCode(65 + index)}`;
+                    }
+                }
+            });
+        }
+        
+        // Create course form submission
+        document.getElementById('createCourseForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const data = {
+                course_code: document.getElementById('courseCode').value,
+                course_name: document.getElementById('courseName').value,
+                description: document.getElementById('courseDescription').value,
+                semester: document.getElementById('semester').value,
+                academic_year: document.getElementById('academicYear').value
+            };
+            
+            try {
+                const response = await fetch('/api/courses/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    showMessage('Course created successfully!', 'success');
+                    closeModal('createCourseModal');
+                    document.getElementById('createCourseForm').reset();
+                    loadCourses();
+                    loadDashboardData();
+                } else {
+                    const error = await response.json();
+                    showMessage(error.error || 'Failed to create course', 'error');
+                }
+            } catch (error) {
+                showMessage('Network error', 'error');
+            }
+        });
+        
+        // Create activity form submission
+        document.getElementById('createActivityForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            console.log('Form submit event triggered');
+            
+            // Validate basic fields
+            const title = document.getElementById('activityTitle').value.trim();
+            const courseId = document.getElementById('activityCourse').value;
+            
+            if (!title) {
+                showMessage('Please enter activity title', 'error');
+                return;
+            }
+            
+            if (!courseId) {
+                showMessage('Please select a course', 'error');
+                return;
+            }
+            
+            if (!selectedActivityType) {
+                showMessage('Please select activity type', 'error');
+                return;
+            }
+            
+            const data = {
+                title: title,
+                description: document.getElementById('activityDescription').value.trim(),
+                activity_type: selectedActivityType,
+                course_id: parseInt(courseId),
+                duration_minutes: parseInt(document.getElementById('activityDuration').value) || 10,
+                config: {}
+            };
+            
+            // Collect configuration based on activity type
+            if (selectedActivityType === 'poll') {
+                const question = document.getElementById('pollQuestion').value.trim();
+                const options = Array.from(document.querySelectorAll('#pollOptions .option-input')).map(input => input.value.trim()).filter(v => v);
+                
+                if (!question) {
+                    showMessage('Please enter poll question', 'error');
+                    return;
+                }
+                if (options.length < 2) {
+                    showMessage('At least 2 options are required', 'error');
+                    return;
+                }
+                
+                data.config = {
+                    question: question,
+                    options: options
+                };
+            } else if (selectedActivityType === 'quiz') {
+                const question = document.getElementById('quizQuestion').value.trim();
+                const options = Array.from(document.querySelectorAll('#quizOptions .option-input')).map(input => input.value.trim()).filter(v => v);
+                const correctAnswerRadio = document.querySelector('input[name="correctAnswer"]:checked');
+                const explanation = document.getElementById('quizExplanation').value.trim();
+                
+                if (!question) {
+                    showMessage('Please enter quiz question', 'error');
+                    return;
+                }
+                if (options.length < 2) {
+                    showMessage('At least 2 options are required', 'error');
+                    return;
+                }
+                if (!correctAnswerRadio) {
+                    showMessage('Please select correct answer', 'error');
+                    return;
+                }
+                
+                data.config = {
+                    question: question,
+                    options: options,
+                    correct_answer: parseInt(correctAnswerRadio.value),
+                    explanation: explanation
+                };
+            } else if (selectedActivityType === 'word_cloud') {
+                const prompt = document.getElementById('wordCloudPrompt').value.trim();
+                const maxWords = parseInt(document.getElementById('maxWords').value) || 10;
+                const minWordLength = parseInt(document.getElementById('minWordLength').value) || 2;
+                
+                if (!prompt) {
+                    showMessage('Please enter prompt', 'error');
+                    return;
+                }
+                
+                data.config = {
+                    prompt: prompt,
+                    max_words: maxWords,
+                    min_word_length: minWordLength
+                };
+            } else if (selectedActivityType === 'short_answer') {
+                const question = document.getElementById('shortAnswerQuestion').value.trim();
+                const maxLength = parseInt(document.getElementById('maxLength').value) || 500;
+                const sampleAnswer = document.getElementById('sampleAnswer').value.trim();
+                
+                if (!question) {
+                    showMessage('Please enter question', 'error');
+                    return;
+                }
+                
+                data.config = {
+                    question: question,
+                    max_length: maxLength,
+                    sample_answer: sampleAnswer
+                };
+            }
+            
+            console.log('Preparing to submit data:', data);
+            
+            try {
+                showMessage('Creating activity...', 'success');
+                const response = await fetch('/api/activities/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                console.log('Response status:', response.status);
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    console.log('Activity created successfully:', result);
+                    showMessage('Activity created successfully!', 'success');
+                    document.getElementById('createActivityForm').reset();
+                    selectedActivityType = '';
+                    document.querySelectorAll('.activity-type-card').forEach(card => {
+                        card.classList.remove('selected');
+                    });
+                    // Hide configuration area
+                    document.getElementById('activityConfigSection').style.display = 'none';
+                    document.querySelectorAll('.activity-config').forEach(config => {
+                        config.style.display = 'none';
+                    });
+                    // Reset option containers
+                    resetActivityConfigs();
+                    closeModal('createActivityModal');
+                    loadActivities();
+                    loadDashboardData();
+                } else {
+                    const error = await response.json();
+                    console.error('Failed to create activity:', error);
+                    showMessage(error.error || 'Failed to create activity', 'error');
+                }
+            } catch (error) {
+                console.error('Network error:', error);
+                showMessage('Network error: ' + error.message, 'error');
+            }
+        });
+        
+        // AI generator form submission
+        document.getElementById('aiGeneratorForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const data = {
+                activity_type: document.getElementById('aiActivityType').value,
+                course_content: document.getElementById('courseContent').value,
+                web_resources: document.getElementById('webResources').value,
+                additional_prompt: document.getElementById('additionalPrompt').value,
+                course_id: parseInt(document.getElementById('aiCourse').value)
+            };
+            
+            const resultDiv = document.getElementById('aiResult');
+            resultDiv.innerHTML = '<div class="loading">AI is generating activity...</div>';
+            
+            try {
+                const response = await fetch('/api/activities/ai/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    displayAIGeneratedActivity(result.generated_activity);
+                } else {
+                    const error = await response.json();
+                    resultDiv.innerHTML = `<div class="error">${error.error || 'AI generation failed'}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = '<div class="error">Network error</div>';
+            }
+        });
+        
+        // Display AI generated activity
+        function displayAIGeneratedActivity(activity) {
+            const resultDiv = document.getElementById('aiResult');
+            resultDiv.innerHTML = `
+                <div style="background: #e8f5e8; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                    <h3>🤖 AI Generated Activity</h3>
+                    <h4>${activity.title}</h4>
+                    <p><strong>Description:</strong> ${activity.description}</p>
+                    ${activity.question ? `<p><strong>Question:</strong> ${activity.question}</p>` : ''}
+                    ${activity.options ? `<p><strong>Options:</strong> ${activity.options.join(', ')}</p>` : ''}
+                    ${activity.explanation ? `<p><strong>Explanation:</strong> ${activity.explanation}</p>` : ''}
+                </div>
+                <button class="btn btn-success" onclick="useAIGeneratedActivity()">Use This Activity</button>
+                <button class="btn btn-secondary" onclick="regenerateActivity()">Regenerate</button>
+            `;
+        }
+        
+        // Use AI generated activity
+        function useAIGeneratedActivity() {
+            // Here you can populate the create activity form with AI generated content
+            showMessage('AI generated activity is ready!', 'success');
+            closeModal('aiGeneratorModal');
+        }
+        
+        // Regenerate activity
+        function regenerateActivity() {
+            document.getElementById('aiGeneratorForm').dispatchEvent(new Event('submit'));
+        }
+        
+        // Start activity
+        async function startActivity(activityId) {
+            try {
+                const response = await fetch(`/api/activities/${activityId}/start`, {
+                    method: 'POST'
+                });
+                
+                if (response.ok) {
+                    showMessage('Activity started!', 'success');
+                    loadActivities();
+                    loadDashboardData();
+                } else {
+                    const error = await response.json();
+                    showMessage(error.error || 'Failed to start activity', 'error');
+                }
+            } catch (error) {
+                showMessage('Network error', 'error');
+            }
+        }
+        
+        // Stop activity
+        async function stopActivity(activityId) {
+            try {
+                const response = await fetch(`/api/activities/${activityId}/stop`, {
+                    method: 'POST'
+                });
+                
+                if (response.ok) {
+                    showMessage('Activity stopped!', 'success');
+                    loadActivities();
+                    loadDashboardData();
+                } else {
+                    const error = await response.json();
+                    showMessage(error.error || 'Failed to stop activity', 'error');
+                }
+            } catch (error) {
+                showMessage('Network error', 'error');
+            }
+        }
+        
+        // Show message
+        function showMessage(message, type = 'success') {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = type;
+            messageDiv.textContent = message;
+            messageDiv.style.position = 'fixed';
+            messageDiv.style.top = '80px';
+            messageDiv.style.right = '20px';
+            messageDiv.style.zIndex = '10000';
+            messageDiv.style.minWidth = '300px';
+            messageDiv.style.maxWidth = '500px';
+            messageDiv.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+            
+            document.body.appendChild(messageDiv);
+            
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 3000);
+        }
+        
+        // Logout
+        async function logout() {
+            try {
+                await fetch('/api/auth/logout', { method: 'POST' });
+                window.location.href = '/';
+            } catch (error) {
+                window.location.href = '/';
+            }
+        }
+        
+        // Utility functions
+        function getActivityTypeName(type) {
+            const types = {
+                'poll': 'Poll',
+                'quiz': 'Quiz',
+                'word_cloud': 'Word Cloud',
+                'short_answer': 'Short Answer',
+                'mini_game': 'Mini Game'
+            };
+            return types[type] || type;
+        }
+        
+        function getStatusName(status) {
+            const statuses = {
+                'draft': 'Draft',
+                'active': 'Active',
+                'completed': 'Completed',
+                'archived': 'Archived'
+            };
+            return statuses[status] || status;
+        }
+        
+        function getStatusColor(status) {
+            const colors = {
+                'draft': '#6c757d',
+                'active': '#28a745',
+                'completed': '#007bff',
+                'archived': '#dc3545'
+            };
+            return colors[status] || '#6c757d';
+        }
+        
+        // View course details
+        async function viewCourse(courseId) {
+            try {
+                const response = await fetch(`/api/courses/${courseId}`);
+                if (response.ok) {
+                    const course = await response.json();
+                    displayCourseDetail(course);
+                    document.getElementById('courseDetailModal').style.display = 'block';
+                } else {
+                    const error = await response.json();
+                    showMessage(error.error || 'Failed to load course details', 'error');
+                }
+            } catch (error) {
+                showMessage('Network error', 'error');
+            }
+        }
+        
+        // Display course details
+        function displayCourseDetail(course) {
+            const container = document.getElementById('courseDetailContent');
+            const html = `
+                <div class="form-group">
+                    <label>Course Code:</label>
+                    <p style="padding: 10px; background: #f8f9fa; border-radius: 5px;">${course.course_code}</p>
+                </div>
+                <div class="form-group">
+                    <label>Course Name:</label>
+                    <p style="padding: 10px; background: #f8f9fa; border-radius: 5px;">${course.course_name}</p>
+                </div>
+                <div class="form-group">
+                    <label>Course Description:</label>
+                    <p style="padding: 10px; background: #f8f9fa; border-radius: 5px; min-height: 60px;">${course.description || 'No description'}</p>
+                </div>
+                <div class="form-group">
+                    <label>Teacher:</label>
+                    <p style="padding: 10px; background: #f8f9fa; border-radius: 5px;">${course.teacher_name || 'Unknown'}</p>
+                </div>
+                <div class="form-group">
+                    <label>Semester:</label>
+                    <p style="padding: 10px; background: #f8f9fa; border-radius: 5px;">${course.semester}</p>
+                </div>
+                <div class="form-group">
+                    <label>Academic Year:</label>
+                    <p style="padding: 10px; background: #f8f9fa; border-radius: 5px;">${course.academic_year}</p>
+                </div>
+                <div class="form-group">
+                    <label>Status:</label>
+                    <p style="padding: 10px; background: #f8f9fa; border-radius: 5px;">
+                        <span style="color: ${course.is_active ? 'green' : 'red'}">
+                            ${course.is_active ? 'Active' : 'Inactive'}
+                        </span>
+                    </p>
+                </div>
+                <div class="form-group">
+                    <label>Student Count:</label>
+                    <p style="padding: 10px; background: #f8f9fa; border-radius: 5px;">${course.student_count || 0}</p>
+                </div>
+                <div class="form-group">
+                    <label>Activity Count:</label>
+                    <p style="padding: 10px; background: #f8f9fa; border-radius: 5px;">${course.activity_count || 0}</p>
+                </div>
+                <div class="form-group">
+                    <label>Created At:</label>
+                    <p style="padding: 10px; background: #f8f9fa; border-radius: 5px;">
+                        ${course.created_at ? new Date(course.created_at).toLocaleString() : 'Unknown'}
+                    </p>
+                </div>
+                <div class="form-group">
+                    <label>Updated At:</label>
+                    <p style="padding: 10px; background: #f8f9fa; border-radius: 5px;">
+                        ${course.updated_at ? new Date(course.updated_at).toLocaleString() : 'Unknown'}
+                    </p>
+                </div>
+                <hr style="margin: 20px 0; border: none; border-top: 1px solid #e1e5e9;">
+                <div class="form-group">
+                    <label>Course Documents:</label>
+                    <button class="btn btn-primary" onclick="showDocumentManagement(${course.id})" style="margin-top: 10px;">
+                        Manage Documents
+                    </button>
+                </div>
+                <hr style="margin: 20px 0; border: none; border-top: 1px solid #e1e5e9;">
+                <div class="form-group">
+                    <label>AI Course Assistant:</label>
+                    <button class="btn btn-success" onclick="showAIAssistant(${course.id})" style="margin-top: 10px;">
+                        🤖 Ask AI Assistant
+                    </button>
+                </div>
+            `;
+            container.innerHTML = html;
+        }
+        
+        // Import students from Excel
+        async function importStudentsFromExcel() {
+            const fileInput = document.getElementById('excelFileInput');
+            const resultDiv = document.getElementById('excelImportResult');
+            
+            if (!fileInput.files || fileInput.files.length === 0) {
+                resultDiv.innerHTML = '<div class="error" style="padding: 10px; margin-top: 10px; color: #dc3545; background: #f8d7da; border-radius: 5px;">Please select an Excel file</div>';
+                return;
+            }
+            
+            const file = fileInput.files[0];
+            
+            // Validate file type
+            if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
+                resultDiv.innerHTML = '<div class="error" style="padding: 10px; margin-top: 10px; color: #dc3545; background: #f8d7da; border-radius: 5px;">Only Excel files (.xlsx, .xls) are supported</div>';
+                return;
+            }
+            
+            // Create FormData
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            // Show loading state
+            resultDiv.innerHTML = '<div style="padding: 10px; margin-top: 10px; color: #0c5460; background: #d1ecf1; border-radius: 5px;">Uploading and processing Excel file...</div>';
+            
+            try {
+                const response = await fetch('/api/courses/import-students-excel', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    let resultHtml = `<div style="padding: 15px; margin-top: 10px; border-radius: 5px; background: #d4edda; color: #155724;">
+                        <h4 style="margin-bottom: 10px;">Import Complete!</h4>
+                        <p><strong>New Students:</strong> ${result.imported_count}</p>
+                        <p><strong>Updated Students:</strong> ${result.updated_count}</p>
+                        <p><strong>Course Enrollments:</strong> ${result.enrolled_count}</p>
+                        <p><strong>Skipped:</strong> ${result.skipped_count}</p>
+                        <p><strong>Total Rows:</strong> ${result.total_rows}</p>
+                    </div>`;
+                    
+                    if (result.errors && result.errors.length > 0) {
+                        resultHtml += `<div style="margin-top: 10px; padding: 10px; background: #fff3cd; border-radius: 5px; max-height: 200px; overflow-y: auto; color: #856404;">
+                            <strong>Errors (first 20):</strong>
+                            <ul style="margin-top: 5px; padding-left: 20px;">
+                                ${result.errors.map(err => `<li style="font-size: 12px;">${err}</li>`).join('')}
+                            </ul>
+                        </div>`;
+                    }
+                    
+                    resultDiv.innerHTML = resultHtml;
+                    
+                    // Clear file input
+                    fileInput.value = '';
+                    
+                    // Refresh course list
+                    loadCourses();
+                    loadDashboardData();
+                } else {
+                    let errorMsg = result.error || 'Import failed';
+                    if (result.required_columns) {
+                        errorMsg += `<br>Required columns: ${result.required_columns.join(', ')}`;
+                        if (result.found_columns) {
+                            errorMsg += `<br>Found columns: ${result.found_columns.join(', ')}`;
+                        }
+                    }
+                    resultDiv.innerHTML = `<div class="error" style="padding: 10px; margin-top: 10px; color: #dc3545; background: #f8d7da; border-radius: 5px;">${errorMsg}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error" style="padding: 10px; margin-top: 10px; color: #dc3545; background: #f8d7da; border-radius: 5px;">Network error: ${error.message}</div>`;
+            }
+        }
+        
+        // View activity details
+        async function viewActivity(activityId) {
+            try {
+                const response = await fetch(`/api/activities/${activityId}`);
+                if (response.ok) {
+                    const activity = await response.json();
+                    displayActivityDetail(activity);
+                    document.getElementById('activityDetailModal').style.display = 'block';
+                } else {
+                    const error = await response.json();
+                    showMessage(error.error || 'Failed to load activity details', 'error');
+                }
+            } catch (error) {
+                showMessage('Network error', 'error');
+            }
+        }
+        
+        // Display activity details
+        function displayActivityDetail(activity) {
+            const container = document.getElementById('activityDetailContent');
+            const config = activity.config || {};
+            let configHtml = '';
+            
+            // Display different configuration information based on activity type
+            if (activity.activity_type === 'poll' || activity.activity_type === 'quiz') {
+                if (config.question) {
+                    configHtml += `<div class="form-group"><label>Question:</label><p style="padding: 10px; background: #f8f9fa; border-radius: 5px;">${config.question}</p></div>`;
+                }
+                if (config.options && Array.isArray(config.options)) {
+                    configHtml += `<div class="form-group"><label>Options:</label><ul style="padding: 10px; background: #f8f9fa; border-radius: 5px;">${config.options.map(opt => `<li>${opt}</li>`).join('')}</ul></div>`;
+                }
+                if (config.correct_answer !== undefined) {
+                    configHtml += `<div class="form-group"><label>Correct Answer:</label><p style="padding: 10px; background: #f8f9fa; border-radius: 5px;">${config.correct_answer}</p></div>`;
+                }
+                if (config.explanation) {
+                    configHtml += `<div class="form-group"><label>Explanation:</label><p style="padding: 10px; background: #f8f9fa; border-radius: 5px;">${config.explanation}</p></div>`;
+                }
+            } else if (activity.activity_type === 'word_cloud') {
+                if (config.prompt) {
+                    configHtml += `<div class="form-group"><label>Prompt:</label><p style="padding: 10px; background: #f8f9fa; border-radius: 5px;">${config.prompt}</p></div>`;
+                }
+            } else if (activity.activity_type === 'short_answer') {
+                if (config.question) {
+                    configHtml += `<div class="form-group"><label>Question:</label><p style="padding: 10px; background: #f8f9fa; border-radius: 5px;">${config.question}</p></div>`;
+                }
+                if (config.max_length) {
+                    configHtml += `<div class="form-group"><label>Max Length:</label><p style="padding: 10px; background: #f8f9fa; border-radius: 5px;">${config.max_length} characters</p></div>`;
+                }
+            }
+            
+            const html = `
+                <div class="form-group">
+                    <label>Activity Title:</label>
+                    <p style="padding: 10px; background: #f8f9fa; border-radius: 5px;">${activity.title}</p>
+                </div>
+                <div class="form-group">
+                    <label>Activity Description:</label>
+                    <p style="padding: 10px; background: #f8f9fa; border-radius: 5px; min-height: 60px;">${activity.description || 'No description'}</p>
+                </div>
+                <div class="form-group">
+                    <label>Activity Type:</label>
+                    <p style="padding: 10px; background: #f8f9fa; border-radius: 5px;">${getActivityTypeName(activity.activity_type)}</p>
+                </div>
+                <div class="form-group">
+                    <label>Course:</label>
+                    <p style="padding: 10px; background: #f8f9fa; border-radius: 5px;">${activity.course_name || 'Unknown'}</p>
+                </div>
+                <div class="form-group">
+                    <label>Creator:</label>
+                    <p style="padding: 10px; background: #f8f9fa; border-radius: 5px;">${activity.creator_name || 'Unknown'}</p>
+                </div>
+                <div class="form-group">
+                    <label>Status:</label>
+                    <p style="padding: 10px; background: #f8f9fa; border-radius: 5px;">
+                        <span style="color: ${getStatusColor(activity.status)}">
+                            ${getStatusName(activity.status)}
+                        </span>
+                    </p>
+                </div>
+                <div class="form-group">
+                    <label>Duration:</label>
+                    <p style="padding: 10px; background: #f8f9fa; border-radius: 5px;">${activity.duration_minutes || 10} minutes</p>
+                </div>
+                <div class="form-group">
+                    <label>Response Count:</label>
+                    <p style="padding: 10px; background: #f8f9fa; border-radius: 5px;">${activity.response_count || 0}</p>
+                </div>
+                ${activity.start_time ? `
+                <div class="form-group">
+                    <label>Start Time:</label>
+                    <p style="padding: 10px; background: #f8f9fa; border-radius: 5px;">
+                        ${new Date(activity.start_time).toLocaleString()}
+                    </p>
+                </div>
+                ` : ''}
+                ${activity.end_time ? `
+                <div class="form-group">
+                    <label>End Time:</label>
+                    <p style="padding: 10px; background: #f8f9fa; border-radius: 5px;">
+                        ${new Date(activity.end_time).toLocaleString()}
+                    </p>
+                </div>
+                ` : ''}
+                <div class="form-group">
+                    <label>Created At:</label>
+                    <p style="padding: 10px; background: #f8f9fa; border-radius: 5px;">
+                        ${activity.created_at ? new Date(activity.created_at).toLocaleString() : 'Unknown'}
+                    </p>
+                </div>
+                ${activity.is_ai_generated ? `
+                <div class="form-group">
+                    <label>AI Generated:</label>
+                    <p style="padding: 10px; background: #e3f2fd; border-radius: 5px;">Yes</p>
+                </div>
+                ` : ''}
+                ${configHtml}
+                <hr style="margin: 20px 0; border: none; border-top: 1px solid #e1e5e9;">
+                <div class="form-group">
+                    <button class="btn btn-success" onclick="viewActivityResults(${activity.id})" style="width: 100%;">
+                        View Activity Results (${activity.response_count || 0} responses)
+                    </button>
+                </div>
+            `;
+            container.innerHTML = html;
+        }
+        
+        // View activity results
+        async function viewActivityResults(activityId) {
+            try {
+                const response = await fetch(`/api/responses/activity/${activityId}`);
+                if (response.ok) {
+                    const responses = await response.json();
+                    displayActivityResults(activityId, responses);
+                    document.getElementById('activityResultsModal').style.display = 'block';
+                } else {
+                    const error = await response.json();
+                    showMessage(error.error || 'Failed to load results', 'error');
+                }
+            } catch (error) {
+                showMessage('Network error', 'error');
+            }
+        }
+        
+        // Display activity results
+        function displayActivityResults(activityId, responses) {
+            const container = document.getElementById('activityResultsContent');
+            
+            if (responses.length === 0) {
+                container.innerHTML = '<p style="text-align: center; padding: 20px; color: #666;">No responses</p>';
+                return;
+            }
+            
+            // Get activity information to display configuration
+            fetch(`/api/activities/${activityId}`)
+                .then(res => res.json())
+                .then(activity => {
+                    const config = activity.config || {};
+                    let html = `<h3 style="margin-bottom: 20px;">Activity Results (${responses.length} responses)</h3>`;
+                    
+                    // If it's a poll activity, display visualization chart
+                    if (activity.activity_type === 'poll') {
+                        html += generatePollVisualization(responses, config);
+                    }
+                    
+                    // Display detailed response list
+                    html += `<hr style="margin: 30px 0; border: none; border-top: 1px solid #e1e5e9;">
+                    <h4 style="margin-bottom: 15px;">Detailed Response List</h4>`;
+                    
+                    responses.forEach((resp, index) => {
+                        const responseData = resp.response_data || {};
+                        html += `
+                            <div style="padding: 20px; border: 1px solid #e1e5e9; border-radius: 8px; margin-bottom: 15px; background: white;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                    <h4 style="margin: 0; color: #082f49;">${resp.student_name || resp.student_username || 'Unknown Student'}</h4>
+                                    <span style="color: #666; font-size: 14px;">${new Date(resp.submitted_at).toLocaleString()}</span>
+                                </div>
+                                ${displayResponseData(responseData, activity.activity_type, config)}
+                                ${resp.score !== null && resp.score !== undefined ? `
+                                    <div style="margin-top: 10px; padding: 10px; background: #e3f2fd; border-radius: 5px;">
+                                        <strong>Score:</strong> ${resp.score}
+                                    </div>
+                                ` : ''}
+                                ${resp.feedback ? `
+                                    <div style="margin-top: 10px; padding: 10px; background: #fff3cd; border-radius: 5px;">
+                                        <strong>Feedback:</strong> ${resp.feedback}
+                                    </div>
+                                ` : ''}
+                            </div>
+                        `;
+                    });
+                    
+                    container.innerHTML = html;
+                    
+                    // If it's a poll activity, draw pie chart
+                    if (activity.activity_type === 'poll') {
+                        drawPollChart(responses, config);
+                    }
+                })
+                .catch(error => {
+                    container.innerHTML = '<p style="text-align: center; padding: 20px; color: #dc3545;">Failed to load activity information</p>';
+                });
+        }
+        
+        // Generate poll visualization
+        function generatePollVisualization(responses, config) {
+            const options = config.options || [];
+            const optionCounts = {};
+            const optionColors = ['#28a745', '#dc3545', '#007bff', '#ffc107', '#17a2b8', '#6f42c1', '#e83e8c', '#fd7e14'];
+            
+            // Initialize counts
+            options.forEach((option, index) => {
+                optionCounts[index] = 0;
+            });
+            
+            // Count votes for each option
+            responses.forEach(resp => {
+                const responseData = resp.response_data || {};
+                const optionIndex = responseData.option_index;
+                if (optionIndex !== undefined && optionIndex !== null) {
+                    const index = parseInt(optionIndex);
+                    if (optionCounts[index] !== undefined) {
+                        optionCounts[index]++;
+                    }
+                }
+            });
+            
+            const totalVotes = responses.length;
+            let html = `
+                <div style="background: white; padding: 30px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <h3 style="margin-bottom: 20px; color: #082f49;">${config.question || 'Poll Results'}</h3>
+                    <div style="display: flex; gap: 40px; align-items: center; flex-wrap: wrap;">
+                        <div style="flex: 1; min-width: 300px;">
+                            <canvas id="pollChart" width="300" height="300" style="max-width: 100%;"></canvas>
+                        </div>
+                        <div style="flex: 1; min-width: 250px;">
+                            <div style="margin-bottom: 20px;">
+                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                                    <div style="width: 40px; height: 40px; border-radius: 50%; background: #6c757d; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">
+                                        ${totalVotes}
+                                    </div>
+                                    <div>
+                                        <strong style="font-size: 16px;">Total Participants</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="display: grid; gap: 15px;">
+            `;
+            
+            // Display statistics for each option
+            options.forEach((option, index) => {
+                const count = optionCounts[index] || 0;
+                const percentage = totalVotes > 0 ? ((count / totalVotes) * 100).toFixed(1) : 0;
+                const color = optionColors[index % optionColors.length];
+                
+                html += `
+                    <div style="display: flex; align-items: center; gap: 15px; padding: 12px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid ${color};">
+                        <div style="width: 50px; height: 50px; border-radius: 50%; background: ${color}; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 18px;">
+                            ${count}
+                        </div>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 600; margin-bottom: 5px; color: #082f49;">${option}</div>
+                            <div style="font-size: 14px; color: #666;">${percentage}% (${count} votes)</div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += `
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            return html;
+        }
+        
+        // Draw poll pie chart
+        function drawPollChart(responses, config) {
+            const options = config.options || [];
+            const optionCounts = {};
+            const optionColors = ['#28a745', '#dc3545', '#007bff', '#ffc107', '#17a2b8', '#6f42c1', '#e83e8c', '#fd7e14'];
+            
+            // Initialize counts
+            options.forEach((option, index) => {
+                optionCounts[index] = 0;
+            });
+            
+            // Count votes for each option
+            responses.forEach(resp => {
+                const responseData = resp.response_data || {};
+                const optionIndex = responseData.option_index;
+                if (optionIndex !== undefined && optionIndex !== null) {
+                    const index = parseInt(optionIndex);
+                    if (optionCounts[index] !== undefined) {
+                        optionCounts[index]++;
+                    }
+                }
+            });
+            
+            const canvas = document.getElementById('pollChart');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = Math.min(canvas.width, canvas.height) / 2 - 20;
+            
+            const totalVotes = responses.length;
+            let currentAngle = -Math.PI / 2; // Start from top
+            
+            // Draw pie chart
+            options.forEach((option, index) => {
+                const count = optionCounts[index] || 0;
+                const percentage = totalVotes > 0 ? count / totalVotes : 0;
+                const sliceAngle = percentage * 2 * Math.PI;
+                const color = optionColors[index % optionColors.length];
+                
+                // Draw slice
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, currentAngle, currentAngle + sliceAngle);
+                ctx.closePath();
+                ctx.fillStyle = color;
+                ctx.fill();
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // Display number in slice center
+                if (count > 0) {
+                    const labelAngle = currentAngle + sliceAngle / 2;
+                    const labelX = centerX + Math.cos(labelAngle) * (radius * 0.6);
+                    const labelY = centerY + Math.sin(labelAngle) * (radius * 0.6);
+                    
+                    ctx.fillStyle = '#fff';
+                    ctx.font = 'bold 24px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(count.toString(), labelX, labelY);
+                }
+                
+                currentAngle += sliceAngle;
+            });
+        }
+        
+        // Document management related functions
+        let currentCourseIdForDocuments = null;
+        
+        // Show document management interface
+        async function showDocumentManagement(courseId) {
+            currentCourseIdForDocuments = courseId;
+            document.getElementById('documentManagementModal').style.display = 'block';
+            await loadDocuments(courseId);
+        }
+        
+        // Load documents list
+        async function loadDocuments(courseId) {
+            const container = document.getElementById('documentsList');
+            container.innerHTML = '<div class="loading">Loading...</div>';
+            
+            try {
+                const response = await fetch(`/api/documents/course/${courseId}`);
+                if (response.ok) {
+                    const documents = await response.json();
+                    displayDocuments(documents);
+                } else {
+                    const error = await response.json();
+                    container.innerHTML = `<p style="color: #dc3545;">Failed to load: ${error.error}</p>`;
+                }
+            } catch (error) {
+                container.innerHTML = `<p style="color: #dc3545;">Network error: ${error.message}</p>`;
+            }
+        }
+        
+        // Display documents list
+        function displayDocuments(documents) {
+            const container = document.getElementById('documentsList');
+            
+            if (documents.length === 0) {
+                container.innerHTML = '<p style="text-align: center; padding: 20px; color: #666;">No documents</p>';
+                return;
+            }
+            
+            let html = '<div style="display: grid; gap: 15px;">';
+            documents.forEach(doc => {
+                const statusBadge = doc.is_active 
+                    ? '<span style="background: #28a745; color: white; padding: 3px 8px; border-radius: 3px; font-size: 12px;">Published</span>'
+                    : '<span style="background: #dc3545; color: white; padding: 3px 8px; border-radius: 3px; font-size: 12px;">Unpublished</span>';
+                
+                html += `
+                    <div style="padding: 20px; border: 1px solid #e1e5e9; border-radius: 8px; background: white;">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                            <div style="flex: 1;">
+                                <h4 style="margin: 0 0 5px 0; color: #082f49;">${doc.title}</h4>
+                                <p style="margin: 0; color: #666; font-size: 14px;">${doc.filename}</p>
+                            </div>
+                            ${statusBadge}
+                        </div>
+                        ${doc.description ? `<p style="margin: 10px 0; color: #666; font-size: 14px;">${doc.description}</p>` : ''}
+                        <div style="display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
+                            <div style="flex: 1; min-width: 200px;">
+                                <small style="color: #666;">
+                                    <strong>Size:</strong> ${doc.file_size_mb} MB | 
+                                    <strong>Type:</strong> ${doc.file_type.toUpperCase()} | 
+                                    <strong>Downloads:</strong> ${doc.download_count} times
+                                </small>
+                            </div>
+                            <div style="display: flex; gap: 5px;">
+                                <button class="btn btn-primary" onclick="downloadDocument(${doc.id})" style="font-size: 12px; padding: 5px 10px;">Download</button>
+                                <button class="btn btn-secondary" onclick="editDocument(${doc.id})" style="font-size: 12px; padding: 5px 10px;">Edit</button>
+                                <button class="btn btn-danger" onclick="deleteDocument(${doc.id})" style="font-size: 12px; padding: 5px 10px;">Delete</button>
+                            </div>
+                        </div>
+                        <small style="color: #999; display: block; margin-top: 10px;">
+                            Upload Time: ${new Date(doc.created_at).toLocaleString()}
+                        </small>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        }
+        
+        // Show upload form
+        function showUploadDocumentForm() {
+            document.getElementById('documentUploadForm').style.display = 'block';
+            document.getElementById('documentTitle').value = '';
+            document.getElementById('documentDescription').value = '';
+            document.getElementById('documentFileInput').value = '';
+            document.getElementById('documentUploadResult').innerHTML = '';
+        }
+        
+        // Hide upload form
+        function hideUploadDocumentForm() {
+            document.getElementById('documentUploadForm').style.display = 'none';
+        }
+        
+        // Upload document
+        async function uploadDocument() {
+            const fileInput = document.getElementById('documentFileInput');
+            const titleInput = document.getElementById('documentTitle');
+            const descriptionInput = document.getElementById('documentDescription');
+            const resultDiv = document.getElementById('documentUploadResult');
+            
+            if (!fileInput.files || fileInput.files.length === 0) {
+                resultDiv.innerHTML = '<div style="padding: 10px; color: #dc3545; background: #f8d7da; border-radius: 5px;">Please select a file</div>';
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            if (titleInput.value.trim()) {
+                formData.append('title', titleInput.value.trim());
+            }
+            if (descriptionInput.value.trim()) {
+                formData.append('description', descriptionInput.value.trim());
+            }
+            
+            resultDiv.innerHTML = '<div style="padding: 10px; color: #0c5460; background: #d1ecf1; border-radius: 5px;">Uploading...</div>';
+            
+            try {
+                const response = await fetch(`/api/documents/course/${currentCourseIdForDocuments}`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = '<div style="padding: 10px; color: #155724; background: #d4edda; border-radius: 5px;">Upload successful!</div>';
+                    fileInput.value = '';
+                    titleInput.value = '';
+                    descriptionInput.value = '';
+                    await loadDocuments(currentCourseIdForDocuments);
+                    setTimeout(() => {
+                        hideUploadDocumentForm();
+                    }, 1500);
+                } else {
+                    resultDiv.innerHTML = `<div style="padding: 10px; color: #dc3545; background: #f8d7da; border-radius: 5px;">Upload failed: ${result.error}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div style="padding: 10px; color: #dc3545; background: #f8d7da; border-radius: 5px;">Network error: ${error.message}</div>`;
+            }
+        }
+        
+        // Download document
+        function downloadDocument(documentId) {
+            window.open(`/api/documents/${documentId}/download`, '_blank');
+        }
+        
+        // Edit document
+        async function editDocument(documentId) {
+            try {
+                const response = await fetch(`/api/documents/${documentId}`);
+                if (response.ok) {
+                    const doc = await response.json();
+                    const newTitle = prompt('Document Title:', doc.title);
+                    if (newTitle === null) return;
+                    
+                    const newDescription = prompt('Document Description:', doc.description || '');
+                    if (newDescription === null) return;
+                    
+                    const isActive = confirm(`Current Status: ${doc.is_active ? 'Published' : 'Unpublished'}\n\nPublish?`);
+                    
+                    const updateData = {
+                        title: newTitle,
+                        description: newDescription,
+                        is_active: isActive
+                    };
+                    
+                    const updateResponse = await fetch(`/api/documents/${documentId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(updateData)
+                    });
+                    
+                    if (updateResponse.ok) {
+                        showMessage('Document updated successfully', 'success');
+                        await loadDocuments(currentCourseIdForDocuments);
+                    } else {
+                        const error = await updateResponse.json();
+                        showMessage(`Update failed: ${error.error}`, 'error');
+                    }
+                } else {
+                    const error = await response.json();
+                    showMessage(`Failed to load: ${error.error}`, 'error');
+                }
+            } catch (error) {
+                showMessage(`Network error: ${error.message}`, 'error');
+            }
+        }
+        
+        // Delete document
+        async function deleteDocument(documentId) {
+            if (!confirm('Are you sure you want to delete this document? This action cannot be undone.')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/documents/${documentId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    showMessage('Document deleted', 'success');
+                    await loadDocuments(currentCourseIdForDocuments);
+                } else {
+                    const error = await response.json();
+                    showMessage(`Delete failed: ${error.error}`, 'error');
+                }
+            } catch (error) {
+                showMessage(`Network error: ${error.message}`, 'error');
+            }
+        }
+        
+        // AI Assistant related functions
+        let currentCourseIdForAI = null;
+        
+        // Show AI Assistant interface
+        async function showAIAssistant(courseId) {
+            currentCourseIdForAI = courseId;
+            
+            // Get course information
+            try {
+                const response = await fetch(`/api/courses/${courseId}`);
+                if (response.ok) {
+                    const course = await response.json();
+                    document.getElementById('aiAssistantCourseName').textContent = `${course.course_name} (${course.course_code})`;
+                }
+            } catch (error) {
+                document.getElementById('aiAssistantCourseName').textContent = 'Unknown Course';
+            }
+            
+            // Clear chat history
+            document.getElementById('aiChatMessages').innerHTML = `
+                <div style="padding: 10px; background: #e3f2fd; border-radius: 8px; margin-bottom: 10px;">
+                    <strong>AI Assistant:</strong> Hello! I'm an AI course assistant, and I can help you answer questions about the course. I can provide assistance based on course materials, activity content, and other information. Please feel free to ask!
+                </div>
+            `;
+            
+            // Clear input field
+            document.getElementById('aiQuestionInput').value = '';
+            
+            // Show modal
+            document.getElementById('aiAssistantModal').style.display = 'block';
+        }
+        
+        // Ask AI a question
+        async function askAIQuestion() {
+            const questionInput = document.getElementById('aiQuestionInput');
+            const question = questionInput.value.trim();
+            
+            if (!question) {
+                showMessage('Please enter your question', 'error');
+                return;
+            }
+            
+            if (!currentCourseIdForAI) {
+                showMessage('Course information error', 'error');
+                return;
+            }
+            
+            const messagesContainer = document.getElementById('aiChatMessages');
+            const loadingIndicator = document.getElementById('aiLoadingIndicator');
+            
+            // Display user question
+            messagesContainer.innerHTML += `
+                <div style="padding: 10px; background: #d4edda; border-radius: 8px; margin-bottom: 10px; text-align: right;">
+                    <strong>You:</strong> ${question}
+                </div>
+            `;
+            
+            // Clear input field
+            questionInput.value = '';
+            
+            // Show loading indicator
+            loadingIndicator.style.display = 'block';
+            
+            // Scroll to bottom
+            const chatContainer = document.getElementById('aiChatContainer');
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            
+            try {
+                const response = await fetch(`/api/ai-qa/course/${currentCourseIdForAI}/ask`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ question: question })
+                });
+                
+                loadingIndicator.style.display = 'none';
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    
+                    // Display AI answer
+                    messagesContainer.innerHTML += `
+                        <div style="padding: 10px; background: #e3f2fd; border-radius: 8px; margin-bottom: 10px;">
+                            <strong>AI Assistant:</strong> ${result.answer.replace(/\n/g, '<br>')}
+                        </div>
+                    `;
+                } else {
+                    const error = await response.json();
+                    messagesContainer.innerHTML += `
+                        <div style="padding: 10px; background: #f8d7da; border-radius: 8px; margin-bottom: 10px; color: #dc3545;">
+                            <strong>Error:</strong> ${error.error || 'Request failed'}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                loadingIndicator.style.display = 'none';
+                messagesContainer.innerHTML += `
+                    <div style="padding: 10px; background: #f8d7da; border-radius: 8px; margin-bottom: 10px; color: #dc3545;">
+                        <strong>Error:</strong> Network error: ${error.message}
+                    </div>
+                `;
+            }
+            
+            // Scroll to bottom
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+        
+        // General AI Assistant related functions
+        // Show general AI Assistant interface
+        function showGeneralAIAssistant() {
+            setActiveSidebar(3);
+            // Clear chat history
+            document.getElementById('generalAIChatMessages').innerHTML = `
+                <div style="padding: 10px; background: #e3f2fd; border-radius: 8px; margin-bottom: 10px;">
+                    <strong>AI Assistant:</strong> Hello! I'm a general AI assistant, and I can help you answer various questions. If you have questions about a specific course, I will guide you to use that course's AI assistant. Please feel free to ask!
+                </div>
+            `;
+            
+            // Clear input field
+            document.getElementById('generalAIQuestionInput').value = '';
+            
+            // Show modal
+            document.getElementById('generalAIAssistantModal').style.display = 'block';
+        }
+        
+        // Ask general AI a question
+        async function askGeneralAIQuestion() {
+            const questionInput = document.getElementById('generalAIQuestionInput');
+            const question = questionInput.value.trim();
+            
+            if (!question) {
+                showMessage('Please enter your question', 'error');
+                return;
+            }
+            
+            const messagesContainer = document.getElementById('generalAIChatMessages');
+            const loadingIndicator = document.getElementById('generalAILoadingIndicator');
+            
+            // Display user question
+            messagesContainer.innerHTML += `
+                <div style="padding: 10px; background: #d4edda; border-radius: 8px; margin-bottom: 10px; text-align: right;">
+                    <strong>You:</strong> ${question}
+                </div>
+            `;
+            
+            // Clear input field
+            questionInput.value = '';
+            
+            // Show loading indicator
+            loadingIndicator.style.display = 'block';
+            
+            // Scroll to bottom
+            const chatContainer = document.getElementById('generalAIChatContainer');
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            
+            try {
+                const response = await fetch('/api/ai-qa/general/ask', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ question: question })
+                });
+                
+                loadingIndicator.style.display = 'none';
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    
+                    // Display AI answer
+                    messagesContainer.innerHTML += `
+                        <div style="padding: 10px; background: #e3f2fd; border-radius: 8px; margin-bottom: 10px;">
+                            <strong>AI Assistant:</strong> ${result.answer.replace(/\n/g, '<br>')}
+                        </div>
+                    `;
+                } else {
+                    const error = await response.json();
+                    messagesContainer.innerHTML += `
+                        <div style="padding: 10px; background: #f8d7da; border-radius: 8px; margin-bottom: 10px; color: #dc3545;">
+                            <strong>Error:</strong> ${error.error || 'Request failed'}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                loadingIndicator.style.display = 'none';
+                messagesContainer.innerHTML += `
+                    <div style="padding: 10px; background: #f8d7da; border-radius: 8px; margin-bottom: 10px; color: #dc3545;">
+                        <strong>Error:</strong> Network error: ${error.message}
+                    </div>
+                `;
+            }
+            
+            // Scroll to bottom
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+        
+        // Display response data
+        function displayResponseData(responseData, activityType, config) {
+            let html = '';
+            
+            if (activityType === 'poll') {
+                html += `<div style="padding: 10px; background: #f8f9fa; border-radius: 5px;">
+                    <strong>Selected Option:</strong> ${responseData.selected_option || responseData.option_index !== undefined ? 
+                        (config.options && config.options[responseData.option_index] ? config.options[responseData.option_index] : responseData.selected_option) : 
+                        'Not selected'}
+                </div>`;
+            } else if (activityType === 'quiz') {
+                html += `<div style="padding: 10px; background: #f8f9fa; border-radius: 5px;">
+                    <strong>Selected Option:</strong> ${responseData.selected_option || (config.options && responseData.option_index !== undefined ? config.options[responseData.option_index] : 'Not selected')}
+                    ${responseData.is_correct !== undefined ? `
+                        <br><strong>Is Correct:</strong> <span style="color: ${responseData.is_correct ? '#28a745' : '#dc3545'}">
+                            ${responseData.is_correct ? '✓ Correct' : '✗ Incorrect'}
+                        </span>
+                    ` : ''}
+                </div>`;
+            } else if (activityType === 'word_cloud') {
+                const words = responseData.words || [];
+                html += `<div style="padding: 10px; background: #f8f9fa; border-radius: 5px;">
+                    <strong>Submitted Keywords:</strong> ${words.length > 0 ? words.join(', ') : 'None'}
+                </div>`;
+            } else if (activityType === 'short_answer') {
+                html += `<div style="padding: 10px; background: #f8f9fa; border-radius: 5px;">
+                    <strong>Answer:</strong><br>
+                    <div style="margin-top: 5px; padding: 10px; background: white; border-radius: 5px; white-space: pre-wrap;">${responseData.answer || 'None'}</div>
+                </div>`;
+            } else {
+                html += `<div style="padding: 10px; background: #f8f9fa; border-radius: 5px;">
+                    <pre style="white-space: pre-wrap; margin: 0;">${JSON.stringify(responseData, null, 2)}</pre>
+                </div>`;
+            }
+            
+            return html;
+        }
+    </script>
+</body>
+</html>

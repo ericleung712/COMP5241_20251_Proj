@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Classroom Platform - Login</title>
+    <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: "Inter", "PingFang SC", "Microsoft YaHei", sans-serif;
+        }
+
+        body {
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* Left background area */
+        .left-section {
+            flex: 2;
+            background-image: url('/static/C0143.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .left-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: 1;
+        }
+
+
+        /* Right login area */
+        .right-section {
+            flex: 1;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 60px 40px;
+            box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .platform-logo {
+            width: 200px;
+            height: 60px;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .platform-logo svg {
+            filter: drop-shadow(0 2px 4px rgba(8, 47, 73, 0.3));
+        }
+
+        .platform-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #082f49;
+            margin-bottom: 8px;
+        }
+
+        .platform-subtitle {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .login-instruction {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .login-form {
+            width: 100%;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            background: #fafafa;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #082f49;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(8, 47, 73, 0.1);
+        }
+
+        .login-button {
+            width: 100%;
+            background: linear-gradient(135deg, #082f49 0%, #083d5d 100%);
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin-bottom: 20px;
+        }
+
+        .login-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(8, 47, 73, 0.3);
+        }
+
+        .login-button:active {
+            transform: translateY(0);
+        }
+
+        .login-links {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-links a {
+            color: #082f49;
+            text-decoration: none;
+            font-size: 14px;
+            margin: 0 10px;
+            transition: color 0.3s ease;
+        }
+
+        .login-links a:hover {
+            color: #083d5d;
+            text-decoration: underline;
+        }
+
+        .footer-info {
+            text-align: center;
+            color: #999;
+            font-size: 12px;
+            margin-top: auto;
+        }
+
+        .footer-links {
+            margin-top: 10px;
+        }
+
+        .footer-links a {
+            color: #999;
+            text-decoration: none;
+            font-size: 12px;
+            margin: 0 8px;
+        }
+
+        .footer-links a:hover {
+            color: #666;
+        }
+
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            border-left: 4px solid #c62828;
+        }
+
+        .success-message {
+            background: #e8f5e8;
+            color: #2e7d32;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            border-left: 4px solid #2e7d32;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+
+            .left-section {
+                flex: 1;
+                min-height: 40vh;
+            }
+
+            .right-section {
+                flex: 1;
+                padding: 40px 20px;
+            }
+
+
+            .platform-logo {
+                width: 160px;
+                height: 50px;
+            }
+
+            .platform-logo svg {
+                height: 40px;
+            }
+
+
+            .platform-title {
+                font-size: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .left-section {
+                min-height: 30vh;
+            }
+
+            .right-section {
+                padding: 30px 15px;
+            }
+
+
+            .platform-logo {
+                width: 140px;
+                height: 40px;
+            }
+
+            .platform-logo svg {
+                height: 35px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Left background area -->
+    <div class="left-section">
+    </div>
+
+    <!-- Right login area -->
+    <div class="right-section">
+        <div class="login-header">
+            <div class="platform-logo">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 90" style="height:50px;">
+                    <!-- Background hexagon outline (PolyU style) -->
+                    <polygon points="30,45 50,15 90,15 110,45 90,75 50,75" fill="none" stroke="#b51e36" stroke-width="3"/>
+
+                    <!-- Open book (education) -->
+                    <path d="M60 40 Q75 25 90 40 Q105 55 120 40 Q135 25 150 40" fill="none" stroke="#083d5d" stroke-width="4" stroke-linecap="round" />
+
+                    <!-- Book spine -->
+                    <line x1="105" y1="40" x2="105" y2="70" stroke="#083d5d" stroke-width="3"/>
+
+                    <!-- Circuit nodes (technology connection lines) -->
+                    <circle cx="75" cy="28" r="3" fill="#3baadf"/>
+                    <circle cx="135" cy="28" r="3" fill="#3baadf"/>
+                    <line x1="75" y1="28" x2="135" y2="28" stroke="#3baadf" stroke-width="2" stroke-dasharray="4 3"/>
+
+                    <!-- Light bulb on book -->
+                    <circle cx="105" cy="18" r="4" fill="#ffd54f"/>
+
+                    <!-- Text section -->
+                    <text x="160" y="42" font-size="18" font-family="Inter, PingFang SC, sans-serif" font-weight="700" fill="#083d5d">PolyLearn</text>
+                    <text x="160" y="65" font-size="12" font-family="Inter, sans-serif" fill="#64748b">Smart Learning</text>
+                </svg>
+            </div>
+            <h2 class="platform-title">Welcome Back</h2>
+            <p class="platform-subtitle">Welcome Back</p>
+            <p class="login-instruction">Please login with your username and password</p>
+        </div>
+
+        <form class="login-form" id="loginForm">
+            <div id="messageContainer"></div>
+            
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" placeholder="Enter username" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="Enter password" required>
+            </div>
+
+            <button type="submit" class="login-button">Login</button>
+        </form>
+
+        <div class="login-links">
+            <a href="#" onclick="showForgotPassword()">Forgot Password?</a>
+            <a href="#" onclick="showGuestAccess()">Guest Access</a>
+        </div>
+
+        <div class="footer-info">
+            <p>© 2025 Smart Classroom Platform</p>
+            <div class="footer-links">
+                <a href="#" onclick="showHelp()">Help</a>
+                <a href="#" onclick="showContact()">Contact Us</a>
+                <a href="#" onclick="showPrivacy()">Privacy Policy</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check if already logged in when page loads
+        window.onload = async function() {
+            try {
+                const response = await fetch('/api/auth/profile');
+                if (response.ok) {
+                    const user = await response.json();
+                    // Already logged in, redirect to appropriate page
+                    if (user.role === 'teacher') {
+                        window.location.href = '/teacher';
+                    } else if (user.role === 'student') {
+                        window.location.href = '/student';
+                    } else if (user.role === 'admin') {
+                        window.location.href = '/admin';
+                    }
+                }
+            } catch (error) {
+                // Not logged in, show login page
+                console.log('User not logged in, showing login page');
+            }
+        };
+
+        // Login form submission
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const messageContainer = document.getElementById('messageContainer');
+            
+            if (!username || !password) {
+                showMessage('Please enter username and password', 'error');
+                return;
+            }
+
+            // Show loading state
+            const submitButton = document.querySelector('.login-button');
+            const originalText = submitButton.textContent;
+            submitButton.textContent = 'Logging in...';
+            submitButton.disabled = true;
+
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    showMessage('Login successful! Redirecting...', 'success');
+                    
+                    // Redirect to appropriate page based on user role
+                    setTimeout(() => {
+                        if (data.user.role === 'teacher') {
+                            window.location.href = '/teacher';
+                        } else if (data.user.role === 'student') {
+                            window.location.href = '/student';
+                        } else if (data.user.role === 'admin') {
+                            window.location.href = '/admin';
+                        }
+                    }, 1000);
+                } else {
+                    const error = await response.json();
+                    showMessage('Login failed: ' + (error.message || 'Invalid username or password'), 'error');
+                }
+            } catch (error) {
+                showMessage('Network error, please try again later', 'error');
+            } finally {
+                // Restore button state
+                submitButton.textContent = originalText;
+                submitButton.disabled = false;
+            }
+        });
+
+        // Show message
+        function showMessage(message, type) {
+            const messageContainer = document.getElementById('messageContainer');
+            const messageClass = type === 'error' ? 'error-message' : 'success-message';
+            messageContainer.innerHTML = `<div class="${messageClass}">${message}</div>`;
+            
+            // Auto-hide success message after 3 seconds
+            if (type === 'success') {
+                setTimeout(() => {
+                    messageContainer.innerHTML = '';
+                }, 3000);
+            }
+        }
+
+        // Helper functions
+        function showForgotPassword() {
+            alert('Forgot password feature coming soon. Please contact administrator to reset password.');
+        }
+
+        function showGuestAccess() {
+            alert('Guest access feature coming soon.');
+        }
+
+        function showHelp() {
+            alert('Help documentation coming soon.');
+        }
+
+        function showContact() {
+            alert('Contact us: support@smartclassroom.edu.hk');
+        }
+
+        function showPrivacy() {
+            alert('Privacy policy coming soon.');
+        }
+
+        // Enter key login
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('loginForm').dispatchEvent(new Event('submit'));
+            }
+        });
+    </script>
+</body>
+</html>

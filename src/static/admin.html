@@ -1,0 +1,1473 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-en="Admin Dashboard - Smart Classroom Platform" data-zh="管理员仪表板 - 智能课堂互动平台">管理员仪表板 - 智能课堂互动平台</title>
+    <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
+    <script src="/static/js/i18n.js"></script>
+    <style>
+        /* 通用样式 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: "Inter", "PingFang SC", "Microsoft YaHei", sans-serif;
+        }
+
+        body {
+            background: #f5f6fa;
+            color: #222;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #082f49;
+            color: #fff;
+            padding: 15px 25px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+        }
+        
+        header h1 {
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        header h1::before {
+            content: "⚙️";
+            font-size: 22px;
+        }
+
+        header .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .lang-switch {
+            background: #fff;
+            color: #082f49;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .logout-btn {
+            background: #d9534f;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 6px 16px;
+            cursor: pointer;
+        }
+
+        main {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px 40px;
+        }
+
+        /* 卡片区布局 */
+        .metrics {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .metric-card {
+            flex: 1;
+            background: #083d5d;
+            color: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+        }
+
+        .metric-card h3 {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .metric-card p {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        /* 模块标题 */
+        section h2 {
+            font-size: 20px;
+            margin-bottom: 16px;
+            color: #082f49;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* 区块卡 */
+        .card {
+            background-color: #fff;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .card .loading {
+            color: #999;
+            text-align: center;
+            padding: 10px 0;
+        }
+
+        button.primary {
+            background-color: #083d5d;
+            color: #fff;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s ease;
+        }
+
+        button.primary:hover {
+            background-color: #0b4b70;
+        }
+
+        footer {
+            text-align: center;
+            padding: 15px;
+            color: #777;
+            font-size: 13px;
+        }
+
+        @media (max-width: 768px) {
+            main {
+                padding: 20px;
+            }
+
+            .metrics {
+                flex-direction: column;
+            }
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .table th,
+        .table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e1e5e9;
+        }
+        
+        .table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .role-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+        
+        .role-teacher {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        
+        .role-student {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+        
+        .role-admin {
+            background: #e8f5e8;
+            color: #388e3c;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .close:hover {
+            color: #000;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #4facfe;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .success {
+            background: #e8f5e8;
+            color: #2e7d32;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .chart-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .chart-placeholder {
+            height: 300px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-size: 1.1em;
+        }
+        
+        .admin-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .action-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        
+        .action-card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .action-icon {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+        }
+        
+        .action-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .action-description {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .admin-actions {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <div class="platform-logo" style="display: flex; align-items: center;">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 90" style="height:40px;">
+                    <!-- 背景六边形轮廓（PolyU风格） -->
+                    <polygon points="30,45 50,15 90,15 110,45 90,75 50,75" fill="none" stroke="#ff6b6b" stroke-width="3"/>
+
+                    <!-- 打开的书本（教育） -->
+                    <path d="M60 40 Q75 25 90 40 Q105 55 120 40 Q135 25 150 40" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" />
+
+                    <!-- 书脊 -->
+                    <line x1="105" y1="40" x2="105" y2="70" stroke="#ffffff" stroke-width="3"/>
+
+                    <!-- 电路节点（科技连接线） -->
+                    <circle cx="75" cy="28" r="3" fill="#4facfe"/>
+                    <circle cx="135" cy="28" r="3" fill="#4facfe"/>
+                    <line x1="75" y1="28" x2="135" y2="28" stroke="#4facfe" stroke-width="2" stroke-dasharray="4 3"/>
+
+                    <!-- 书上发光灵感点 -->
+                    <circle cx="105" cy="18" r="4" fill="#ffd54f"/>
+
+                    <!-- 文本部分 -->
+                    <text x="160" y="42" font-size="18" font-family="Inter, PingFang SC, sans-serif" font-weight="700" fill="#ffffff">PolyLearn</text>
+                    <text x="160" y="65" font-size="12" font-family="Inter, sans-serif" fill="#b0bec5">Smart Learning</text>
+                </svg>
+            </div>
+            <h1 data-en="Admin Dashboard" data-zh="管理员仪表板" style="margin: 0;">管理员仪表板</h1>
+        </div>
+        <div class="nav-actions">
+            <button id="languageToggle" class="lang-switch" onclick="toggleLanguage()">
+                🌐 EN
+            </button>
+            <span id="userName" data-en="Loading..." data-zh="加载中...">加载中...</span>
+            <button class="logout-btn" onclick="logout()" data-en="Logout" data-zh="登出">登出</button>
+        </div>
+    </header>
+    
+    <main>
+        <!-- 数据指标 -->
+        <div class="metrics">
+            <div class="metric-card">
+                <h3 data-en="Total Users" data-zh="总用户数">总用户数</h3>
+                <p id="totalUsers">0</p>
+            </div>
+            <div class="metric-card">
+                <h3 data-en="Total Courses" data-zh="总课程数">总课程数</h3>
+                <p id="totalCourses">0</p>
+            </div>
+            <div class="metric-card">
+                <h3 data-en="Total Activities" data-zh="总活动数">总活动数</h3>
+                <p id="totalActivities">0</p>
+            </div>
+            <div class="metric-card">
+                <h3 data-en="Total Responses" data-zh="总响应数">总响应数</h3>
+                <p id="totalResponses">0</p>
+            </div>
+            <div class="metric-card">
+                <h3 data-en="Active Users" data-zh="活跃用户">活跃用户</h3>
+                <p id="activeUsers">0</p>
+            </div>
+            <div class="metric-card">
+                <h3 data-en="AI Activities" data-zh="AI生成活动">AI生成活动</h3>
+                <p id="aiActivities">0</p>
+            </div>
+        </div>
+        
+        <!-- 用户管理 -->
+        <section class="card">
+            <h2>👥 用户管理</h2>
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <button class="primary" onclick="showUserManagement()">管理用户</button>
+                <button class="primary" onclick="showImportUsers()" style="background: #28a745;">批量导入用户</button>
+            </div>
+            <div id="usersList" class="loading">加载中...</div>
+        </section>
+
+        <!-- 课程管理 -->
+        <section class="card">
+            <h2>📚 课程管理</h2>
+            <button class="primary" onclick="showCourseManagement()">管理课程</button>
+            <div id="coursesManagementList" class="loading">加载中...</div>
+        </section>
+
+        <!-- 活动管理 -->
+        <section class="card">
+            <h2>🎯 活动管理</h2>
+            <button class="primary" onclick="showActivityManagement()">管理活动</button>
+            <div id="activitiesManagementList" class="loading">加载中...</div>
+        </section>
+
+        <!-- 系统概览 -->
+        <section class="card">
+            <h2>📊 系统概览</h2>
+            <div id="systemOverview" class="loading">加载中...</div>
+        </section>
+    </main>
+
+    <footer>
+        智能课堂互动平台 © 2025
+    </footer>
+    
+    <!-- 用户管理模态框 -->
+    <div id="userManagementModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('userManagementModal')">&times;</span>
+            <h2>用户管理</h2>
+            <div style="margin-bottom: 20px;">
+                <button class="btn" onclick="loadUsers()">刷新用户</button>
+                <button class="btn btn-success" onclick="showCreateUserModal()">创建用户</button>
+            </div>
+            <div id="usersList" class="loading">加载中...</div>
+        </div>
+    </div>
+    
+    <!-- 批量导入用户模态框 -->
+    <div id="importUsersModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <span class="close" onclick="closeModal('importUsersModal')">&times;</span>
+            <h2>批量导入用户（Excel）</h2>
+            <div style="padding: 20px; background: #f8f9fa; border-radius: 5px; margin-bottom: 20px;">
+                <h3 style="margin-top: 0;">Excel文件格式要求：</h3>
+                <p><strong>必需列：</strong></p>
+                <ul>
+                    <li><code>username</code> - 用户名（唯一）</li>
+                    <li><code>full_name</code> - 姓名</li>
+                    <li><code>email</code> - 邮箱（唯一）</li>
+                    <li><code>role</code> - 角色（student 或 teacher）</li>
+                </ul>
+                <p><strong>可选列：</strong></p>
+                <ul>
+                    <li><code>department</code> - 院系</li>
+                    <li><code>student_id</code> - 学生ID（当role为student时必需）</li>
+                    <li><code>course_code</code> - 课程代码（仅学生，用于自动注册课程）</li>
+                </ul>
+                <p style="margin-top: 15px; padding: 10px; background: #fff3cd; border-radius: 5px;">
+                    <strong>注意：</strong>所有新创建的用户默认密码为 <code>123456</code>
+                </p>
+                <p style="margin-top: 10px; padding: 10px; background: #d1ecf1; border-radius: 5px;">
+                    <strong>邮箱格式要求：</strong>邮箱必须以 <code>@connect.polyu.hk</code> 结尾（例如：<code>24085316G@connect.polyu.hk</code>）
+                </p>
+            </div>
+            <div style="padding: 15px; background: #f8f9fa; border-radius: 5px; border: 2px dashed #4facfe;">
+                <input type="file" id="adminExcelFileInput" accept=".xlsx,.xls" style="margin-bottom: 15px; width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px;">
+                <button class="btn btn-success" onclick="importUsersFromExcel()" style="width: 100%; padding: 12px; font-size: 16px;">
+                    上传并导入用户
+                </button>
+                <div id="adminExcelImportResult" style="margin-top: 15px;"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 创建用户模态框 -->
+    <div id="createUserModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('createUserModal')">&times;</span>
+            <h2>创建用户</h2>
+            <form id="createUserForm">
+                <div class="form-group">
+                    <label for="userUsername">用户名:</label>
+                    <input type="text" id="userUsername" placeholder="输入用户名" required>
+                </div>
+                <div class="form-group">
+                    <label for="userEmail">邮箱:</label>
+                    <input type="email" id="userEmail" placeholder="例如: 24085316G@connect.polyu.hk" required>
+                    <small style="color: #666; font-size: 12px;">邮箱必须以 @connect.polyu.hk 结尾</small>
+                </div>
+                <div class="form-group">
+                    <label for="userFullName">姓名:</label>
+                    <input type="text" id="userFullName" placeholder="输入真实姓名" required>
+                </div>
+                <div class="form-group">
+                    <label for="userRole">角色:</label>
+                    <select id="userRole" required>
+                        <option value="">选择角色</option>
+                        <option value="teacher">教师</option>
+                        <option value="student">学生</option>
+                        <option value="admin">管理员</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="userPassword">密码:</label>
+                    <input type="password" id="userPassword" placeholder="输入密码" required>
+                </div>
+                <div class="form-group">
+                    <label for="userStudentId">学生ID (仅学生):</label>
+                    <input type="text" id="userStudentId" placeholder="输入学生ID">
+                </div>
+                <div class="form-group">
+                    <label for="userDepartment">院系:</label>
+                    <input type="text" id="userDepartment" placeholder="输入院系">
+                </div>
+                <button type="submit" class="btn">创建用户</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- 编辑用户模态框 -->
+    <div id="editUserModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('editUserModal')">&times;</span>
+            <h2>编辑用户</h2>
+            <form id="editUserForm">
+                <input type="hidden" id="editUserId">
+                <div class="form-group">
+                    <label for="editUserUsername">用户名:</label>
+                    <input type="text" id="editUserUsername" placeholder="输入用户名" required>
+                </div>
+                <div class="form-group">
+                    <label for="editUserEmail">邮箱:</label>
+                    <input type="email" id="editUserEmail" placeholder="例如: 24085316G@connect.polyu.hk" required>
+                    <small style="color: #666; font-size: 12px;">邮箱必须以 @connect.polyu.hk 结尾</small>
+                </div>
+                <div class="form-group">
+                    <label for="editUserFullName">姓名:</label>
+                    <input type="text" id="editUserFullName" placeholder="输入真实姓名" required>
+                </div>
+                <div class="form-group">
+                    <label for="editUserRole">角色:</label>
+                    <select id="editUserRole" required>
+                        <option value="">选择角色</option>
+                        <option value="teacher">教师</option>
+                        <option value="student">学生</option>
+                        <option value="admin">管理员</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="editUserStudentId">学生ID (仅学生):</label>
+                    <input type="text" id="editUserStudentId" placeholder="输入学生ID">
+                </div>
+                <div class="form-group">
+                    <label for="editUserDepartment">院系:</label>
+                    <input type="text" id="editUserDepartment" placeholder="输入院系">
+                </div>
+                <button type="submit" class="btn">保存更改</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- 编辑课程模态框 -->
+    <div id="editCourseModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('editCourseModal')">&times;</span>
+            <h2>编辑课程</h2>
+            <form id="editCourseForm">
+                <input type="hidden" id="editCourseId">
+                <div class="form-group">
+                    <label for="editCourseName">课程名称:</label>
+                    <input type="text" id="editCourseName" placeholder="输入课程名称" required>
+                </div>
+                <div class="form-group">
+                    <label for="editCourseCode">课程代码:</label>
+                    <input type="text" id="editCourseCode" placeholder="输入课程代码" required>
+                </div>
+                <div class="form-group">
+                    <label for="editCourseDescription">课程描述:</label>
+                    <textarea id="editCourseDescription" placeholder="输入课程描述" rows="4"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="editCourseActive">状态:</label>
+                    <select id="editCourseActive" required>
+                        <option value="true">活跃</option>
+                        <option value="false">非活跃</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn">保存更改</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- 课程管理模态框 -->
+    <div id="courseManagementModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('courseManagementModal')">&times;</span>
+            <h2>课程管理</h2>
+            <div style="margin-bottom: 20px;">
+                <button class="btn" onclick="loadCourses()">刷新课程</button>
+            </div>
+            <div id="coursesManagementList" class="loading">加载中...</div>
+        </div>
+    </div>
+    
+    <!-- 活动管理模态框 -->
+    <div id="activityManagementModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('activityManagementModal')">&times;</span>
+            <h2>活动管理</h2>
+            <div style="margin-bottom: 20px;">
+                <button class="btn" onclick="loadActivities()">刷新活动</button>
+            </div>
+            <div id="activitiesManagementList" class="loading">加载中...</div>
+        </div>
+    </div>
+    
+    <!-- 系统日志模态框 -->
+    <div id="systemLogsModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('systemLogsModal')">&times;</span>
+            <h2>系统日志</h2>
+            <div style="margin-bottom: 20px;">
+                <button class="btn" onclick="loadSystemLogs()">刷新日志</button>
+            </div>
+            <div id="systemLogsList" class="loading">加载中...</div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        
+        // 页面加载时初始化
+        window.onload = async function() {
+            await checkAuth();
+            await loadDashboardData();
+            // 自动加载用户、课程和活动列表
+            await loadUsers();
+            await loadCourses();
+            await loadActivities();
+            // 绑定编辑表单提交事件
+            bindEditFormEvents();
+        };
+        
+        // 绑定编辑表单提交事件（页面加载时）
+        function bindEditFormEvents() {
+            // 初始化时绑定一次，但主要是在打开模态框时重新绑定
+            bindEditUserFormEvent();
+            bindEditCourseFormEvent();
+        }
+        
+        // 检查认证状态
+        async function checkAuth() {
+            try {
+                const response = await fetch('/api/auth/profile');
+                if (response.ok) {
+                    currentUser = await response.json();
+                    if (currentUser.role !== 'admin') {
+                        window.location.href = '/login';
+                        return;
+                    }
+                    document.getElementById('userName').textContent = currentUser.full_name;
+                } else {
+                    window.location.href = '/';
+                }
+            } catch (error) {
+                window.location.href = '/';
+            }
+        }
+        
+        // 加载仪表板数据
+        async function loadDashboardData() {
+            try {
+                const response = await fetch('/api/analytics/dashboard');
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('totalUsers').textContent = data.stats.total_users;
+                    document.getElementById('totalCourses').textContent = data.stats.total_courses;
+                    document.getElementById('totalActivities').textContent = data.stats.total_activities;
+                    document.getElementById('totalResponses').textContent = data.stats.total_responses;
+                    document.getElementById('activeUsers').textContent = data.stats.active_users;
+                    document.getElementById('aiActivities').textContent = data.stats.ai_activities;
+                    
+                    // 显示用户角色分布
+                    displayRoleChart(data.role_stats);
+                    
+                    // 显示最近注册用户
+                    displayRecentUsers(data.recent_users);
+                }
+            } catch (error) {
+                console.error('加载仪表板数据失败:', error);
+            }
+        }
+        
+        // 显示用户角色分布
+        function displayRoleChart(roleStats) {
+            const container = document.getElementById('roleChart');
+            if (!roleStats || roleStats.length === 0) {
+                container.innerHTML = '<p>暂无数据</p>';
+                return;
+            }
+            
+            const html = roleStats.map(stat => `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #e1e5e9;">
+                    <span>${getRoleName(stat.role)}</span>
+                    <span style="font-weight: bold; color: #4facfe;">${stat.count}</span>
+                </div>
+            `).join('');
+            
+            container.innerHTML = html;
+        }
+        
+        // 显示最近注册用户
+        function displayRecentUsers(users) {
+            const container = document.getElementById('recentUsers');
+            if (!users || users.length === 0) {
+                container.innerHTML = '<p>暂无用户</p>';
+                return;
+            }
+            
+            const html = users.map(user => `
+                <div style="padding: 15px; border: 1px solid #e1e5e9; border-radius: 8px; margin-bottom: 10px;">
+                    <h4>${user.full_name} (@${user.username})</h4>
+                    <p>角色: <span class="role-badge role-${user.role}">${getRoleName(user.role)}</span></p>
+                    <p>邮箱: ${user.email}</p>
+                    <p>注册时间: ${new Date(user.created_at).toLocaleString()}</p>
+                    <button class="btn btn-danger" onclick="deleteUser(${user.id})">删除用户</button>
+                </div>
+            `).join('');
+            
+            container.innerHTML = html;
+        }
+        
+        // 显示用户管理
+        async function showUserManagement() {
+            document.getElementById('userManagementModal').style.display = 'block';
+            await loadUsers();
+        }
+        
+        // 显示批量导入用户
+        function showImportUsers() {
+            document.getElementById('importUsersModal').style.display = 'block';
+            // 清空之前的结果
+            document.getElementById('adminExcelImportResult').innerHTML = '';
+            document.getElementById('adminExcelFileInput').value = '';
+        }
+        
+        // 从Excel导入用户
+        async function importUsersFromExcel() {
+            const fileInput = document.getElementById('adminExcelFileInput');
+            const resultDiv = document.getElementById('adminExcelImportResult');
+            
+            if (!fileInput.files || fileInput.files.length === 0) {
+                resultDiv.innerHTML = '<div class="error" style="padding: 10px; margin-top: 10px; background: #f8d7da; color: #721c24; border-radius: 5px;">请选择Excel文件</div>';
+                return;
+            }
+            
+            const file = fileInput.files[0];
+            
+            // 验证文件类型
+            if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
+                resultDiv.innerHTML = '<div class="error" style="padding: 10px; margin-top: 10px; background: #f8d7da; color: #721c24; border-radius: 5px;">只支持Excel文件(.xlsx, .xls)</div>';
+                return;
+            }
+            
+            // 创建FormData
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            // 显示加载状态
+            resultDiv.innerHTML = '<div class="loading" style="padding: 10px; margin-top: 10px; background: #d1ecf1; color: #0c5460; border-radius: 5px;">正在上传并处理Excel文件...</div>';
+            
+            try {
+                const response = await fetch('/api/admin/import-users-excel', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    let resultHtml = `<div class="success" style="padding: 15px; margin-top: 10px; background: #d4edda; color: #155724; border-radius: 5px;">
+                        <h4 style="margin-bottom: 10px; margin-top: 0;">导入完成！</h4>
+                        <p><strong>新增用户:</strong> ${result.imported_count} 名</p>
+                        <p><strong>更新用户:</strong> ${result.updated_count} 名</p>
+                        <p><strong>注册课程:</strong> ${result.enrolled_count} 次</p>
+                        <p><strong>跳过:</strong> ${result.skipped_count} 名</p>
+                        <p><strong>总行数:</strong> ${result.total_rows} 行</p>
+                    </div>`;
+                    
+                    if (result.errors && result.errors.length > 0) {
+                        resultHtml += `<div style="margin-top: 10px; padding: 10px; background: #fff3cd; color: #856404; border-radius: 5px; max-height: 200px; overflow-y: auto;">
+                            <strong>错误信息（前20条）:</strong>
+                            <ul style="margin-top: 5px; padding-left: 20px;">
+                                ${result.errors.map(err => `<li style="font-size: 12px;">${err}</li>`).join('')}
+                            </ul>
+                        </div>`;
+                    }
+                    
+                    resultDiv.innerHTML = resultHtml;
+                    
+                    // 清空文件输入
+                    fileInput.value = '';
+                    
+                    // 刷新用户列表和统计数据
+                    loadUsers();
+                    loadStats();
+                } else {
+                    let errorMsg = result.error || '导入失败';
+                    if (result.required_columns) {
+                        errorMsg += `<br>必需列: ${result.required_columns.join(', ')}`;
+                        if (result.found_columns) {
+                            errorMsg += `<br>找到的列: ${result.found_columns.join(', ')}`;
+                        }
+                    }
+                    resultDiv.innerHTML = `<div class="error" style="padding: 10px; margin-top: 10px; background: #f8d7da; color: #721c24; border-radius: 5px;">${errorMsg}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error" style="padding: 10px; margin-top: 10px; background: #f8d7da; color: #721c24; border-radius: 5px;">网络错误: ${error.message}</div>`;
+            }
+        }
+        
+        // 加载用户列表
+        async function loadUsers() {
+            try {
+                const response = await fetch('/api/admin/users');
+                if (response.ok) {
+                    const data = await response.json();
+                    displayUsers(data.users);
+                }
+            } catch (error) {
+                document.getElementById('usersList').innerHTML = '<div class="error">加载用户失败</div>';
+            }
+        }
+        
+        // 显示用户列表
+        function displayUsers(users) {
+            const container = document.getElementById('usersList');
+            if (users.length === 0) {
+                container.innerHTML = '<p>暂无用户</p>';
+                return;
+            }
+            
+            const html = `
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>用户名</th>
+                            <th>姓名</th>
+                            <th>邮箱</th>
+                            <th>角色</th>
+                            <th>注册时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${users.map(user => `
+                            <tr>
+                                <td>${user.username}</td>
+                                <td>${user.full_name}</td>
+                                <td>${user.email}</td>
+                                <td><span class="role-badge role-${user.role}">${getRoleName(user.role)}</span></td>
+                                <td>${new Date(user.created_at).toLocaleString()}</td>
+                                <td>
+                                    <button class="btn btn-secondary" onclick="editUser(${user.id})">编辑</button>
+                                    <button class="btn btn-danger" onclick="deleteUser(${user.id})">删除</button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+            
+            container.innerHTML = html;
+        }
+        
+        // 显示课程管理
+        async function showCourseManagement() {
+            document.getElementById('courseManagementModal').style.display = 'block';
+            await loadCourses();
+        }
+        
+        // 加载课程列表
+        async function loadCourses() {
+            try {
+                const response = await fetch('/api/admin/courses');
+                if (response.ok) {
+                    const courses = await response.json();
+                    displayCoursesManagement(courses);
+                }
+            } catch (error) {
+                document.getElementById('coursesManagementList').innerHTML = '<div class="error">加载课程失败</div>';
+            }
+        }
+        
+        // 显示课程管理列表
+        function displayCoursesManagement(courses) {
+            const container = document.getElementById('coursesManagementList');
+            if (courses.length === 0) {
+                container.innerHTML = '<p>暂无课程</p>';
+                return;
+            }
+            
+            const html = `
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>课程代码</th>
+                            <th>课程名称</th>
+                            <th>教师</th>
+                            <th>学期</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${courses.map(course => `
+                            <tr>
+                                <td>${course.course_code}</td>
+                                <td>${course.course_name}</td>
+                                <td>${course.teacher_name || '未知'}</td>
+                                <td>${course.semester} ${course.academic_year}</td>
+                                <td><span style="color: ${course.is_active ? 'green' : 'red'}">${course.is_active ? '活跃' : '非活跃'}</span></td>
+                                <td>
+                                    <button class="btn btn-secondary" onclick="editCourse(${course.id})">编辑</button>
+                                    <button class="btn btn-danger" onclick="deleteCourse(${course.id})">删除</button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+            
+            container.innerHTML = html;
+        }
+        
+        // 显示活动管理
+        async function showActivityManagement() {
+            document.getElementById('activityManagementModal').style.display = 'block';
+            await loadActivities();
+        }
+        
+        // 加载活动列表
+        async function loadActivities() {
+            try {
+                const response = await fetch('/api/admin/activities');
+                if (response.ok) {
+                    const activities = await response.json();
+                    displayActivitiesManagement(activities);
+                }
+            } catch (error) {
+                document.getElementById('activitiesManagementList').innerHTML = '<div class="error">加载活动失败</div>';
+            }
+        }
+        
+        // 显示活动管理列表
+        function displayActivitiesManagement(activities) {
+            const container = document.getElementById('activitiesManagementList');
+            if (activities.length === 0) {
+                container.innerHTML = '<p>暂无活动</p>';
+                return;
+            }
+            
+            const html = `
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>活动标题</th>
+                            <th>类型</th>
+                            <th>课程</th>
+                            <th>创建者</th>
+                            <th>状态</th>
+                            <th>响应数</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${activities.map(activity => `
+                            <tr>
+                                <td>${activity.title}</td>
+                                <td>${getActivityTypeName(activity.activity_type)}</td>
+                                <td>${activity.course_name || '未知'}</td>
+                                <td>${activity.creator_name || '未知'}</td>
+                                <td><span style="color: ${getStatusColor(activity.status)}">${getStatusName(activity.status)}</span></td>
+                                <td>${activity.response_count}</td>
+                                <td>
+                                    <button class="btn btn-danger" onclick="deleteActivity(${activity.id})">删除</button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+            
+            container.innerHTML = html;
+        }
+        
+        // 显示系统日志
+        async function showSystemLogs() {
+            document.getElementById('systemLogsModal').style.display = 'block';
+            await loadSystemLogs();
+        }
+        
+        // 加载系统日志
+        async function loadSystemLogs() {
+            try {
+                const response = await fetch('/api/admin/logs');
+                if (response.ok) {
+                    const data = await response.json();
+                    displaySystemLogs(data.logs);
+                }
+            } catch (error) {
+                document.getElementById('systemLogsList').innerHTML = '<div class="error">加载日志失败</div>';
+            }
+        }
+        
+        // 显示系统日志
+        function displaySystemLogs(logs) {
+            const container = document.getElementById('systemLogsList');
+            if (logs.length === 0) {
+                container.innerHTML = '<p>暂无日志</p>';
+                return;
+            }
+            
+            const html = logs.map(log => `
+                <div style="padding: 15px; border: 1px solid #e1e5e9; border-radius: 8px; margin-bottom: 10px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-weight: bold; color: ${getLogLevelColor(log.level)}">${log.level}</span>
+                        <span style="color: #666; font-size: 0.9em;">${new Date(log.timestamp).toLocaleString()}</span>
+                    </div>
+                    <p style="margin: 10px 0;">${log.message}</p>
+                    <p style="color: #666; font-size: 0.9em;">用户: ${log.user}</p>
+                </div>
+            `).join('');
+            
+            container.innerHTML = html;
+        }
+        
+        // 创建备份
+        async function createBackup() {
+            try {
+                const response = await fetch('/api/admin/backup', {
+                    method: 'POST'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    showMessage(`备份创建成功！备份ID: ${data.backup_id}`, 'success');
+                } else {
+                    showMessage('创建备份失败', 'error');
+                }
+            } catch (error) {
+                showMessage('网络错误', 'error');
+            }
+        }
+        
+        // 显示系统设置
+        function showSystemSettings() {
+            showMessage('系统设置功能开发中...', 'success');
+        }
+        
+        // 显示创建用户模态框
+        function showCreateUserModal() {
+            document.getElementById('createUserModal').style.display = 'block';
+        }
+        
+        // 创建用户表单提交
+        document.getElementById('createUserForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const data = {
+                username: document.getElementById('userUsername').value,
+                email: document.getElementById('userEmail').value,
+                full_name: document.getElementById('userFullName').value,
+                role: document.getElementById('userRole').value,
+                password: document.getElementById('userPassword').value,
+                department: document.getElementById('userDepartment').value
+            };
+            
+            if (data.role === 'student') {
+                data.student_id = document.getElementById('userStudentId').value;
+            }
+            
+            try {
+                const response = await fetch('/api/admin/users', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    showMessage('用户创建成功！', 'success');
+                    closeModal('createUserModal');
+                    document.getElementById('createUserForm').reset();
+                    loadUsers();
+                } else {
+                    const error = await response.json();
+                    showMessage(error.error || '创建用户失败', 'error');
+                }
+            } catch (error) {
+                showMessage('网络错误', 'error');
+            }
+        });
+        
+        // 删除用户
+        async function deleteUser(userId) {
+            if (!confirm('确定要删除这个用户吗？')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/admin/users/${userId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    showMessage('用户删除成功！', 'success');
+                    loadUsers();
+                    loadDashboardData();
+                } else {
+                    const error = await response.json();
+                    showMessage(error.error || '删除用户失败', 'error');
+                }
+            } catch (error) {
+                showMessage('网络错误', 'error');
+            }
+        }
+        
+        // 删除课程
+        async function deleteCourse(courseId) {
+            if (!confirm('确定要删除这个课程吗？')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/admin/courses/${courseId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    showMessage('课程删除成功！', 'success');
+                    loadCourses();
+                    loadDashboardData();
+                } else {
+                    const error = await response.json();
+                    showMessage(error.error || '删除课程失败', 'error');
+                }
+            } catch (error) {
+                showMessage('网络错误', 'error');
+            }
+        }
+        
+        // 删除活动
+        async function deleteActivity(activityId) {
+            if (!confirm('确定要删除这个活动吗？')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/admin/activities/${activityId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    showMessage('活动删除成功！', 'success');
+                    loadActivities();
+                    loadDashboardData();
+                } else {
+                    const error = await response.json();
+                    showMessage(error.error || '删除活动失败', 'error');
+                }
+            } catch (error) {
+                showMessage('网络错误', 'error');
+            }
+        }
+        
+        // 关闭模态框
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+        
+        // 显示消息
+        function showMessage(message, type = 'success') {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = type;
+            messageDiv.textContent = message;
+            
+            const container = document.querySelector('.container');
+            container.insertBefore(messageDiv, container.firstChild);
+            
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 3000);
+        }
+        
+        // 登出
+        async function logout() {
+            try {
+                await fetch('/api/auth/logout', { method: 'POST' });
+                window.location.href = '/';
+            } catch (error) {
+                window.location.href = '/';
+            }
+        }
+        
+        // 工具函数
+        function getRoleName(role) {
+            const roles = {
+                'teacher': '教师',
+                'student': '学生',
+                'admin': '管理员'
+            };
+            return roles[role] || role;
+        }
+        
+        function getActivityTypeName(type) {
+            const types = {
+                'poll': '投票活动',
+                'quiz': '测验活动',
+                'word_cloud': '词云活动',
+                'short_answer': '简答题',
+                'mini_game': '迷你游戏'
+            };
+            return types[type] || type;
+        }
+        
+        function getStatusName(status) {
+            const statuses = {
+                'draft': '草稿',
+                'active': '进行中',
+                'completed': '已完成',
+                'archived': '已归档'
+            };
+            return statuses[status] || status;
+        }
+        
+        function getStatusColor(status) {
+            const colors = {
+                'draft': '#6c757d',
+                'active': '#28a745',
+                'completed': '#007bff',
+                'archived': '#dc3545'
+            };
+            return colors[status] || '#6c757d';
+        }
+        
+        function getLogLevelColor(level) {
+            const colors = {
+                'INFO': '#007bff',
+                'WARNING': '#ffc107',
+                'ERROR': '#dc3545',
+                'DEBUG': '#6c757d'
+            };
+            return colors[level] || '#6c757d';
+        }
+        
+        // 编辑用户
+        async function editUser(userId) {
+            try {
+                const response = await fetch(`/api/admin/users/${userId}`);
+                if (response.ok) {
+                    const user = await response.json();
+                    // 填充表单
+                    document.getElementById('editUserId').value = user.id;
+                    document.getElementById('editUserUsername').value = user.username || '';
+                    document.getElementById('editUserEmail').value = user.email || '';
+                    document.getElementById('editUserFullName').value = user.full_name || '';
+                    document.getElementById('editUserRole').value = user.role || '';
+                    document.getElementById('editUserStudentId').value = user.student_id || '';
+                    document.getElementById('editUserDepartment').value = user.department || '';
+                    // 显示模态框
+                    document.getElementById('editUserModal').style.display = 'block';
+                    // 重新绑定事件监听器（确保表单可以提交）
+                    bindEditUserFormEvent();
+                } else {
+                    showMessage('加载用户信息失败', 'error');
+                }
+            } catch (error) {
+                showMessage('网络错误', 'error');
+            }
+        }
+        
+        // 绑定编辑用户表单提交事件
+        function bindEditUserFormEvent() {
+            const editUserForm = document.getElementById('editUserForm');
+            if (editUserForm) {
+                // 移除旧的事件监听器
+                const newForm = editUserForm.cloneNode(true);
+                editUserForm.parentNode.replaceChild(newForm, editUserForm);
+                
+                newForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    const userId = document.getElementById('editUserId').value;
+                    if (!userId) {
+                        showMessage('用户ID不存在', 'error');
+                        return;
+                    }
+                    
+                    const data = {
+                        username: document.getElementById('editUserUsername').value,
+                        email: document.getElementById('editUserEmail').value,
+                        full_name: document.getElementById('editUserFullName').value,
+                        role: document.getElementById('editUserRole').value,
+                        student_id: document.getElementById('editUserStudentId').value || null,
+                        department: document.getElementById('editUserDepartment').value || null
+                    };
+                    
+                    try {
+                        const response = await fetch(`/api/admin/users/${userId}`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(data)
+                        });
+                        
+                        if (response.ok) {
+                            showMessage('用户信息更新成功！', 'success');
+                            closeModal('editUserModal');
+                            loadUsers();
+                            loadDashboardData();
+                        } else {
+                            const error = await response.json();
+                            showMessage(error.error || '更新用户失败', 'error');
+                        }
+                    } catch (error) {
+                        showMessage('网络错误: ' + error.message, 'error');
+                    }
+                });
+            }
+        }
+        
+        // 编辑课程
+        async function editCourse(courseId) {
+            try {
+                const response = await fetch(`/api/admin/courses/${courseId}`);
+                if (response.ok) {
+                    const course = await response.json();
+                    // 填充表单
+                    document.getElementById('editCourseId').value = course.id;
+                    document.getElementById('editCourseName').value = course.course_name || '';
+                    document.getElementById('editCourseCode').value = course.course_code || '';
+                    document.getElementById('editCourseDescription').value = course.description || '';
+                    document.getElementById('editCourseActive').value = course.is_active ? 'true' : 'false';
+                    // 显示模态框
+                    document.getElementById('editCourseModal').style.display = 'block';
+                    // 重新绑定事件监听器（确保表单可以提交）
+                    bindEditCourseFormEvent();
+                } else {
+                    showMessage('加载课程信息失败', 'error');
+                }
+            } catch (error) {
+                showMessage('网络错误', 'error');
+            }
+        }
+        
+        // 绑定编辑课程表单提交事件
+        function bindEditCourseFormEvent() {
+            const editCourseForm = document.getElementById('editCourseForm');
+            if (editCourseForm) {
+                // 移除旧的事件监听器
+                const newForm = editCourseForm.cloneNode(true);
+                editCourseForm.parentNode.replaceChild(newForm, editCourseForm);
+                
+                newForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    const courseId = document.getElementById('editCourseId').value;
+                    if (!courseId) {
+                        showMessage('课程ID不存在', 'error');
+                        return;
+                    }
+                    
+                    const data = {
+                        course_name: document.getElementById('editCourseName').value,
+                        course_code: document.getElementById('editCourseCode').value,
+                        description: document.getElementById('editCourseDescription').value,
+                        is_active: document.getElementById('editCourseActive').value === 'true'
+                    };
+                    
+                    try {
+                        const response = await fetch(`/api/admin/courses/${courseId}`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(data)
+                        });
+                        
+                        if (response.ok) {
+                            showMessage('课程信息更新成功！', 'success');
+                            closeModal('editCourseModal');
+                            loadCourses();
+                            loadDashboardData();
+                        } else {
+                            const error = await response.json();
+                            showMessage(error.error || '更新课程失败', 'error');
+                        }
+                    } catch (error) {
+                        showMessage('网络错误: ' + error.message, 'error');
+                    }
+                });
+            }
+        }
+        
+    </script>
+</body>
+</html>

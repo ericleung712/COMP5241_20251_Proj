@@ -1,0 +1,2050 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - Smart Classroom Platform</title>
+    <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
+    <script src="/static/js/i18n.js"></script>
+    <style>
+        /* General styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: "Inter", "PingFang SC", "Microsoft YaHei", sans-serif;
+        }
+        
+        body {
+            background: #f5f6fa;
+            color: #222;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Top navigation bar */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background-color: #082f49;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+        }
+
+        .search-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .search-input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 8px 16px;
+            color: white;
+            width: 300px;
+            font-size: 14px;
+        }
+
+        .search-input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .header-icon:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 60px;
+            width: 80px;
+            height: calc(100vh - 60px);
+            background-color: #082f49;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 0;
+            z-index: 999;
+        }
+
+        .sidebar-icon {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 20px;
+        }
+        
+        .sidebar-icon svg {
+            width: 24px;
+            height: 24px;
+            stroke: currentColor;
+        }
+
+        .sidebar-icon:hover,
+        .sidebar-icon.active {
+            background: #0b4b70;
+            transform: scale(1.05);
+        }
+
+        /* Main content area */
+        main {
+            margin-left: 80px;
+            margin-top: 60px;
+            flex: 1;
+            padding: 30px 40px;
+            overflow-y: auto;
+            background: #f5f6fa;
+        }
+
+        .page-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: #082f49;
+            margin-bottom: 10px;
+        }
+
+        .welcome-text {
+            color: #0b4b70;
+            font-size: 16px;
+            margin-bottom: 30px;
+        }
+
+        /* Welcome banner */
+        .welcome-banner {
+            background: linear-gradient(135deg, #0b4b70 0%, #083d5d 100%);
+            color: white;
+            border-radius: 16px;
+            padding: 40px;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .welcome-banner::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 200px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+
+        .welcome-banner h2 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .welcome-banner p {
+            font-size: 16px;
+            opacity: 0.9;
+            line-height: 1.6;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Action cards */
+        .action-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .action-card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .action-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        }
+
+        .action-card h3 {
+            color: #082f49;
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .action-card p {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .create-form {
+            display: flex;
+            gap: 10px;
+        }
+
+        .create-input {
+            flex: 1;
+            padding: 10px 16px;
+            border: 1px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .create-btn {
+            background: #082f49;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.2s ease;
+        }
+
+        .create-btn:hover {
+            background: #0b4b70;
+        }
+
+        /* Content area */
+        .content-sections {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .section {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .section h3 {
+            color: #082f49;
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .testimonial {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .testimonial:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .testimonial-author {
+            color: #082f49;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .testimonial-text {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .quick-links {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .quick-link {
+            background: #082f49;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.2s ease;
+        }
+
+        .quick-link:hover {
+            background: #0b4b70;
+        }
+
+        /* Data metrics */
+        .metrics {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .metric-card {
+            flex: 1;
+            background: #083d5d;
+            color: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+        }
+
+        .metric-card h3 {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .metric-card p {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        /* Card block */
+        .card {
+            background-color: #fff;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .card .loading {
+            color: #999;
+            text-align: center;
+            padding: 10px 0;
+        }
+
+        button.primary {
+            background-color: #083d5d;
+            color: #fff;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s ease;
+        }
+
+        button.primary:hover {
+            background-color: #0b4b70;
+        }
+
+        .course-list, .activity-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .course-item, .activity-item {
+            background: #083d5d;
+            color: white;
+            padding: 14px 18px;
+            border-radius: 12px;
+            min-width: 130px;
+            text-align: center;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .course-item:hover, .activity-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        footer {
+            text-align: center;
+            padding: 15px;
+            color: #777;
+            font-size: 13px;
+        }
+
+        @media (max-width: 768px) {
+            main {
+                padding: 20px;
+            }
+
+            .metrics {
+                flex-direction: column;
+            }
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .close:hover {
+            color: #000;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #f5576c;
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .response-form {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        .poll-options {
+            display: grid;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .poll-option {
+            background: white;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .poll-option:hover {
+            border-color: #f5576c;
+            background: #fff5f5;
+        }
+        
+        .poll-option.selected {
+            border-color: #f5576c;
+            background: #f5576c;
+            color: white;
+        }
+        
+        /* Button styles */
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+        
+        .btn-success {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: #218838;
+        }
+        
+        .btn-primary {
+            background-color: #083d5d;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #0b4b70;
+        }
+        
+        /* Course card styles */
+        .course-card {
+            background: white;
+            border: 1px solid #e1e5e9;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .course-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #082f49;
+            margin-bottom: 10px;
+        }
+        
+        .course-meta {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e1e5e9;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+            transition: width 0.3s ease;
+        }
+        
+        /* Activity card styles */
+        .activity-card {
+            background: white;
+            border: 1px solid #e1e5e9;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .activity-card.active {
+            border-color: #28a745;
+        }
+        
+        .activity-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #082f49;
+            margin-bottom: 10px;
+        }
+        
+        .activity-meta {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+        
+        .activity-description {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+        
+        .activity-status {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+        
+        .status-active {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        /* Message notification styles */
+        .success, .error {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            z-index: 2000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            animation: slideIn 0.3s ease;
+        }
+        
+        .success {
+            background-color: #28a745;
+        }
+        
+        .error {
+            background-color: #dc3545;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Top navigation bar -->
+    <header>
+        <div class="platform-logo" style="display: flex; align-items: center; margin-left: 20px;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 90" style="height:40px;">
+                <!-- Background hexagon outline (PolyU style) -->
+                <polygon points="30,45 50,15 90,15 110,45 90,75 50,75" fill="none" stroke="#ff6b6b" stroke-width="3"/>
+
+                <!-- Open book (education) -->
+                <path d="M60 40 Q75 25 90 40 Q105 55 120 40 Q135 25 150 40" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" />
+
+                <!-- Book spine -->
+                <line x1="105" y1="40" x2="105" y2="70" stroke="#ffffff" stroke-width="3"/>
+
+                <!-- Circuit nodes (technology connection lines) -->
+                <circle cx="75" cy="28" r="3" fill="#4facfe"/>
+                <circle cx="135" cy="28" r="3" fill="#4facfe"/>
+                <line x1="75" y1="28" x2="135" y2="28" stroke="#4facfe" stroke-width="2" stroke-dasharray="4 3"/>
+
+                <!-- Light bulb on book -->
+                <circle cx="105" cy="18" r="4" fill="#ffd54f"/>
+
+                <!-- Text section -->
+                <text x="160" y="42" font-size="18" font-family="Inter, PingFang SC, sans-serif" font-weight="700" fill="#ffffff">PolyLearn</text>
+                <text x="160" y="65" font-size="12" font-family="Inter, sans-serif" fill="#b0bec5">Smart Learning</text>
+            </svg>
+        </div>
+        <div class="header-actions" style="margin-left: auto;">
+        </div>
+    </header>
+
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="sidebar-icon active" onclick="showHome()" title="Home">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 9.5L12 3l9 6.5v11a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/>
+            </svg>
+        </div>
+        <div class="sidebar-icon" onclick="showCourses()" title="Courses">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 5l8-3 8 3M4 5v6a8 8 0 0 0 16 0V5M12 12v9"/>
+            </svg>
+        </div>
+        <div class="sidebar-icon" onclick="showGeneralAIAssistant()" title="AI Assistant">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="4" y="8" width="16" height="8" rx="2" ry="2"/>
+                <circle cx="8" cy="12" r="1"/>
+                <circle cx="16" cy="12" r="1"/>
+                <path d="M12 4v2M12 18v2"/>
+            </svg>
+        </div>
+        <div class="sidebar-icon" onclick="showActivities()" title="Activities">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 7V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2"/>
+                <rect x="3" y="7" width="18" height="14" rx="2" ry="2"/>
+            </svg>
+        </div>
+        <div class="sidebar-icon" onclick="logout()" title="Logout">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                <polyline points="16 17 21 12 16 7"/>
+                <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+        </div>
+    </nav>
+
+    <!-- Main content area -->
+    <main>
+        <h1 class="page-title">Student Portal</h1>
+        <p class="welcome-text">Welcome back, @user name</p>
+
+        <!-- Welcome banner -->
+        <div class="welcome-banner">
+            <h2>Welcome to your Student Portal</h2>
+            <p>Track your learning progress, participate in activities, and stay connected with your courses. Your academic journey starts here!</p>
+        </div>
+
+        <!-- Data metrics -->
+        <div class="metrics">
+            <div class="metric-card">
+                <h3>Enrolled Courses</h3>
+                <p id="totalCourses">0</p>
+            </div>
+            <div class="metric-card">
+                <h3>Participations</h3>
+                <p id="totalParticipations">0</p>
+            </div>
+            <div class="metric-card">
+                <h3>Average Score</h3>
+                <p id="avgScore">0</p>
+            </div>
+            <div class="metric-card">
+                <h3>Active Activities</h3>
+                <p id="activeActivities">0</p>
+            </div>
+        </div>
+
+        <!-- Action cards -->
+        <div class="action-cards">
+            <div class="action-card">
+                <h3>My Courses</h3>
+                <p>View and manage your enrolled courses</p>
+                <button class="create-btn" onclick="showCourseEnrollmentModal()">Enroll Course</button>
+            </div>
+            
+            <div class="action-card">
+                <h3>Active Activities</h3>
+                <p>Participate in ongoing learning activities</p>
+                <button class="create-btn" onclick="loadActivities()">Refresh Activities</button>
+            </div>
+            
+            <div class="action-card">
+                <h3>Quick Actions</h3>
+                <p>Access frequently used features</p>
+                <div class="create-form">
+                    <input type="text" class="create-input" placeholder="Search courses...">
+                    <button class="create-btn" onclick="searchCourses()">Search</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content area -->
+        <div class="content-sections">
+            <!-- My Courses -->
+            <div class="section">
+                <h3>My Courses</h3>
+                <div id="coursesList" class="loading">Loading...</div>
+            </div>
+
+            <!-- Active Activities -->
+            <div class="section">
+                <h3>Active Activities</h3>
+                <div id="activeActivitiesList" class="loading">Loading...</div>
+            </div>
+        </div>
+
+        <!-- Recent Participation -->
+        <div class="section" style="margin-top: 30px;">
+            <h3>Recent Participation</h3>
+            <div id="recentResponses" class="loading">Loading...</div>
+        </div>
+    </main>
+
+    <footer>
+        Smart Classroom Platform © 2025
+    </footer>
+    
+    <!-- Course enrollment modal -->
+    <div id="courseEnrollmentModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('courseEnrollmentModal')">&times;</span>
+            <h2>Enroll Course</h2>
+            <div id="availableCourses" class="loading">Loading...</div>
+        </div>
+    </div>
+    
+    <!-- Activity participation modal -->
+    <div id="activityModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('activityModal')">&times;</span>
+            <div id="activityContent">
+                <h2 id="activityTitle">Activity Title</h2>
+                <div id="activityDescription">Activity Description</div>
+                <div id="activityForm"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Activity results modal -->
+    <div id="activityResultsModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <span class="close" onclick="closeModal('activityResultsModal')">&times;</span>
+            <h2>My Activity Results</h2>
+            <div id="activityResultsContent" class="loading">Loading...</div>
+        </div>
+    </div>
+    
+    <!-- Course documents modal -->
+    <div id="courseDocumentsModal" class="modal">
+        <div class="modal-content" style="max-width: 900px;">
+            <span class="close" onclick="closeModal('courseDocumentsModal')">&times;</span>
+            <h2>Course Documents</h2>
+            <div id="courseDocumentsList" class="loading">Loading...</div>
+        </div>
+    </div>
+    
+    <!-- AI course assistant modal -->
+    <div id="aiAssistantModal" class="modal">
+        <div class="modal-content" style="max-width: 900px;">
+            <span class="close" onclick="closeModal('aiAssistantModal')">&times;</span>
+            <h2>🤖 AI Course Assistant</h2>
+            <div id="aiAssistantCourseInfo" style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                <p><strong>Course:</strong> <span id="aiAssistantCourseName">Loading...</span></p>
+            </div>
+            <div id="aiChatContainer" style="height: 400px; overflow-y: auto; border: 1px solid #e1e5e9; border-radius: 8px; padding: 15px; margin-bottom: 15px; background: #fff;">
+                <div id="aiChatMessages" style="min-height: 100%;">
+                    <div style="padding: 10px; background: #e3f2fd; border-radius: 8px; margin-bottom: 10px;">
+                        <strong>AI Assistant:</strong> Hello! I'm an AI course assistant, and I can help you answer questions about the course. I can provide assistance based on course materials, activity content, and other information. Please feel free to ask!
+                    </div>
+                </div>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="aiQuestionInput" class="form-control" placeholder="Please enter your question..." style="flex: 1;" onkeypress="if(event.key === 'Enter') askAIQuestion()">
+                <button class="btn btn-primary" onclick="askAIQuestion()">Send</button>
+            </div>
+            <div id="aiLoadingIndicator" style="display: none; margin-top: 10px; text-align: center; color: #666;">
+                AI is thinking...
+            </div>
+        </div>
+    </div>
+    
+    <!-- General AI assistant modal -->
+    <div id="generalAIAssistantModal" class="modal">
+        <div class="modal-content" style="max-width: 900px;">
+            <span class="close" onclick="closeModal('generalAIAssistantModal')">&times;</span>
+            <h2>🤖 General AI Assistant</h2>
+            <div style="margin-bottom: 20px; padding: 15px; background: #e3f2fd; border-radius: 8px;">
+                <p style="margin: 0; color: #666; font-size: 14px;">
+                    <strong>Tip:</strong> I can answer various questions. If you have questions about a specific course, I will guide you to use that course's AI assistant, which can provide more accurate answers based on course materials and activity information.
+                </p>
+            </div>
+            <div id="generalAIChatContainer" style="height: 400px; overflow-y: auto; border: 1px solid #e1e5e9; border-radius: 8px; padding: 15px; margin-bottom: 15px; background: #fff;">
+                <div id="generalAIChatMessages" style="min-height: 100%;">
+                    <div style="padding: 10px; background: #e3f2fd; border-radius: 8px; margin-bottom: 10px;">
+                        <strong>AI Assistant:</strong> Hello! I'm a general AI assistant, and I can help you answer various questions. If you have questions about a specific course, I will guide you to use that course's AI assistant. Please feel free to ask!
+                    </div>
+                </div>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="generalAIQuestionInput" class="form-control" placeholder="Please enter your question..." style="flex: 1;" onkeypress="if(event.key === 'Enter') askGeneralAIQuestion()">
+                <button class="btn btn-primary" onclick="askGeneralAIQuestion()">Send</button>
+            </div>
+            <div id="generalAILoadingIndicator" style="display: none; margin-top: 10px; text-align: center; color: #666;">
+                AI is thinking...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let currentActivity = null;
+        
+        // Initialize on page load
+        window.onload = async function() {
+            console.log('Student page loaded, checking auth...');
+            await checkAuth();
+            await loadDashboardData();
+            await loadCourses();
+            await loadActiveActivities();
+        };
+        
+        // Check authentication status
+        async function checkAuth() {
+            try {
+                const response = await fetch('/api/auth/profile');
+                if (response.ok) {
+                    currentUser = await response.json();
+                    if (currentUser.role !== 'student') {
+                        window.location.href = '/login';
+                        return;
+                    }
+                    updateWelcomeMessage();
+                } else {
+                    window.location.href = '/';
+                }
+            } catch (error) {
+                window.location.href = '/';
+            }
+        }
+        
+        // Update welcome message
+        function updateWelcomeMessage() {
+            if (currentUser) {
+                const welcomeText = document.querySelector('.welcome-text');
+                welcomeText.textContent = `Welcome back, ${currentUser.full_name}`;
+            }
+        }
+        
+        // Sidebar navigation functions
+        function showHome() {
+            setActiveSidebar(0);
+            // Refresh home page content
+            location.reload();
+        }
+        
+        function showCourses() {
+            setActiveSidebar(1);
+            // Scroll to courses section
+            document.querySelector('.content-sections').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function showActivities() {
+            setActiveSidebar(3);
+            // Scroll to activities section
+            document.querySelector('.content-sections').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function logout() {
+            setActiveSidebar(4);
+            if (confirm('Are you sure you want to logout?')) {
+                // Call logout API
+                fetch('/api/auth/logout', { method: 'POST' })
+                    .then(() => {
+                        window.location.href = '/login';
+                    })
+                    .catch(() => {
+                        window.location.href = '/login';
+                    });
+            }
+        }
+        
+        // Set active sidebar icon
+        function setActiveSidebar(index) {
+            document.querySelectorAll('.sidebar-icon').forEach((icon, i) => {
+                icon.classList.toggle('active', i === index);
+            });
+        }
+        
+        // Search courses function
+        function searchCourses() {
+            const input = document.querySelector('.create-input');
+            const searchTerm = input.value.trim();
+            if (searchTerm) {
+                // Add course search logic here
+                alert(`Searching for: ${searchTerm}`);
+                input.value = '';
+            } else {
+                alert('Please enter a search term');
+            }
+        }
+        
+        // Load dashboard data
+        async function loadDashboardData() {
+            try {
+                const response = await fetch('/api/analytics/dashboard');
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('totalCourses').textContent = data.stats.total_courses;
+                    document.getElementById('totalParticipations').textContent = data.stats.total_participations;
+                    
+                    // Display recent participations
+                    displayRecentResponses(data.recent_responses);
+                }
+            } catch (error) {
+                console.error('Failed to load dashboard data:', error);
+            }
+        }
+        
+        // Display recent participations
+        function displayRecentResponses(responses) {
+            const container = document.getElementById('recentResponses');
+            if (responses.length === 0) {
+                container.innerHTML = '<p>No participation records</p>';
+                return;
+            }
+            
+            const html = responses.map(response => `
+                <div style="padding: 15px; border: 1px solid #e1e5e9; border-radius: 8px; margin-bottom: 10px;">
+                    <h4>${response.activity_title}</h4>
+                    <p>Submitted at: ${new Date(response.submitted_at).toLocaleString()}</p>
+                    ${response.score ? `<p>Score: ${response.score}</p>` : ''}
+                    ${response.feedback ? `<p>Feedback: ${response.feedback}</p>` : ''}
+                </div>
+            `).join('');
+            
+            container.innerHTML = html;
+        }
+        
+        // Load courses list
+        async function loadCourses() {
+            try {
+                const response = await fetch('/api/courses/');
+                if (response.ok) {
+                    const courses = await response.json();
+                    displayCourses(courses);
+                }
+            } catch (error) {
+                document.getElementById('coursesList').innerHTML = '<div class="error">Failed to load courses</div>';
+            }
+        }
+        
+        // Display courses list
+        function displayCourses(courses) {
+            const container = document.getElementById('coursesList');
+            if (courses.length === 0) {
+                container.innerHTML = '<p>No enrolled courses</p>';
+                return;
+            }
+            
+            const html = courses.map(course => `
+                <div class="course-card">
+                    <div class="course-title">${course.course_name} (${course.course_code})</div>
+                    <div class="course-meta">
+                        Teacher: ${course.teacher_name || 'Unknown'}<br>
+                        Semester: ${course.semester} ${course.academic_year}<br>
+                        Activities: ${course.activity_count}
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${Math.min(course.activity_count * 10, 100)}%"></div>
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap;">
+                        <button class="btn btn-secondary" onclick="viewCourseActivities(${course.id})">View Activities</button>
+                        <button class="btn btn-primary" onclick="viewCourseDocuments(${course.id})">View Documents</button>
+                        <button class="btn btn-success" onclick="showAIAssistant(${course.id})">🤖 AI Assistant</button>
+                    </div>
+                </div>
+            `).join('');
+            
+            container.innerHTML = html;
+        }
+        
+        // Load active activities
+        async function loadActiveActivities() {
+            try {
+                const response = await fetch('/api/activities/?status=active');
+                if (response.ok) {
+                    const activities = await response.json();
+                    displayActiveActivities(activities);
+                }
+            } catch (error) {
+                document.getElementById('activeActivitiesList').innerHTML = '<div class="error">Failed to load activities</div>';
+            }
+        }
+        
+        // Display active activities
+        function displayActiveActivities(activities) {
+            const container = document.getElementById('activeActivitiesList');
+            document.getElementById('activeActivities').textContent = activities.length;
+            
+            if (activities.length === 0) {
+                container.innerHTML = '<p>No active activities</p>';
+                return;
+            }
+            
+            const html = activities.map(activity => `
+                <div class="activity-card active">
+                    <div class="activity-title">${activity.title}</div>
+                    <div class="activity-meta">
+                        Course: ${activity.course_name || 'Unknown'}<br>
+                        Type: ${getActivityTypeName(activity.activity_type)}<br>
+                        Time remaining: ${calculateRemainingTime(activity.end_time)}
+                    </div>
+                    <div class="activity-description">${activity.description || 'No description'}</div>
+                    <div class="activity-status status-active">Active</div>
+                    <div style="display: flex; gap: 10px; margin-top: 10px;">
+                        <button class="btn btn-success" onclick="participateActivity(${activity.id})">Participate</button>
+                        <button class="btn btn-secondary" onclick="viewMyActivityResult(${activity.id})">View My Result</button>
+                    </div>
+                </div>
+            `).join('');
+            
+            container.innerHTML = html;
+        }
+        
+        // Show course enrollment modal
+        async function showCourseEnrollmentModal() {
+            try {
+                // Get all available courses
+                const response = await fetch('/api/courses/available');
+                if (response.ok) {
+                    const availableCourses = await response.json();
+                    displayAvailableCourses(availableCourses);
+                    document.getElementById('courseEnrollmentModal').style.display = 'block';
+                }
+            } catch (error) {
+                showMessage('Failed to load courses', 'error');
+            }
+        }
+        
+        // Display available courses
+        async function displayAvailableCourses(courses) {
+            const container = document.getElementById('availableCourses');
+            if (courses.length === 0) {
+                container.innerHTML = '<p>No available courses</p>';
+                return;
+            }
+            
+            // Get enrolled course IDs
+            let enrolledCourseIds = [];
+            try {
+                const enrolledResponse = await fetch('/api/courses/');
+                if (enrolledResponse.ok) {
+                    const enrolledCourses = await enrolledResponse.json();
+                    enrolledCourseIds = enrolledCourses.map(course => course.id);
+                }
+            } catch (error) {
+                console.error('Failed to get enrolled courses:', error);
+            }
+            
+            // Filter out enrolled courses
+            const availableCourses = courses.filter(course => !enrolledCourseIds.includes(course.id));
+            
+            if (availableCourses.length === 0) {
+                container.innerHTML = '<p>You have enrolled in all available courses</p>';
+                return;
+            }
+            
+            const html = availableCourses.map(course => `
+                <div style="padding: 15px; border: 1px solid #e1e5e9; border-radius: 8px; margin-bottom: 10px;">
+                    <h4>${course.course_name} (${course.course_code})</h4>
+                    <p>Teacher: ${course.teacher_name || 'Unknown'}</p>
+                    <p>Semester: ${course.semester} ${course.academic_year}</p>
+                    <p>Description: ${course.description || 'No description'}</p>
+                    <button class="btn btn-primary" onclick="enrollCourse(${course.id})">Enroll Course</button>
+                </div>
+            `).join('');
+            
+            container.innerHTML = html;
+        }
+        
+        // Enroll in course
+        async function enrollCourse(courseId) {
+            try {
+                const response = await fetch(`/api/courses/${courseId}/enroll`, {
+                    method: 'POST'
+                });
+                
+                if (response.ok) {
+                    showMessage('Course enrolled successfully!', 'success');
+                    closeModal('courseEnrollmentModal');
+                    loadCourses();
+                    loadDashboardData();
+                } else {
+                    const error = await response.json();
+                    showMessage(error.error || 'Failed to enroll course', 'error');
+                }
+            } catch (error) {
+                showMessage('Network error', 'error');
+            }
+        }
+        
+        // Participate in activity
+        async function participateActivity(activityId) {
+            try {
+                console.log('Participating in activity, ID:', activityId);
+                const response = await fetch(`/api/activities/${activityId}`);
+                console.log('Response status:', response.status);
+                
+                if (response.ok) {
+                    currentActivity = await response.json();
+                    console.log('Activity data:', currentActivity);
+                    showActivityModal();
+                } else {
+                    const error = await response.json();
+                    console.error('Failed to load activity:', error);
+                    showMessage(error.error || 'Failed to load activity', 'error');
+                }
+            } catch (error) {
+                console.error('Network error:', error);
+                showMessage('Network error: ' + error.message, 'error');
+            }
+        }
+        
+        // Show activity modal
+        function showActivityModal() {
+            if (!currentActivity) return;
+            
+            document.getElementById('activityTitle').textContent = currentActivity.title;
+            document.getElementById('activityDescription').textContent = currentActivity.description || 'No description';
+            
+            // Generate form based on activity type
+            const formContainer = document.getElementById('activityForm');
+            formContainer.innerHTML = generateActivityForm(currentActivity);
+            
+            document.getElementById('activityModal').style.display = 'block';
+        }
+        
+        // Generate activity form
+        function generateActivityForm(activity) {
+            const config = activity.config || {};
+            
+            switch (activity.activity_type) {
+                case 'poll':
+                    return generatePollForm(config);
+                case 'quiz':
+                    return generateQuizForm(config);
+                case 'word_cloud':
+                    return generateWordCloudForm(config);
+                case 'short_answer':
+                    return generateShortAnswerForm(config);
+                case 'mini_game':
+                    return generateMiniGameForm(config);
+                default:
+                    return '<p>Unknown activity type</p>';
+            }
+        }
+        
+        // Generate poll form
+        function generatePollForm(config) {
+            const options = config.options || ['Option 1', 'Option 2', 'Option 3', 'Option 4'];
+            const question = config.question || 'Please select your answer';
+            
+            return `
+                <div class="response-form">
+                    <h3>${question}</h3>
+                    <div class="poll-options">
+                        ${options.map((option, index) => `
+                            <div class="poll-option" onclick="selectPollOption(${index})" data-index="${index}">
+                                ${option}
+                            </div>
+                        `).join('')}
+                    </div>
+                    <button class="btn btn-success" onclick="submitPollResponse()" style="margin-top: 15px;">Submit Vote</button>
+                </div>
+            `;
+        }
+        
+        // Generate quiz form
+        function generateQuizForm(config) {
+            const question = config.question || 'Please select your answer';
+            const options = config.options || ['Option A', 'Option B', 'Option C', 'Option D'];
+            
+            return `
+                <div class="response-form">
+                    <h3>${question}</h3>
+                    <div class="poll-options">
+                        ${options.map((option, index) => `
+                            <div class="poll-option" onclick="selectQuizOption(0, ${index})" data-q="0" data-o="${index}">
+                                ${option}
+                            </div>
+                        `).join('')}
+                    </div>
+                    <button class="btn btn-success" onclick="submitQuizResponse()" style="margin-top: 15px;">Submit Quiz</button>
+                </div>
+            `;
+        }
+        
+        // Generate word cloud form
+        function generateWordCloudForm(config) {
+            const prompt = config.prompt || 'Please enter keywords related to the topic';
+            const maxWords = config.max_words || 10;
+            
+            return `
+                <div class="response-form">
+                    <h3>${prompt}</h3>
+                    <div class="form-group">
+                        <label for="wordInput">Keywords (max ${maxWords}, separated by commas):</label>
+                        <textarea id="wordInput" placeholder="Enter keywords, e.g.: learning, education, technology, innovation"></textarea>
+                    </div>
+                    <button class="btn btn-success" onclick="submitWordCloudResponse()">Submit Word Cloud</button>
+                </div>
+            `;
+        }
+        
+        // Generate short answer form
+        function generateShortAnswerForm(config) {
+            const question = config.question || 'Please briefly answer the following question';
+            const maxLength = config.max_length || 500;
+            
+            return `
+                <div class="response-form">
+                    <h3>${question}</h3>
+                    <div class="form-group">
+                        <label for="shortAnswerInput">Your answer:</label>
+                        <textarea id="shortAnswerInput" placeholder="Please enter your answer" maxlength="${maxLength}" rows="6"></textarea>
+                        <small style="color: #666;">Max ${maxLength} characters</small>
+                    </div>
+                    <button class="btn btn-success" onclick="submitShortAnswerResponse()">Submit Answer</button>
+                </div>
+            `;
+        }
+        
+        // Generate mini game form
+        function generateMiniGameForm(config) {
+            const gameType = config.game_type || 'matching';
+            const content = config.content || {};
+            
+            if (gameType === 'matching') {
+                return `
+                    <div class="response-form">
+                        <h3>Matching Game</h3>
+                        <p>Please match items on the left with matches on the right</p>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                            <div>
+                                <h4>Items</h4>
+                                ${content.items.map((item, index) => `
+                                    <div class="poll-option" onclick="selectItem(${index})" data-type="item" data-index="${index}">
+                                        ${item}
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <div>
+                                <h4>Matches</h4>
+                                ${content.matches.map((match, index) => `
+                                    <div class="poll-option" onclick="selectMatch(${index})" data-type="match" data-index="${index}">
+                                        ${match}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                        <button class="btn btn-success" onclick="submitGameResponse()" style="margin-top: 15px;">Submit Game</button>
+                    </div>
+                `;
+            }
+            
+            return '<p>Game type not supported</p>';
+        }
+        
+        // Select poll option
+        function selectPollOption(index) {
+            document.querySelectorAll('.poll-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            document.querySelector(`[data-index="${index}"]`).classList.add('selected');
+        }
+        
+        // Select quiz option
+        function selectQuizOption(questionIndex, optionIndex) {
+            document.querySelectorAll(`[data-q="${questionIndex}"]`).forEach(option => {
+                option.classList.remove('selected');
+            });
+            document.querySelector(`[data-q="${questionIndex}"][data-o="${optionIndex}"]`).classList.add('selected');
+        }
+        
+        // Submit poll response
+        async function submitPollResponse() {
+            const selectedOption = document.querySelector('.poll-option.selected');
+            if (!selectedOption) {
+                showMessage('Please select an option', 'error');
+                return;
+            }
+            
+            const responseData = {
+                selected_option: selectedOption.textContent,
+                option_index: selectedOption.dataset.index
+            };
+            
+            await submitResponse(responseData);
+        }
+        
+        // Submit quiz response
+        async function submitQuizResponse() {
+            const selectedOption = document.querySelector('.poll-option.selected');
+            if (!selectedOption) {
+                showMessage('Please select an option', 'error');
+                return;
+            }
+            
+            const config = currentActivity.config || {};
+            const options = config.options || [];
+            const selectedIndex = parseInt(selectedOption.dataset.o);
+            const correctAnswer = config.correct_answer;
+            
+            const responseData = {
+                selected_option: selectedOption.textContent,
+                option_index: selectedIndex,
+                is_correct: selectedIndex === correctAnswer
+            };
+            
+            await submitResponse(responseData);
+        }
+        
+        // Submit word cloud response
+        async function submitWordCloudResponse() {
+            const words = document.getElementById('wordInput').value.trim();
+            if (!words) {
+                showMessage('Please enter keywords', 'error');
+                return;
+            }
+            
+            const wordList = words.split(',').map(word => word.trim()).filter(word => word);
+            await submitResponse({ words: wordList });
+        }
+        
+        // Submit short answer response
+        async function submitShortAnswerResponse() {
+            const answer = document.getElementById('shortAnswerInput').value.trim();
+            if (!answer) {
+                showMessage('Please enter your answer', 'error');
+                return;
+            }
+            
+            await submitResponse({ answer: answer });
+        }
+        
+        // Submit game response
+        async function submitGameResponse() {
+            // Game logic needs to be implemented here
+            showMessage('Game feature under development...', 'success');
+        }
+        
+        // Submit response
+        async function submitResponse(responseData) {
+            try {
+                const response = await fetch('/api/responses/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        activity_id: currentActivity.id,
+                        response_data: responseData,
+                        time_spent_seconds: Math.floor(Math.random() * 300) + 60 // Simulated time
+                    })
+                });
+                
+                if (response.ok) {
+                    showMessage('Submitted successfully!', 'success');
+                    closeModal('activityModal');
+                    loadActiveActivities();
+                    loadDashboardData();
+                } else {
+                    const error = await response.json();
+                    showMessage(error.error || 'Submission failed', 'error');
+                }
+            } catch (error) {
+                showMessage('Network error', 'error');
+            }
+        }
+        
+        // Close modal
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+        
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        }
+        
+        // Show message
+        function showMessage(message, type = 'success') {
+            // Remove existing message
+            const existingMessage = document.querySelector('.success, .error');
+            if (existingMessage) {
+                existingMessage.remove();
+            }
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = type;
+            messageDiv.textContent = message;
+            document.body.appendChild(messageDiv);
+            
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 3000);
+        }
+        
+        // Logout
+        async function logout() {
+            try {
+                await fetch('/api/auth/logout', { method: 'POST' });
+                window.location.href = '/';
+            } catch (error) {
+                window.location.href = '/';
+            }
+        }
+        
+        // Utility functions
+        function getActivityTypeName(type) {
+            const types = {
+                'poll': 'Poll',
+                'quiz': 'Quiz',
+                'word_cloud': 'Word Cloud',
+                'short_answer': 'Short Answer',
+                'mini_game': 'Mini Game'
+            };
+            return types[type] || type;
+        }
+        
+        function calculateRemainingTime(endTime) {
+            if (!endTime) return 'Unknown';
+            const now = new Date();
+            const end = new Date(endTime);
+            const diff = end - now;
+            
+            if (diff <= 0) return 'Ended';
+            
+            const minutes = Math.floor(diff / 60000);
+            const seconds = Math.floor((diff % 60000) / 1000);
+            
+            return `${minutes}m ${seconds}s`;
+        }
+        
+        // View course activities
+        async function viewCourseActivities(courseId) {
+            try {
+                const response = await fetch(`/api/activities/?course_id=${courseId}`);
+                if (response.ok) {
+                    const activities = await response.json();
+                    displayCourseActivitiesModal(courseId, activities);
+                } else {
+                    showMessage('Failed to load activities', 'error');
+                }
+            } catch (error) {
+                showMessage('Network error', 'error');
+            }
+        }
+        
+        // Display course activities modal
+        function displayCourseActivitiesModal(courseId, activities) {
+            // Create or get modal
+            let modal = document.getElementById('courseActivitiesModal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'courseActivitiesModal';
+                modal.className = 'modal';
+                modal.innerHTML = `
+                    <div class="modal-content">
+                        <span class="close" onclick="closeModal('courseActivitiesModal')">&times;</span>
+                        <h2>Course Activities</h2>
+                        <div id="courseActivitiesList"></div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+            }
+            
+            const container = document.getElementById('courseActivitiesList');
+            if (activities.length === 0) {
+                container.innerHTML = '<p>No activities for this course</p>';
+            } else {
+                const html = activities.map(activity => `
+                    <div style="padding: 15px; border: 1px solid #e1e5e9; border-radius: 8px; margin-bottom: 15px;">
+                        <h3>${activity.title}</h3>
+                        <p style="color: #666; margin: 10px 0;">${activity.description || 'No description'}</p>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+                            <div>
+                                <span style="color: #666;">Type: ${getActivityTypeName(activity.activity_type)}</span>
+                                <span style="color: #666; margin-left: 15px;">Status: ${getActivityStatusName(activity.status)}</span>
+                            </div>
+                            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                                ${activity.status === 'active' ? 
+                                    `<button class="btn btn-success" onclick="closeModal('courseActivitiesModal'); participateActivity(${activity.id})">Participate</button>` : 
+                                    `<span style="color: #999; padding: 10px;">Activity ended</span>`
+                                }
+                                <button class="btn btn-secondary" onclick="closeModal('courseActivitiesModal'); viewMyActivityResult(${activity.id})">View My Result</button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+                container.innerHTML = html;
+            }
+            
+            modal.style.display = 'block';
+        }
+        
+        // Get activity status name
+        function getActivityStatusName(status) {
+            const statusMap = {
+                'draft': 'Draft',
+                'active': 'Active',
+                'completed': 'Completed',
+                'archived': 'Archived'
+            };
+            return statusMap[status] || status;
+        }
+        
+        function loadActivities() {
+            loadActiveActivities();
+        }
+        
+        // View my activity result
+        async function viewMyActivityResult(activityId) {
+            try {
+                const response = await fetch(`/api/responses/activity/${activityId}`);
+                if (response.ok) {
+                    const responses = await response.json();
+                    displayMyActivityResult(activityId, responses);
+                    document.getElementById('activityResultsModal').style.display = 'block';
+                } else {
+                    const error = await response.json();
+                    if (response.status === 404) {
+                        showMessage('You have not participated in this activity yet', 'error');
+                    } else {
+                        showMessage(error.error || 'Failed to load result', 'error');
+                    }
+                }
+            } catch (error) {
+                showMessage('Network error', 'error');
+            }
+        }
+        
+        // Display my activity result
+        function displayMyActivityResult(activityId, responses) {
+            const container = document.getElementById('activityResultsContent');
+            
+            if (responses.length === 0) {
+                container.innerHTML = '<p style="text-align: center; padding: 20px; color: #666;">You have not participated in this activity yet</p>';
+                return;
+            }
+            
+            // Get activity information to display config
+            fetch(`/api/activities/${activityId}`)
+                .then(res => res.json())
+                .then(activity => {
+                    const config = activity.config || {};
+                    const resp = responses[0]; // Student has only one response
+                    const responseData = resp.response_data || {};
+                    
+                    let html = `
+                        <div style="padding: 20px; border: 1px solid #e1e5e9; border-radius: 8px; background: white;">
+                            <h3 style="margin-bottom: 15px; color: #082f49;">${activity.title}</h3>
+                            <div style="margin-bottom: 15px; color: #666;">
+                                <strong>Submitted at:</strong> ${new Date(resp.submitted_at).toLocaleString()}
+                            </div>
+                            ${displayResponseData(responseData, activity.activity_type, config)}
+                            ${resp.score !== null && resp.score !== undefined ? `
+                                <div style="margin-top: 15px; padding: 15px; background: #e3f2fd; border-radius: 5px;">
+                                    <strong style="font-size: 16px;">Score:</strong> 
+                                    <span style="font-size: 20px; font-weight: bold; color: #1976d2;">${resp.score}</span>
+                                </div>
+                            ` : ''}
+                            ${resp.feedback ? `
+                                <div style="margin-top: 15px; padding: 15px; background: #fff3cd; border-radius: 5px;">
+                                    <strong>Teacher Feedback:</strong><br>
+                                    <div style="margin-top: 5px; padding: 10px; background: white; border-radius: 5px; white-space: pre-wrap;">${resp.feedback}</div>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                    
+                    container.innerHTML = html;
+                })
+                .catch(error => {
+                    container.innerHTML = '<p style="text-align: center; padding: 20px; color: #dc3545;">Failed to load activity information</p>';
+                });
+        }
+        
+        // Display response data
+        function displayResponseData(responseData, activityType, config) {
+            let html = '';
+            
+            if (activityType === 'poll') {
+                html += `<div style="padding: 15px; background: #f8f9fa; border-radius: 5px;">
+                    <strong>Your selected option:</strong> 
+                    <div style="margin-top: 10px; padding: 10px; background: white; border-radius: 5px; font-size: 16px;">
+                        ${responseData.selected_option || (config.options && responseData.option_index !== undefined ? config.options[responseData.option_index] : 'Not selected')}
+                    </div>
+                </div>`;
+            } else if (activityType === 'quiz') {
+                html += `<div style="padding: 15px; background: #f8f9fa; border-radius: 5px;">
+                    <strong>Your selected option:</strong> 
+                    <div style="margin-top: 10px; padding: 10px; background: white; border-radius: 5px; font-size: 16px;">
+                        ${responseData.selected_option || (config.options && responseData.option_index !== undefined ? config.options[responseData.option_index] : 'Not selected')}
+                    </div>
+                    ${responseData.is_correct !== undefined ? `
+                        <div style="margin-top: 10px; padding: 10px; background: ${responseData.is_correct ? '#d4edda' : '#f8d7da'}; border-radius: 5px;">
+                            <strong>Result:</strong> 
+                            <span style="color: ${responseData.is_correct ? '#155724' : '#721c24'}; font-weight: bold;">
+                                ${responseData.is_correct ? '✓ Correct' : '✗ Incorrect'}
+                            </span>
+                            ${config.explanation ? `
+                                <div style="margin-top: 10px; padding: 10px; background: white; border-radius: 5px;">
+                                    <strong>Explanation:</strong> ${config.explanation}
+                                </div>
+                            ` : ''}
+                        </div>
+                    ` : ''}
+                </div>`;
+            } else if (activityType === 'word_cloud') {
+                const words = responseData.words || [];
+                html += `<div style="padding: 15px; background: #f8f9fa; border-radius: 5px;">
+                    <strong>Your submitted keywords:</strong> 
+                    <div style="margin-top: 10px; padding: 10px; background: white; border-radius: 5px;">
+                        ${words.length > 0 ? words.map(word => `<span style="display: inline-block; padding: 5px 10px; margin: 5px; background: #4facfe; color: white; border-radius: 15px;">${word}</span>`).join('') : 'None'}
+                    </div>
+                </div>`;
+            } else if (activityType === 'short_answer') {
+                html += `<div style="padding: 15px; background: #f8f9fa; border-radius: 5px;">
+                    <strong>Your answer:</strong> 
+                    <div style="margin-top: 10px; padding: 15px; background: white; border-radius: 5px; white-space: pre-wrap; min-height: 100px; border: 1px solid #e1e5e9;">${responseData.answer || 'None'}</div>
+                </div>`;
+            } else {
+                html += `<div style="padding: 15px; background: #f8f9fa; border-radius: 5px;">
+                    <strong>Your response:</strong> 
+                    <div style="margin-top: 10px; padding: 10px; background: white; border-radius: 5px;">
+                        <pre style="white-space: pre-wrap; margin: 0;">${JSON.stringify(responseData, null, 2)}</pre>
+                    </div>
+                </div>`;
+            }
+            
+            return html;
+        }
+        
+        // View course documents
+        async function viewCourseDocuments(courseId) {
+            document.getElementById('courseDocumentsModal').style.display = 'block';
+            await loadCourseDocuments(courseId);
+        }
+        
+        // Load course documents
+        async function loadCourseDocuments(courseId) {
+            const container = document.getElementById('courseDocumentsList');
+            container.innerHTML = '<div class="loading">Loading...</div>';
+            
+            try {
+                const response = await fetch(`/api/documents/course/${courseId}`);
+                if (response.ok) {
+                    const documents = await response.json();
+                    displayCourseDocuments(documents);
+                } else {
+                    const error = await response.json();
+                    container.innerHTML = `<p style="color: #dc3545;">Failed to load: ${error.error}</p>`;
+                }
+            } catch (error) {
+                container.innerHTML = `<p style="color: #dc3545;">Network error: ${error.message}</p>`;
+            }
+        }
+        
+        // Display course documents list
+        function displayCourseDocuments(documents) {
+            const container = document.getElementById('courseDocumentsList');
+            
+            if (documents.length === 0) {
+                container.innerHTML = '<p style="text-align: center; padding: 20px; color: #666;">No documents</p>';
+                return;
+            }
+            
+            let html = '<div style="display: grid; gap: 15px;">';
+            documents.forEach(doc => {
+                html += `
+                    <div style="padding: 20px; border: 1px solid #e1e5e9; border-radius: 8px; background: white;">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                            <div style="flex: 1;">
+                                <h4 style="margin: 0 0 5px 0; color: #082f49;">${doc.title}</h4>
+                                <p style="margin: 0; color: #666; font-size: 14px;">${doc.filename}</p>
+                            </div>
+                        </div>
+                        ${doc.description ? `<p style="margin: 10px 0; color: #666; font-size: 14px;">${doc.description}</p>` : ''}
+                        <div style="display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
+                            <div style="flex: 1; min-width: 200px;">
+                                <small style="color: #666;">
+                                    <strong>Size:</strong> ${doc.file_size_mb} MB | 
+                                    <strong>Type:</strong> ${doc.file_type.toUpperCase()} | 
+                                    <strong>Downloads:</strong> ${doc.download_count} times
+                                </small>
+                            </div>
+                            <div>
+                                <button class="btn btn-primary" onclick="downloadDocument(${doc.id})" style="font-size: 12px; padding: 5px 10px;">Download</button>
+                            </div>
+                        </div>
+                        <small style="color: #999; display: block; margin-top: 10px;">
+                            Uploaded at: ${new Date(doc.created_at).toLocaleString()}
+                        </small>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        }
+        
+        // Download document
+        function downloadDocument(documentId) {
+            window.open(`/api/documents/${documentId}/download`, '_blank');
+        }
+        
+        // AI assistant related functions
+        let currentCourseIdForAI = null;
+        
+        // Show AI assistant interface
+        async function showAIAssistant(courseId) {
+            currentCourseIdForAI = courseId;
+            
+            // Get course information
+            try {
+                const response = await fetch(`/api/courses/${courseId}`);
+                if (response.ok) {
+                    const course = await response.json();
+                    document.getElementById('aiAssistantCourseName').textContent = `${course.course_name} (${course.course_code})`;
+                }
+            } catch (error) {
+                document.getElementById('aiAssistantCourseName').textContent = 'Unknown course';
+            }
+            
+            // Clear chat history
+            document.getElementById('aiChatMessages').innerHTML = `
+                <div style="padding: 10px; background: #e3f2fd; border-radius: 8px; margin-bottom: 10px;">
+                    <strong>AI Assistant:</strong> Hello! I'm an AI course assistant, and I can help you answer questions about the course. I can provide assistance based on course materials, activity content, and other information. Please feel free to ask!
+                </div>
+            `;
+            
+            // Clear input field
+            document.getElementById('aiQuestionInput').value = '';
+            
+            // Show modal
+            document.getElementById('aiAssistantModal').style.display = 'block';
+        }
+        
+        // Ask AI question
+        async function askAIQuestion() {
+            const questionInput = document.getElementById('aiQuestionInput');
+            const question = questionInput.value.trim();
+            
+            if (!question) {
+                showMessage('Please enter your question', 'error');
+                return;
+            }
+            
+            if (!currentCourseIdForAI) {
+                showMessage('Course information error', 'error');
+                return;
+            }
+            
+            const messagesContainer = document.getElementById('aiChatMessages');
+            const loadingIndicator = document.getElementById('aiLoadingIndicator');
+            
+            // Display user question
+            messagesContainer.innerHTML += `
+                <div style="padding: 10px; background: #d4edda; border-radius: 8px; margin-bottom: 10px; text-align: right;">
+                    <strong>You:</strong> ${question}
+                </div>
+            `;
+            
+            // Clear input field
+            questionInput.value = '';
+            
+            // Show loading indicator
+            loadingIndicator.style.display = 'block';
+            
+            // Scroll to bottom
+            const chatContainer = document.getElementById('aiChatContainer');
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            
+            try {
+                const response = await fetch(`/api/ai-qa/course/${currentCourseIdForAI}/ask`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ question: question })
+                });
+                
+                loadingIndicator.style.display = 'none';
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    
+                    // Display AI answer
+                    messagesContainer.innerHTML += `
+                        <div style="padding: 10px; background: #e3f2fd; border-radius: 8px; margin-bottom: 10px;">
+                            <strong>AI Assistant:</strong> ${result.answer.replace(/\n/g, '<br>')}
+                        </div>
+                    `;
+                } else {
+                    const error = await response.json();
+                    messagesContainer.innerHTML += `
+                        <div style="padding: 10px; background: #f8d7da; border-radius: 8px; margin-bottom: 10px; color: #dc3545;">
+                            <strong>Error:</strong> ${error.error || 'Request failed'}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                loadingIndicator.style.display = 'none';
+                messagesContainer.innerHTML += `
+                    <div style="padding: 10px; background: #f8d7da; border-radius: 8px; margin-bottom: 10px; color: #dc3545;">
+                        <strong>Error:</strong> Network error: ${error.message}
+                    </div>
+                `;
+            }
+            
+            // Scroll to bottom
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+        
+        // General AI assistant related functions
+        // Show general AI assistant interface
+        function showGeneralAIAssistant() {
+            setActiveSidebar(2);
+            // Clear chat history
+            document.getElementById('generalAIChatMessages').innerHTML = `
+                <div style="padding: 10px; background: #e3f2fd; border-radius: 8px; margin-bottom: 10px;">
+                    <strong>AI Assistant:</strong> Hello! I'm a general AI assistant, and I can help you answer various questions. If you have questions about a specific course, I will guide you to use that course's AI assistant. Please feel free to ask!
+                </div>
+            `;
+            
+            // Clear input field
+            document.getElementById('generalAIQuestionInput').value = '';
+            
+            // Show modal
+            document.getElementById('generalAIAssistantModal').style.display = 'block';
+        }
+        
+        // Ask general AI question
+        async function askGeneralAIQuestion() {
+            const questionInput = document.getElementById('generalAIQuestionInput');
+            const question = questionInput.value.trim();
+            
+            if (!question) {
+                showMessage('Please enter your question', 'error');
+                return;
+            }
+            
+            const messagesContainer = document.getElementById('generalAIChatMessages');
+            const loadingIndicator = document.getElementById('generalAILoadingIndicator');
+            
+            // Display user question
+            messagesContainer.innerHTML += `
+                <div style="padding: 10px; background: #d4edda; border-radius: 8px; margin-bottom: 10px; text-align: right;">
+                    <strong>You:</strong> ${question}
+                </div>
+            `;
+            
+            // Clear input field
+            questionInput.value = '';
+            
+            // Show loading indicator
+            loadingIndicator.style.display = 'block';
+            
+            // Scroll to bottom
+            const chatContainer = document.getElementById('generalAIChatContainer');
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            
+            try {
+                const response = await fetch('/api/ai-qa/general/ask', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ question: question })
+                });
+                
+                loadingIndicator.style.display = 'none';
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    
+                    // Display AI answer
+                    messagesContainer.innerHTML += `
+                        <div style="padding: 10px; background: #e3f2fd; border-radius: 8px; margin-bottom: 10px;">
+                            <strong>AI Assistant:</strong> ${result.answer.replace(/\n/g, '<br>')}
+                        </div>
+                    `;
+                } else {
+                    const error = await response.json();
+                    messagesContainer.innerHTML += `
+                        <div style="padding: 10px; background: #f8d7da; border-radius: 8px; margin-bottom: 10px; color: #dc3545;">
+                            <strong>Error:</strong> ${error.error || 'Request failed'}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                loadingIndicator.style.display = 'none';
+                messagesContainer.innerHTML += `
+                    <div style="padding: 10px; background: #f8d7da; border-radius: 8px; margin-bottom: 10px; color: #dc3545;">
+                        <strong>Error:</strong> Network error: ${error.message}
+                    </div>
+                `;
+            }
+            
+            // Scroll to bottom
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+    </script>
+</body>
+</html>
