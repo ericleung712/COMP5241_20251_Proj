@@ -236,14 +236,6 @@ CMD ["gunicorn", "wsgi:app"]
 - Asynchronous task processing for time-consuming operations
 - CDN acceleration for static resources
 
-## Contributing
-
-1. Fork the project
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
-
 ## License
 
 MIT License
@@ -257,3 +249,4 @@ MIT License
 ## Acknowledgments
 
 Thanks to all developers and educators who have contributed to this project.
+
