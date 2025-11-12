@@ -48,6 +48,68 @@ def get_all_users():
         'current_page': page
     })
 
+@admin_bp.route('/users', methods=['POST'])
+def create_user():
+    """创建新用户（仅管理员）"""
+    admin = require_admin()
+    if not admin:
+        return jsonify({'error': '权限不足'}), 403
+    
+    data = request.get_json()
+    
+    if not data:
+        return jsonify({'error': '没有提供数据'}), 400
+    
+    # 验证必需字段
+    required_fields = ['username', 'email', 'full_name', 'role', 'password']
+    missing_fields = [field for field in required_fields if not data.get(field)]
+    if missing_fields:
+        return jsonify({'error': f'缺少必需字段: {", ".join(missing_fields)}'}), 400
+    
+    # 验证邮箱格式
+    is_valid, error_msg = validate_polyu_email(data['email'])
+    if not is_valid:
+        return jsonify({'error': error_msg}), 400
+    
+    # 验证角色
+    if data['role'] not in ['teacher', 'student', 'admin']:
+        return jsonify({'error': '无效的用户角色'}), 400
+    
+    # 检查用户名是否已存在
+    if User.query.filter_by(username=data['username']).first():
+        return jsonify({'error': '用户名已存在'}), 400
+    
+    # 检查邮箱是否已存在
+    if User.query.filter_by(email=data['email']).first():
+        return jsonify({'error': '邮箱已存在'}), 400
+    
+    # 如果是学生，验证student_id
+    if data['role'] == 'student':
+        if not data.get('student_id'):
+            return jsonify({'error': '学生角色必须提供student_id'}), 400
+        # 检查student_id是否已被使用
+        if User.query.filter_by(student_id=data['student_id']).first():
+            return jsonify({'error': '学生ID已存在'}), 400
+    
+    # 创建新用户
+    user = User(
+        username=data['username'],
+        email=data['email'],
+        full_name=data['full_name'],
+        role=data['role'],
+        department=data.get('department'),
+        student_id=data.get('student_id') if data['role'] == 'student' else None
+    )
+    user.set_password(data['password'])
+    
+    db.session.add(user)
+    db.session.commit()
+    
+    return jsonify({
+        'message': '用户创建成功',
+        'user': user.to_dict()
+    }), 201
+
 @admin_bp.route('/users/<int:user_id>', methods=['GET'])
 def get_user(user_id):
     """获取特定用户信息（仅管理员）"""
