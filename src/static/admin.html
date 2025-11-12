@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title data-en="Admin Dashboard - Smart Classroom Platform" data-zh="管理员仪表板 - 智能课堂互动平台">管理员仪表板 - 智能课堂互动平台</title>
+    <title>Admin Dashboard - Smart Classroom Platform</title>
     <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
     <script src="/static/js/i18n.js"></script>
     <style>
-        /* 通用样式 */
+        /* General styles */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -78,7 +78,7 @@
             padding: 30px 40px;
         }
 
-        /* 卡片区布局 */
+        /* Metrics card layout */
         .metrics {
             display: flex;
             justify-content: space-between;
@@ -112,7 +112,7 @@
             font-weight: bold;
         }
 
-        /* 模块标题 */
+        /* Section title */
         section h2 {
             font-size: 20px;
             margin-bottom: 16px;
@@ -122,7 +122,7 @@
             gap: 8px;
         }
 
-        /* 区块卡 */
+        /* Card block */
         .card {
             background-color: #fff;
             border-radius: 12px;
@@ -401,332 +401,332 @@
         <div style="display: flex; align-items: center; gap: 15px;">
             <div class="platform-logo" style="display: flex; align-items: center;">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 90" style="height:40px;">
-                    <!-- 背景六边形轮廓（PolyU风格） -->
+                    <!-- Background hexagon outline (PolyU style) -->
                     <polygon points="30,45 50,15 90,15 110,45 90,75 50,75" fill="none" stroke="#ff6b6b" stroke-width="3"/>
 
-                    <!-- 打开的书本（教育） -->
+                    <!-- Open book (education) -->
                     <path d="M60 40 Q75 25 90 40 Q105 55 120 40 Q135 25 150 40" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" />
 
-                    <!-- 书脊 -->
+                    <!-- Book spine -->
                     <line x1="105" y1="40" x2="105" y2="70" stroke="#ffffff" stroke-width="3"/>
 
-                    <!-- 电路节点（科技连接线） -->
+                    <!-- Circuit nodes (technology connection lines) -->
                     <circle cx="75" cy="28" r="3" fill="#4facfe"/>
                     <circle cx="135" cy="28" r="3" fill="#4facfe"/>
                     <line x1="75" y1="28" x2="135" y2="28" stroke="#4facfe" stroke-width="2" stroke-dasharray="4 3"/>
 
-                    <!-- 书上发光灵感点 -->
+                    <!-- Light bulb on book -->
                     <circle cx="105" cy="18" r="4" fill="#ffd54f"/>
 
-                    <!-- 文本部分 -->
+                    <!-- Text section -->
                     <text x="160" y="42" font-size="18" font-family="Inter, PingFang SC, sans-serif" font-weight="700" fill="#ffffff">PolyLearn</text>
                     <text x="160" y="65" font-size="12" font-family="Inter, sans-serif" fill="#b0bec5">Smart Learning</text>
                 </svg>
             </div>
-            <h1 data-en="Admin Dashboard" data-zh="管理员仪表板" style="margin: 0;">管理员仪表板</h1>
+            <h1 style="margin: 0;">Admin Dashboard</h1>
         </div>
         <div class="nav-actions">
             <button id="languageToggle" class="lang-switch" onclick="toggleLanguage()">
                 🌐 EN
             </button>
-            <span id="userName" data-en="Loading..." data-zh="加载中...">加载中...</span>
-            <button class="logout-btn" onclick="logout()" data-en="Logout" data-zh="登出">登出</button>
+            <span id="userName">Loading...</span>
+            <button class="logout-btn" onclick="logout()">Logout</button>
         </div>
     </header>
     
     <main>
-        <!-- 数据指标 -->
+        <!-- Data Metrics -->
         <div class="metrics">
             <div class="metric-card">
-                <h3 data-en="Total Users" data-zh="总用户数">总用户数</h3>
+                <h3>Total Users</h3>
                 <p id="totalUsers">0</p>
             </div>
             <div class="metric-card">
-                <h3 data-en="Total Courses" data-zh="总课程数">总课程数</h3>
+                <h3>Total Courses</h3>
                 <p id="totalCourses">0</p>
             </div>
             <div class="metric-card">
-                <h3 data-en="Total Activities" data-zh="总活动数">总活动数</h3>
+                <h3>Total Activities</h3>
                 <p id="totalActivities">0</p>
             </div>
             <div class="metric-card">
-                <h3 data-en="Total Responses" data-zh="总响应数">总响应数</h3>
+                <h3>Total Responses</h3>
                 <p id="totalResponses">0</p>
             </div>
             <div class="metric-card">
-                <h3 data-en="Active Users" data-zh="活跃用户">活跃用户</h3>
+                <h3>Active Users</h3>
                 <p id="activeUsers">0</p>
             </div>
             <div class="metric-card">
-                <h3 data-en="AI Activities" data-zh="AI生成活动">AI生成活动</h3>
+                <h3>AI Activities</h3>
                 <p id="aiActivities">0</p>
             </div>
         </div>
         
-        <!-- 用户管理 -->
+        <!-- User Management -->
         <section class="card">
-            <h2>👥 用户管理</h2>
+            <h2>User Management</h2>
             <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                <button class="primary" onclick="showUserManagement()">管理用户</button>
-                <button class="primary" onclick="showImportUsers()" style="background: #28a745;">批量导入用户</button>
+                <button class="primary" onclick="showUserManagement()">Manage Users</button>
+                <button class="primary" onclick="showImportUsers()" style="background: #28a745;">Import Users (Excel)</button>
             </div>
-            <div id="usersList" class="loading">加载中...</div>
+            <div id="usersList" class="loading">Loading...</div>
         </section>
 
-        <!-- 课程管理 -->
+        <!-- Course Management -->
         <section class="card">
-            <h2>📚 课程管理</h2>
-            <button class="primary" onclick="showCourseManagement()">管理课程</button>
-            <div id="coursesManagementList" class="loading">加载中...</div>
+            <h2>Course Management</h2>
+            <button class="primary" onclick="showCourseManagement()">Manage Courses</button>
+            <div id="coursesManagementList" class="loading">Loading...</div>
         </section>
 
-        <!-- 活动管理 -->
+        <!-- Activity Management -->
         <section class="card">
-            <h2>🎯 活动管理</h2>
-            <button class="primary" onclick="showActivityManagement()">管理活动</button>
-            <div id="activitiesManagementList" class="loading">加载中...</div>
+            <h2>Activity Management</h2>
+            <button class="primary" onclick="showActivityManagement()">Manage Activities</button>
+            <div id="activitiesManagementList" class="loading">Loading...</div>
         </section>
 
-        <!-- 系统概览 -->
+        <!-- System Overview -->
         <section class="card">
-            <h2>📊 系统概览</h2>
-            <div id="systemOverview" class="loading">加载中...</div>
+            <h2>System Overview</h2>
+            <div id="systemOverview" class="loading">Loading...</div>
         </section>
     </main>
 
     <footer>
-        智能课堂互动平台 © 2025
+        Smart Classroom Platform © 2025
     </footer>
     
-    <!-- 用户管理模态框 -->
+    <!-- User Management Modal -->
     <div id="userManagementModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeModal('userManagementModal')">&times;</span>
-            <h2>用户管理</h2>
+            <h2>User Management</h2>
             <div style="margin-bottom: 20px;">
-                <button class="btn" onclick="loadUsers()">刷新用户</button>
-                <button class="btn btn-success" onclick="showCreateUserModal()">创建用户</button>
+                <button class="btn" onclick="loadUsers()">Refresh Users</button>
+                <button class="btn btn-success" onclick="showCreateUserModal()">Create User</button>
             </div>
-            <div id="usersList" class="loading">加载中...</div>
+            <div id="usersList" class="loading">Loading...</div>
         </div>
     </div>
     
-    <!-- 批量导入用户模态框 -->
+    <!-- Import Users Modal -->
     <div id="importUsersModal" class="modal">
         <div class="modal-content" style="max-width: 800px;">
             <span class="close" onclick="closeModal('importUsersModal')">&times;</span>
-            <h2>批量导入用户（Excel）</h2>
+            <h2>Import Users (Excel)</h2>
             <div style="padding: 20px; background: #f8f9fa; border-radius: 5px; margin-bottom: 20px;">
-                <h3 style="margin-top: 0;">Excel文件格式要求：</h3>
-                <p><strong>必需列：</strong></p>
+                <h3 style="margin-top: 0;">Excel File Format Requirements:</h3>
+                <p><strong>Required Columns:</strong></p>
                 <ul>
-                    <li><code>username</code> - 用户名（唯一）</li>
-                    <li><code>full_name</code> - 姓名</li>
-                    <li><code>email</code> - 邮箱（唯一）</li>
-                    <li><code>role</code> - 角色（student 或 teacher）</li>
+                    <li><code>username</code> - Username (unique)</li>
+                    <li><code>full_name</code> - Full Name</li>
+                    <li><code>email</code> - Email (unique)</li>
+                    <li><code>role</code> - Role (student or teacher)</li>
                 </ul>
-                <p><strong>可选列：</strong></p>
+                <p><strong>Optional Columns:</strong></p>
                 <ul>
-                    <li><code>department</code> - 院系</li>
-                    <li><code>student_id</code> - 学生ID（当role为student时必需）</li>
-                    <li><code>course_code</code> - 课程代码（仅学生，用于自动注册课程）</li>
+                    <li><code>department</code> - Department</li>
+                    <li><code>student_id</code> - Student ID (required when role is student)</li>
+                    <li><code>course_code</code> - Course Code (students only, for automatic course enrollment)</li>
                 </ul>
                 <p style="margin-top: 15px; padding: 10px; background: #fff3cd; border-radius: 5px;">
-                    <strong>注意：</strong>所有新创建的用户默认密码为 <code>123456</code>
+                    <strong>Note:</strong> Default password for all newly created users is <code>123456</code>
                 </p>
                 <p style="margin-top: 10px; padding: 10px; background: #d1ecf1; border-radius: 5px;">
-                    <strong>邮箱格式要求：</strong>邮箱必须以 <code>@connect.polyu.hk</code> 结尾（例如：<code>24085316G@connect.polyu.hk</code>）
+                    <strong>Email Format Requirement:</strong> Email must end with <code>@connect.polyu.hk</code> (e.g., <code>24085316G@connect.polyu.hk</code>)
                 </p>
             </div>
             <div style="padding: 15px; background: #f8f9fa; border-radius: 5px; border: 2px dashed #4facfe;">
                 <input type="file" id="adminExcelFileInput" accept=".xlsx,.xls" style="margin-bottom: 15px; width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px;">
                 <button class="btn btn-success" onclick="importUsersFromExcel()" style="width: 100%; padding: 12px; font-size: 16px;">
-                    上传并导入用户
+                    Upload and Import Users
                 </button>
                 <div id="adminExcelImportResult" style="margin-top: 15px;"></div>
             </div>
         </div>
     </div>
     
-    <!-- 创建用户模态框 -->
+    <!-- Create User Modal -->
     <div id="createUserModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeModal('createUserModal')">&times;</span>
-            <h2>创建用户</h2>
+            <h2>Create User</h2>
             <form id="createUserForm">
                 <div class="form-group">
-                    <label for="userUsername">用户名:</label>
-                    <input type="text" id="userUsername" placeholder="输入用户名" required>
+                    <label for="userUsername">Username:</label>
+                    <input type="text" id="userUsername" placeholder="Enter username" required>
                 </div>
                 <div class="form-group">
-                    <label for="userEmail">邮箱:</label>
-                    <input type="email" id="userEmail" placeholder="例如: 24085316G@connect.polyu.hk" required>
-                    <small style="color: #666; font-size: 12px;">邮箱必须以 @connect.polyu.hk 结尾</small>
+                    <label for="userEmail">Email:</label>
+                    <input type="email" id="userEmail" placeholder="e.g., 24085316G@connect.polyu.hk" required>
+                    <small style="color: #666; font-size: 12px;">Email must end with @connect.polyu.hk</small>
                 </div>
                 <div class="form-group">
-                    <label for="userFullName">姓名:</label>
-                    <input type="text" id="userFullName" placeholder="输入真实姓名" required>
+                    <label for="userFullName">Full Name:</label>
+                    <input type="text" id="userFullName" placeholder="Enter full name" required>
                 </div>
                 <div class="form-group">
-                    <label for="userRole">角色:</label>
+                    <label for="userRole">Role:</label>
                     <select id="userRole" required>
-                        <option value="">选择角色</option>
-                        <option value="teacher">教师</option>
-                        <option value="student">学生</option>
-                        <option value="admin">管理员</option>
+                        <option value="">Select Role</option>
+                        <option value="teacher">Teacher</option>
+                        <option value="student">Student</option>
+                        <option value="admin">Admin</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="userPassword">密码:</label>
-                    <input type="password" id="userPassword" placeholder="输入密码" required>
+                    <label for="userPassword">Password:</label>
+                    <input type="password" id="userPassword" placeholder="Enter password" required>
                 </div>
                 <div class="form-group">
-                    <label for="userStudentId">学生ID (仅学生):</label>
-                    <input type="text" id="userStudentId" placeholder="输入学生ID">
+                    <label for="userStudentId">Student ID (Students Only):</label>
+                    <input type="text" id="userStudentId" placeholder="Enter student ID">
                 </div>
                 <div class="form-group">
-                    <label for="userDepartment">院系:</label>
-                    <input type="text" id="userDepartment" placeholder="输入院系">
+                    <label for="userDepartment">Department:</label>
+                    <input type="text" id="userDepartment" placeholder="Enter department">
                 </div>
-                <button type="submit" class="btn">创建用户</button>
+                <button type="submit" class="btn">Create User</button>
             </form>
         </div>
     </div>
     
-    <!-- 编辑用户模态框 -->
+    <!-- Edit User Modal -->
     <div id="editUserModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeModal('editUserModal')">&times;</span>
-            <h2>编辑用户</h2>
+            <h2>Edit User</h2>
             <form id="editUserForm">
                 <input type="hidden" id="editUserId">
                 <div class="form-group">
-                    <label for="editUserUsername">用户名:</label>
-                    <input type="text" id="editUserUsername" placeholder="输入用户名" required>
+                    <label for="editUserUsername">Username:</label>
+                    <input type="text" id="editUserUsername" placeholder="Enter username" required>
                 </div>
                 <div class="form-group">
-                    <label for="editUserEmail">邮箱:</label>
-                    <input type="email" id="editUserEmail" placeholder="例如: 24085316G@connect.polyu.hk" required>
-                    <small style="color: #666; font-size: 12px;">邮箱必须以 @connect.polyu.hk 结尾</small>
+                    <label for="editUserEmail">Email:</label>
+                    <input type="email" id="editUserEmail" placeholder="e.g., 24085316G@connect.polyu.hk" required>
+                    <small style="color: #666; font-size: 12px;">Email must end with @connect.polyu.hk</small>
                 </div>
                 <div class="form-group">
-                    <label for="editUserFullName">姓名:</label>
-                    <input type="text" id="editUserFullName" placeholder="输入真实姓名" required>
+                    <label for="editUserFullName">Full Name:</label>
+                    <input type="text" id="editUserFullName" placeholder="Enter full name" required>
                 </div>
                 <div class="form-group">
-                    <label for="editUserRole">角色:</label>
+                    <label for="editUserRole">Role:</label>
                     <select id="editUserRole" required>
-                        <option value="">选择角色</option>
-                        <option value="teacher">教师</option>
-                        <option value="student">学生</option>
-                        <option value="admin">管理员</option>
+                        <option value="">Select Role</option>
+                        <option value="teacher">Teacher</option>
+                        <option value="student">Student</option>
+                        <option value="admin">Admin</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="editUserStudentId">学生ID (仅学生):</label>
-                    <input type="text" id="editUserStudentId" placeholder="输入学生ID">
+                    <label for="editUserStudentId">Student ID (Students Only):</label>
+                    <input type="text" id="editUserStudentId" placeholder="Enter student ID">
                 </div>
                 <div class="form-group">
-                    <label for="editUserDepartment">院系:</label>
-                    <input type="text" id="editUserDepartment" placeholder="输入院系">
+                    <label for="editUserDepartment">Department:</label>
+                    <input type="text" id="editUserDepartment" placeholder="Enter department">
                 </div>
-                <button type="submit" class="btn">保存更改</button>
+                <button type="submit" class="btn">Save Changes</button>
             </form>
         </div>
     </div>
     
-    <!-- 编辑课程模态框 -->
+    <!-- Edit Course Modal -->
     <div id="editCourseModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeModal('editCourseModal')">&times;</span>
-            <h2>编辑课程</h2>
+            <h2>Edit Course</h2>
             <form id="editCourseForm">
                 <input type="hidden" id="editCourseId">
                 <div class="form-group">
-                    <label for="editCourseName">课程名称:</label>
-                    <input type="text" id="editCourseName" placeholder="输入课程名称" required>
+                    <label for="editCourseName">Course Name:</label>
+                    <input type="text" id="editCourseName" placeholder="Enter course name" required>
                 </div>
                 <div class="form-group">
-                    <label for="editCourseCode">课程代码:</label>
-                    <input type="text" id="editCourseCode" placeholder="输入课程代码" required>
+                    <label for="editCourseCode">Course Code:</label>
+                    <input type="text" id="editCourseCode" placeholder="Enter course code" required>
                 </div>
                 <div class="form-group">
-                    <label for="editCourseDescription">课程描述:</label>
-                    <textarea id="editCourseDescription" placeholder="输入课程描述" rows="4"></textarea>
+                    <label for="editCourseDescription">Course Description:</label>
+                    <textarea id="editCourseDescription" placeholder="Enter course description" rows="4"></textarea>
                 </div>
                 <div class="form-group">
-                    <label for="editCourseActive">状态:</label>
+                    <label for="editCourseActive">Status:</label>
                     <select id="editCourseActive" required>
-                        <option value="true">活跃</option>
-                        <option value="false">非活跃</option>
+                        <option value="true">Active</option>
+                        <option value="false">Inactive</option>
                     </select>
                 </div>
-                <button type="submit" class="btn">保存更改</button>
+                <button type="submit" class="btn">Save Changes</button>
             </form>
         </div>
     </div>
     
-    <!-- 课程管理模态框 -->
+    <!-- Course Management Modal -->
     <div id="courseManagementModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeModal('courseManagementModal')">&times;</span>
-            <h2>课程管理</h2>
+            <h2>Course Management</h2>
             <div style="margin-bottom: 20px;">
-                <button class="btn" onclick="loadCourses()">刷新课程</button>
+                <button class="btn" onclick="loadCourses()">Refresh Courses</button>
             </div>
-            <div id="coursesManagementList" class="loading">加载中...</div>
+            <div id="coursesManagementList" class="loading">Loading...</div>
         </div>
     </div>
     
-    <!-- 活动管理模态框 -->
+    <!-- Activity Management Modal -->
     <div id="activityManagementModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeModal('activityManagementModal')">&times;</span>
-            <h2>活动管理</h2>
+            <h2>Activity Management</h2>
             <div style="margin-bottom: 20px;">
-                <button class="btn" onclick="loadActivities()">刷新活动</button>
+                <button class="btn" onclick="loadActivities()">Refresh Activities</button>
             </div>
-            <div id="activitiesManagementList" class="loading">加载中...</div>
+            <div id="activitiesManagementList" class="loading">Loading...</div>
         </div>
     </div>
     
-    <!-- 系统日志模态框 -->
+    <!-- System Logs Modal -->
     <div id="systemLogsModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeModal('systemLogsModal')">&times;</span>
-            <h2>系统日志</h2>
+            <h2>System Logs</h2>
             <div style="margin-bottom: 20px;">
-                <button class="btn" onclick="loadSystemLogs()">刷新日志</button>
+                <button class="btn" onclick="loadSystemLogs()">Refresh Logs</button>
             </div>
-            <div id="systemLogsList" class="loading">加载中...</div>
+            <div id="systemLogsList" class="loading">Loading...</div>
         </div>
     </div>
 
     <script>
         let currentUser = null;
         
-        // 页面加载时初始化
+        // Initialize on page load
         window.onload = async function() {
             await checkAuth();
             await loadDashboardData();
-            // 自动加载用户、课程和活动列表
+            // Auto-load users, courses, and activities lists
             await loadUsers();
             await loadCourses();
             await loadActivities();
-            // 绑定编辑表单提交事件
+            // Bind edit form submit events
             bindEditFormEvents();
-            // 绑定创建用户表单提交事件
+            // Bind create user form submit event
             bindCreateUserFormEvent();
         };
         
-        // 绑定编辑表单提交事件（页面加载时）
+        // Bind edit form submit events (on page load)
         function bindEditFormEvents() {
-            // 初始化时绑定一次，但主要是在打开模态框时重新绑定
+            // Bind once on initialization, but mainly rebind when opening modals
             bindEditUserFormEvent();
             bindEditCourseFormEvent();
         }
         
-        // 检查认证状态
+        // Check authentication status
         async function checkAuth() {
             try {
                 const response = await fetch('/api/auth/profile');
@@ -745,7 +745,7 @@
             }
         }
         
-        // 加载仪表板数据
+        // Load dashboard data
         async function loadDashboardData() {
             try {
                 const response = await fetch('/api/analytics/dashboard');
@@ -758,22 +758,22 @@
                     document.getElementById('activeUsers').textContent = data.stats.active_users;
                     document.getElementById('aiActivities').textContent = data.stats.ai_activities;
                     
-                    // 显示用户角色分布
+                    // Display user role distribution
                     displayRoleChart(data.role_stats);
                     
-                    // 显示最近注册用户
+                    // Display recently registered users
                     displayRecentUsers(data.recent_users);
                 }
             } catch (error) {
-                console.error('加载仪表板数据失败:', error);
+                console.error('Failed to load dashboard data:', error);
             }
         }
         
-        // 显示用户角色分布
+        // Display user role distribution
         function displayRoleChart(roleStats) {
             const container = document.getElementById('roleChart');
             if (!roleStats || roleStats.length === 0) {
-                container.innerHTML = '<p>暂无数据</p>';
+                container.innerHTML = '<p>No data</p>';
                 return;
             }
             
@@ -787,65 +787,65 @@
             container.innerHTML = html;
         }
         
-        // 显示最近注册用户
+        // Display recently registered users
         function displayRecentUsers(users) {
             const container = document.getElementById('recentUsers');
             if (!users || users.length === 0) {
-                container.innerHTML = '<p>暂无用户</p>';
+                container.innerHTML = '<p>No users</p>';
                 return;
             }
             
             const html = users.map(user => `
                 <div style="padding: 15px; border: 1px solid #e1e5e9; border-radius: 8px; margin-bottom: 10px;">
                     <h4>${user.full_name} (@${user.username})</h4>
-                    <p>角色: <span class="role-badge role-${user.role}">${getRoleName(user.role)}</span></p>
-                    <p>邮箱: ${user.email}</p>
-                    <p>注册时间: ${new Date(user.created_at).toLocaleString()}</p>
-                    <button class="btn btn-danger" onclick="deleteUser(${user.id})">删除用户</button>
+                    <p>Role: <span class="role-badge role-${user.role}">${getRoleName(user.role)}</span></p>
+                    <p>Email: ${user.email}</p>
+                    <p>Registered: ${new Date(user.created_at).toLocaleString()}</p>
+                    <button class="btn btn-danger" onclick="deleteUser(${user.id})">Delete User</button>
                 </div>
             `).join('');
             
             container.innerHTML = html;
         }
         
-        // 显示用户管理
+        // Show user management
         async function showUserManagement() {
             document.getElementById('userManagementModal').style.display = 'block';
             await loadUsers();
         }
         
-        // 显示批量导入用户
+        // Show import users
         function showImportUsers() {
             document.getElementById('importUsersModal').style.display = 'block';
-            // 清空之前的结果
+            // Clear previous results
             document.getElementById('adminExcelImportResult').innerHTML = '';
             document.getElementById('adminExcelFileInput').value = '';
         }
         
-        // 从Excel导入用户
+        // Import users from Excel
         async function importUsersFromExcel() {
             const fileInput = document.getElementById('adminExcelFileInput');
             const resultDiv = document.getElementById('adminExcelImportResult');
             
             if (!fileInput.files || fileInput.files.length === 0) {
-                resultDiv.innerHTML = '<div class="error" style="padding: 10px; margin-top: 10px; background: #f8d7da; color: #721c24; border-radius: 5px;">请选择Excel文件</div>';
+                resultDiv.innerHTML = '<div class="error" style="padding: 10px; margin-top: 10px; background: #f8d7da; color: #721c24; border-radius: 5px;">Please select an Excel file</div>';
                 return;
             }
             
             const file = fileInput.files[0];
             
-            // 验证文件类型
+            // Validate file type
             if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
-                resultDiv.innerHTML = '<div class="error" style="padding: 10px; margin-top: 10px; background: #f8d7da; color: #721c24; border-radius: 5px;">只支持Excel文件(.xlsx, .xls)</div>';
+                resultDiv.innerHTML = '<div class="error" style="padding: 10px; margin-top: 10px; background: #f8d7da; color: #721c24; border-radius: 5px;">Only Excel files (.xlsx, .xls) are supported</div>';
                 return;
             }
             
-            // 创建FormData
+            // Create FormData
             const formData = new FormData();
             formData.append('file', file);
             
-            // 显示加载状态
-            resultDiv.innerHTML = '<div class="loading" style="padding: 10px; margin-top: 10px; background: #d1ecf1; color: #0c5460; border-radius: 5px;">正在上传并处理Excel文件...</div>';
+            // Show loading status
+            resultDiv.innerHTML = '<div class="loading" style="padding: 10px; margin-top: 10px; background: #d1ecf1; color: #0c5460; border-radius: 5px;">Uploading and processing Excel file...</div>';
             
             try {
                 const response = await fetch('/api/admin/import-users-excel', {
@@ -857,17 +857,17 @@
                 
                 if (response.ok) {
                     let resultHtml = `<div class="success" style="padding: 15px; margin-top: 10px; background: #d4edda; color: #155724; border-radius: 5px;">
-                        <h4 style="margin-bottom: 10px; margin-top: 0;">导入完成！</h4>
-                        <p><strong>新增用户:</strong> ${result.imported_count} 名</p>
-                        <p><strong>更新用户:</strong> ${result.updated_count} 名</p>
-                        <p><strong>注册课程:</strong> ${result.enrolled_count} 次</p>
-                        <p><strong>跳过:</strong> ${result.skipped_count} 名</p>
-                        <p><strong>总行数:</strong> ${result.total_rows} 行</p>
+                        <h4 style="margin-bottom: 10px; margin-top: 0;">Import Complete!</h4>
+                        <p><strong>New Users:</strong> ${result.imported_count}</p>
+                        <p><strong>Updated Users:</strong> ${result.updated_count}</p>
+                        <p><strong>Course Enrollments:</strong> ${result.enrolled_count}</p>
+                        <p><strong>Skipped:</strong> ${result.skipped_count}</p>
+                        <p><strong>Total Rows:</strong> ${result.total_rows}</p>
                     </div>`;
                     
                     if (result.errors && result.errors.length > 0) {
                         resultHtml += `<div style="margin-top: 10px; padding: 10px; background: #fff3cd; color: #856404; border-radius: 5px; max-height: 200px; overflow-y: auto;">
-                            <strong>错误信息（前20条）:</strong>
+                            <strong>Errors (First 20):</strong>
                             <ul style="margin-top: 5px; padding-left: 20px;">
                                 ${result.errors.map(err => `<li style="font-size: 12px;">${err}</li>`).join('')}
                             </ul>
@@ -876,28 +876,28 @@
                     
                     resultDiv.innerHTML = resultHtml;
                     
-                    // 清空文件输入
+                    // Clear file input
                     fileInput.value = '';
                     
-                    // 刷新用户列表和统计数据
+                    // Refresh user list and statistics
                     loadUsers();
                     loadDashboardData();
                 } else {
-                    let errorMsg = result.error || '导入失败';
+                    let errorMsg = result.error || 'Import failed';
                     if (result.required_columns) {
-                        errorMsg += `<br>必需列: ${result.required_columns.join(', ')}`;
+                        errorMsg += `<br>Required columns: ${result.required_columns.join(', ')}`;
                         if (result.found_columns) {
-                            errorMsg += `<br>找到的列: ${result.found_columns.join(', ')}`;
+                            errorMsg += `<br>Found columns: ${result.found_columns.join(', ')}`;
                         }
                     }
                     resultDiv.innerHTML = `<div class="error" style="padding: 10px; margin-top: 10px; background: #f8d7da; color: #721c24; border-radius: 5px;">${errorMsg}</div>`;
                 }
             } catch (error) {
-                resultDiv.innerHTML = `<div class="error" style="padding: 10px; margin-top: 10px; background: #f8d7da; color: #721c24; border-radius: 5px;">网络错误: ${error.message}</div>`;
+                resultDiv.innerHTML = `<div class="error" style="padding: 10px; margin-top: 10px; background: #f8d7da; color: #721c24; border-radius: 5px;">Network error: ${error.message}</div>`;
             }
         }
         
-        // 加载用户列表
+        // Load user list
         async function loadUsers() {
             try {
                 const response = await fetch('/api/admin/users');
@@ -906,15 +906,15 @@
                     displayUsers(data.users);
                 }
             } catch (error) {
-                document.getElementById('usersList').innerHTML = '<div class="error">加载用户失败</div>';
+                document.getElementById('usersList').innerHTML = '<div class="error">Failed to load users</div>';
             }
         }
         
-        // 显示用户列表
+        // Display user list
         function displayUsers(users) {
             const container = document.getElementById('usersList');
             if (users.length === 0) {
-                container.innerHTML = '<p>暂无用户</p>';
+                container.innerHTML = '<p>No users</p>';
                 return;
             }
             
@@ -922,12 +922,12 @@
                 <table class="table">
                     <thead>
                         <tr>
-                            <th>用户名</th>
-                            <th>姓名</th>
-                            <th>邮箱</th>
-                            <th>角色</th>
-                            <th>注册时间</th>
-                            <th>操作</th>
+                            <th>Username</th>
+                            <th>Full Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Registered</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -939,8 +939,8 @@
                                 <td><span class="role-badge role-${user.role}">${getRoleName(user.role)}</span></td>
                                 <td>${new Date(user.created_at).toLocaleString()}</td>
                                 <td>
-                                    <button class="btn btn-secondary" onclick="editUser(${user.id})">编辑</button>
-                                    <button class="btn btn-danger" onclick="deleteUser(${user.id})">删除</button>
+                                    <button class="btn btn-secondary" onclick="editUser(${user.id})">Edit</button>
+                                    <button class="btn btn-danger" onclick="deleteUser(${user.id})">Delete</button>
                                 </td>
                             </tr>
                         `).join('')}
@@ -951,13 +951,13 @@
             container.innerHTML = html;
         }
         
-        // 显示课程管理
+        // Show course management
         async function showCourseManagement() {
             document.getElementById('courseManagementModal').style.display = 'block';
             await loadCourses();
         }
         
-        // 加载课程列表
+        // Load course list
         async function loadCourses() {
             try {
                 const response = await fetch('/api/admin/courses');
@@ -966,15 +966,15 @@
                     displayCoursesManagement(courses);
                 }
             } catch (error) {
-                document.getElementById('coursesManagementList').innerHTML = '<div class="error">加载课程失败</div>';
+                document.getElementById('coursesManagementList').innerHTML = '<div class="error">Failed to load courses</div>';
             }
         }
         
-        // 显示课程管理列表
+        // Display course management list
         function displayCoursesManagement(courses) {
             const container = document.getElementById('coursesManagementList');
             if (courses.length === 0) {
-                container.innerHTML = '<p>暂无课程</p>';
+                container.innerHTML = '<p>No courses</p>';
                 return;
             }
             
@@ -982,12 +982,12 @@
                 <table class="table">
                     <thead>
                         <tr>
-                            <th>课程代码</th>
-                            <th>课程名称</th>
-                            <th>教师</th>
-                            <th>学期</th>
-                            <th>状态</th>
-                            <th>操作</th>
+                            <th>Course Code</th>
+                            <th>Course Name</th>
+                            <th>Teacher</th>
+                            <th>Semester</th>
+                            <th>Status</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -995,12 +995,12 @@
                             <tr>
                                 <td>${course.course_code}</td>
                                 <td>${course.course_name}</td>
-                                <td>${course.teacher_name || '未知'}</td>
+                                <td>${course.teacher_name || 'Unknown'}</td>
                                 <td>${course.semester} ${course.academic_year}</td>
-                                <td><span style="color: ${course.is_active ? 'green' : 'red'}">${course.is_active ? '活跃' : '非活跃'}</span></td>
+                                <td><span style="color: ${course.is_active ? 'green' : 'red'}">${course.is_active ? 'Active' : 'Inactive'}</span></td>
                                 <td>
-                                    <button class="btn btn-secondary" onclick="editCourse(${course.id})">编辑</button>
-                                    <button class="btn btn-danger" onclick="deleteCourse(${course.id})">删除</button>
+                                    <button class="btn btn-secondary" onclick="editCourse(${course.id})">Edit</button>
+                                    <button class="btn btn-danger" onclick="deleteCourse(${course.id})">Delete</button>
                                 </td>
                             </tr>
                         `).join('')}
@@ -1011,13 +1011,13 @@
             container.innerHTML = html;
         }
         
-        // 显示活动管理
+        // Show activity management
         async function showActivityManagement() {
             document.getElementById('activityManagementModal').style.display = 'block';
             await loadActivities();
         }
         
-        // 加载活动列表
+        // Load activity list
         async function loadActivities() {
             try {
                 const response = await fetch('/api/admin/activities');
@@ -1026,15 +1026,15 @@
                     displayActivitiesManagement(activities);
                 }
             } catch (error) {
-                document.getElementById('activitiesManagementList').innerHTML = '<div class="error">加载活动失败</div>';
+                document.getElementById('activitiesManagementList').innerHTML = '<div class="error">Failed to load activities</div>';
             }
         }
         
-        // 显示活动管理列表
+        // Display activity management list
         function displayActivitiesManagement(activities) {
             const container = document.getElementById('activitiesManagementList');
             if (activities.length === 0) {
-                container.innerHTML = '<p>暂无活动</p>';
+                container.innerHTML = '<p>No activities</p>';
                 return;
             }
             
@@ -1042,13 +1042,13 @@
                 <table class="table">
                     <thead>
                         <tr>
-                            <th>活动标题</th>
-                            <th>类型</th>
-                            <th>课程</th>
-                            <th>创建者</th>
-                            <th>状态</th>
-                            <th>响应数</th>
-                            <th>操作</th>
+                            <th>Activity Title</th>
+                            <th>Type</th>
+                            <th>Course</th>
+                            <th>Creator</th>
+                            <th>Status</th>
+                            <th>Responses</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -1056,12 +1056,12 @@
                             <tr>
                                 <td>${activity.title}</td>
                                 <td>${getActivityTypeName(activity.activity_type)}</td>
-                                <td>${activity.course_name || '未知'}</td>
-                                <td>${activity.creator_name || '未知'}</td>
+                                <td>${activity.course_name || 'Unknown'}</td>
+                                <td>${activity.creator_name || 'Unknown'}</td>
                                 <td><span style="color: ${getStatusColor(activity.status)}">${getStatusName(activity.status)}</span></td>
                                 <td>${activity.response_count}</td>
                                 <td>
-                                    <button class="btn btn-danger" onclick="deleteActivity(${activity.id})">删除</button>
+                                    <button class="btn btn-danger" onclick="deleteActivity(${activity.id})">Delete</button>
                                 </td>
                             </tr>
                         `).join('')}
@@ -1072,13 +1072,13 @@
             container.innerHTML = html;
         }
         
-        // 显示系统日志
+        // Show system logs
         async function showSystemLogs() {
             document.getElementById('systemLogsModal').style.display = 'block';
             await loadSystemLogs();
         }
         
-        // 加载系统日志
+        // Load system logs
         async function loadSystemLogs() {
             try {
                 const response = await fetch('/api/admin/logs');
@@ -1087,15 +1087,15 @@
                     displaySystemLogs(data.logs);
                 }
             } catch (error) {
-                document.getElementById('systemLogsList').innerHTML = '<div class="error">加载日志失败</div>';
+                document.getElementById('systemLogsList').innerHTML = '<div class="error">Failed to load logs</div>';
             }
         }
         
-        // 显示系统日志
+        // Display system logs
         function displaySystemLogs(logs) {
             const container = document.getElementById('systemLogsList');
             if (logs.length === 0) {
-                container.innerHTML = '<p>暂无日志</p>';
+                container.innerHTML = '<p>No logs</p>';
                 return;
             }
             
@@ -1106,14 +1106,14 @@
                         <span style="color: #666; font-size: 0.9em;">${new Date(log.timestamp).toLocaleString()}</span>
                     </div>
                     <p style="margin: 10px 0;">${log.message}</p>
-                    <p style="color: #666; font-size: 0.9em;">用户: ${log.user}</p>
+                    <p style="color: #666; font-size: 0.9em;">User: ${log.user}</p>
                 </div>
             `).join('');
             
             container.innerHTML = html;
         }
         
-        // 创建备份
+        // Create backup
         async function createBackup() {
             try {
                 const response = await fetch('/api/admin/backup', {
@@ -1122,30 +1122,30 @@
                 
                 if (response.ok) {
                     const data = await response.json();
-                    showMessage(`备份创建成功！备份ID: ${data.backup_id}`, 'success');
+                    showMessage(`Backup created successfully! Backup ID: ${data.backup_id}`, 'success');
                 } else {
-                    showMessage('创建备份失败', 'error');
+                    showMessage('Failed to create backup', 'error');
                 }
             } catch (error) {
-                showMessage('网络错误', 'error');
+                showMessage('Network error', 'error');
             }
         }
         
-        // 显示系统设置
+        // Show system settings
         function showSystemSettings() {
-            showMessage('系统设置功能开发中...', 'success');
+            showMessage('System settings feature under development...', 'success');
         }
         
-        // 显示创建用户模态框
+        // Show create user modal
         function showCreateUserModal() {
             document.getElementById('createUserModal').style.display = 'block';
         }
         
-        // 绑定创建用户表单提交事件
+        // Bind create user form submit event
         function bindCreateUserFormEvent() {
             const createUserForm = document.getElementById('createUserForm');
             if (createUserForm) {
-                // 移除旧的事件监听器（如果存在）
+                // Remove old event listener (if exists)
                 const newForm = createUserForm.cloneNode(true);
                 createUserForm.parentNode.replaceChild(newForm, createUserForm);
                 
@@ -1161,16 +1161,16 @@
                         department: document.getElementById('userDepartment').value.trim() || null
                     };
                     
-                    // 验证必需字段
+                    // Validate required fields
                     if (!data.username || !data.email || !data.full_name || !data.role || !data.password) {
-                        showMessage('请填写所有必需字段', 'error');
+                        showMessage('Please fill in all required fields', 'error');
                         return;
                     }
                     
                     if (data.role === 'student') {
                         const studentId = document.getElementById('userStudentId').value.trim();
                         if (!studentId) {
-                            showMessage('学生角色必须提供学生ID', 'error');
+                            showMessage('Student role must provide student ID', 'error');
                             return;
                         }
                         data.student_id = studentId;
@@ -1186,25 +1186,25 @@
                         });
                         
                         if (response.ok) {
-                            showMessage('用户创建成功！', 'success');
+                            showMessage('User created successfully!', 'success');
                             closeModal('createUserModal');
                             document.getElementById('createUserForm').reset();
                             loadUsers();
                             loadDashboardData();
                         } else {
                             const error = await response.json();
-                            showMessage(error.error || '创建用户失败', 'error');
+                            showMessage(error.error || 'Failed to create user', 'error');
                         }
                     } catch (error) {
-                        showMessage('网络错误: ' + error.message, 'error');
+                        showMessage('Network error: ' + error.message, 'error');
                     }
                 });
             }
         }
         
-        // 删除用户
+        // Delete user
         async function deleteUser(userId) {
-            if (!confirm('确定要删除这个用户吗？')) {
+            if (!confirm('Are you sure you want to delete this user?')) {
                 return;
             }
             
@@ -1214,21 +1214,21 @@
                 });
                 
                 if (response.ok) {
-                    showMessage('用户删除成功！', 'success');
+                    showMessage('User deleted successfully!', 'success');
                     loadUsers();
                     loadDashboardData();
                 } else {
                     const error = await response.json();
-                    showMessage(error.error || '删除用户失败', 'error');
+                    showMessage(error.error || 'Failed to delete user', 'error');
                 }
             } catch (error) {
-                showMessage('网络错误', 'error');
+                showMessage('Network error', 'error');
             }
         }
         
-        // 删除课程
+        // Delete course
         async function deleteCourse(courseId) {
-            if (!confirm('确定要删除这个课程吗？')) {
+            if (!confirm('Are you sure you want to delete this course?')) {
                 return;
             }
             
@@ -1238,21 +1238,21 @@
                 });
                 
                 if (response.ok) {
-                    showMessage('课程删除成功！', 'success');
+                    showMessage('Course deleted successfully!', 'success');
                     loadCourses();
                     loadDashboardData();
                 } else {
                     const error = await response.json();
-                    showMessage(error.error || '删除课程失败', 'error');
+                    showMessage(error.error || 'Failed to delete course', 'error');
                 }
             } catch (error) {
-                showMessage('网络错误', 'error');
+                showMessage('Network error', 'error');
             }
         }
         
-        // 删除活动
+        // Delete activity
         async function deleteActivity(activityId) {
-            if (!confirm('确定要删除这个活动吗？')) {
+            if (!confirm('Are you sure you want to delete this activity?')) {
                 return;
             }
             
@@ -1262,26 +1262,26 @@
                 });
                 
                 if (response.ok) {
-                    showMessage('活动删除成功！', 'success');
+                    showMessage('Activity deleted successfully!', 'success');
                     loadActivities();
                     loadDashboardData();
                 } else {
                     const error = await response.json();
-                    showMessage(error.error || '删除活动失败', 'error');
+                    showMessage(error.error || 'Failed to delete activity', 'error');
                 }
             } catch (error) {
-                showMessage('网络错误', 'error');
+                showMessage('Network error', 'error');
             }
         }
         
-        // 关闭模态框
+        // Close modal
         function closeModal(modalId) {
             document.getElementById(modalId).style.display = 'none';
         }
         
-        // 显示消息
+        // Show message
         function showMessage(message, type = 'success') {
-            // 移除现有的消息
+            // Remove existing message
             const existingMessage = document.querySelector('.success, .error');
             if (existingMessage) {
                 existingMessage.remove();
@@ -1314,7 +1314,7 @@
             }, 3000);
         }
         
-        // 登出
+        // Logout
         async function logout() {
             try {
                 await fetch('/api/auth/logout', { method: 'POST' });
@@ -1324,33 +1324,33 @@
             }
         }
         
-        // 工具函数
+        // Utility functions
         function getRoleName(role) {
             const roles = {
-                'teacher': '教师',
-                'student': '学生',
-                'admin': '管理员'
+                'teacher': 'Teacher',
+                'student': 'Student',
+                'admin': 'Admin'
             };
             return roles[role] || role;
         }
         
         function getActivityTypeName(type) {
             const types = {
-                'poll': '投票活动',
-                'quiz': '测验活动',
-                'word_cloud': '词云活动',
-                'short_answer': '简答题',
-                'mini_game': '迷你游戏'
+                'poll': 'Poll',
+                'quiz': 'Quiz',
+                'word_cloud': 'Word Cloud',
+                'short_answer': 'Short Answer',
+                'mini_game': 'Mini Game'
             };
             return types[type] || type;
         }
         
         function getStatusName(status) {
             const statuses = {
-                'draft': '草稿',
-                'active': '进行中',
-                'completed': '已完成',
-                'archived': '已归档'
+                'draft': 'Draft',
+                'active': 'Active',
+                'completed': 'Completed',
+                'archived': 'Archived'
             };
             return statuses[status] || status;
         }
@@ -1375,13 +1375,13 @@
             return colors[level] || '#6c757d';
         }
         
-        // 编辑用户
+        // Edit user
         async function editUser(userId) {
             try {
                 const response = await fetch(`/api/admin/users/${userId}`);
                 if (response.ok) {
                     const user = await response.json();
-                    // 填充表单
+                    // Fill form
                     document.getElementById('editUserId').value = user.id;
                     document.getElementById('editUserUsername').value = user.username || '';
                     document.getElementById('editUserEmail').value = user.email || '';
@@ -1389,23 +1389,23 @@
                     document.getElementById('editUserRole').value = user.role || '';
                     document.getElementById('editUserStudentId').value = user.student_id || '';
                     document.getElementById('editUserDepartment').value = user.department || '';
-                    // 显示模态框
+                    // Show modal
                     document.getElementById('editUserModal').style.display = 'block';
-                    // 重新绑定事件监听器（确保表单可以提交）
+                    // Rebind event listener (ensure form can submit)
                     bindEditUserFormEvent();
                 } else {
-                    showMessage('加载用户信息失败', 'error');
+                    showMessage('Failed to load user information', 'error');
                 }
             } catch (error) {
-                showMessage('网络错误', 'error');
+                showMessage('Network error', 'error');
             }
         }
         
-        // 绑定编辑用户表单提交事件
+        // Bind edit user form submit event
         function bindEditUserFormEvent() {
             const editUserForm = document.getElementById('editUserForm');
             if (editUserForm) {
-                // 移除旧的事件监听器
+                // Remove old event listener
                 const newForm = editUserForm.cloneNode(true);
                 editUserForm.parentNode.replaceChild(newForm, editUserForm);
                 
@@ -1413,7 +1413,7 @@
                     e.preventDefault();
                     const userId = document.getElementById('editUserId').value;
                     if (!userId) {
-                        showMessage('用户ID不存在', 'error');
+                        showMessage('User ID does not exist', 'error');
                         return;
                     }
                     
@@ -1436,50 +1436,50 @@
                         });
                         
                         if (response.ok) {
-                            showMessage('用户信息更新成功！', 'success');
+                            showMessage('User information updated successfully!', 'success');
                             closeModal('editUserModal');
                             loadUsers();
                             loadDashboardData();
                         } else {
                             const error = await response.json();
-                            showMessage(error.error || '更新用户失败', 'error');
+                            showMessage(error.error || 'Failed to update user', 'error');
                         }
                     } catch (error) {
-                        showMessage('网络错误: ' + error.message, 'error');
+                        showMessage('Network error: ' + error.message, 'error');
                     }
                 });
             }
         }
         
-        // 编辑课程
+        // Edit course
         async function editCourse(courseId) {
             try {
                 const response = await fetch(`/api/admin/courses/${courseId}`);
                 if (response.ok) {
                     const course = await response.json();
-                    // 填充表单
+                    // Fill form
                     document.getElementById('editCourseId').value = course.id;
                     document.getElementById('editCourseName').value = course.course_name || '';
                     document.getElementById('editCourseCode').value = course.course_code || '';
                     document.getElementById('editCourseDescription').value = course.description || '';
                     document.getElementById('editCourseActive').value = course.is_active ? 'true' : 'false';
-                    // 显示模态框
+                    // Show modal
                     document.getElementById('editCourseModal').style.display = 'block';
-                    // 重新绑定事件监听器（确保表单可以提交）
+                    // Rebind event listener (ensure form can submit)
                     bindEditCourseFormEvent();
                 } else {
-                    showMessage('加载课程信息失败', 'error');
+                    showMessage('Failed to load course information', 'error');
                 }
             } catch (error) {
-                showMessage('网络错误', 'error');
+                showMessage('Network error', 'error');
             }
         }
         
-        // 绑定编辑课程表单提交事件
+        // Bind edit course form submit event
         function bindEditCourseFormEvent() {
             const editCourseForm = document.getElementById('editCourseForm');
             if (editCourseForm) {
-                // 移除旧的事件监听器
+                // Remove old event listener
                 const newForm = editCourseForm.cloneNode(true);
                 editCourseForm.parentNode.replaceChild(newForm, editCourseForm);
                 
@@ -1487,7 +1487,7 @@
                     e.preventDefault();
                     const courseId = document.getElementById('editCourseId').value;
                     if (!courseId) {
-                        showMessage('课程ID不存在', 'error');
+                        showMessage('Course ID does not exist', 'error');
                         return;
                     }
                     
@@ -1508,16 +1508,16 @@
                         });
                         
                         if (response.ok) {
-                            showMessage('课程信息更新成功！', 'success');
+                            showMessage('Course information updated successfully!', 'success');
                             closeModal('editCourseModal');
                             loadCourses();
                             loadDashboardData();
                         } else {
                             const error = await response.json();
-                            showMessage(error.error || '更新课程失败', 'error');
+                            showMessage(error.error || 'Failed to update course', 'error');
                         }
                     } catch (error) {
-                        showMessage('网络错误: ' + error.message, 'error');
+                        showMessage('Network error: ' + error.message, 'error');
                     }
                 });
             }
