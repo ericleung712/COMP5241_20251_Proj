@@ -365,6 +365,17 @@
             font-size: 0.9em;
         }
         
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
         @media (max-width: 768px) {
             .dashboard-grid {
                 grid-template-columns: 1fr;
@@ -704,6 +715,8 @@
             await loadActivities();
             // 绑定编辑表单提交事件
             bindEditFormEvents();
+            // 绑定创建用户表单提交事件
+            bindCreateUserFormEvent();
         };
         
         // 绑定编辑表单提交事件（页面加载时）
@@ -868,7 +881,7 @@
                     
                     // 刷新用户列表和统计数据
                     loadUsers();
-                    loadStats();
+                    loadDashboardData();
                 } else {
                     let errorMsg = result.error || '导入失败';
                     if (result.required_columns) {
@@ -1128,45 +1141,66 @@
             document.getElementById('createUserModal').style.display = 'block';
         }
         
-        // 创建用户表单提交
-        document.getElementById('createUserForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const data = {
-                username: document.getElementById('userUsername').value,
-                email: document.getElementById('userEmail').value,
-                full_name: document.getElementById('userFullName').value,
-                role: document.getElementById('userRole').value,
-                password: document.getElementById('userPassword').value,
-                department: document.getElementById('userDepartment').value
-            };
-            
-            if (data.role === 'student') {
-                data.student_id = document.getElementById('userStudentId').value;
-            }
-            
-            try {
-                const response = await fetch('/api/admin/users', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(data)
-                });
+        // 绑定创建用户表单提交事件
+        function bindCreateUserFormEvent() {
+            const createUserForm = document.getElementById('createUserForm');
+            if (createUserForm) {
+                // 移除旧的事件监听器（如果存在）
+                const newForm = createUserForm.cloneNode(true);
+                createUserForm.parentNode.replaceChild(newForm, createUserForm);
                 
-                if (response.ok) {
-                    showMessage('用户创建成功！', 'success');
-                    closeModal('createUserModal');
-                    document.getElementById('createUserForm').reset();
-                    loadUsers();
-                } else {
-                    const error = await response.json();
-                    showMessage(error.error || '创建用户失败', 'error');
-                }
-            } catch (error) {
-                showMessage('网络错误', 'error');
+                newForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    const data = {
+                        username: document.getElementById('userUsername').value.trim(),
+                        email: document.getElementById('userEmail').value.trim(),
+                        full_name: document.getElementById('userFullName').value.trim(),
+                        role: document.getElementById('userRole').value,
+                        password: document.getElementById('userPassword').value,
+                        department: document.getElementById('userDepartment').value.trim() || null
+                    };
+                    
+                    // 验证必需字段
+                    if (!data.username || !data.email || !data.full_name || !data.role || !data.password) {
+                        showMessage('请填写所有必需字段', 'error');
+                        return;
+                    }
+                    
+                    if (data.role === 'student') {
+                        const studentId = document.getElementById('userStudentId').value.trim();
+                        if (!studentId) {
+                            showMessage('学生角色必须提供学生ID', 'error');
+                            return;
+                        }
+                        data.student_id = studentId;
+                    }
+                    
+                    try {
+                        const response = await fetch('/api/admin/users', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(data)
+                        });
+                        
+                        if (response.ok) {
+                            showMessage('用户创建成功！', 'success');
+                            closeModal('createUserModal');
+                            document.getElementById('createUserForm').reset();
+                            loadUsers();
+                            loadDashboardData();
+                        } else {
+                            const error = await response.json();
+                            showMessage(error.error || '创建用户失败', 'error');
+                        }
+                    } catch (error) {
+                        showMessage('网络错误: ' + error.message, 'error');
+                    }
+                });
             }
-        });
+        }
         
         // 删除用户
         async function deleteUser(userId) {
@@ -1247,12 +1281,33 @@
         
         // 显示消息
         function showMessage(message, type = 'success') {
+            // 移除现有的消息
+            const existingMessage = document.querySelector('.success, .error');
+            if (existingMessage) {
+                existingMessage.remove();
+            }
+            
             const messageDiv = document.createElement('div');
             messageDiv.className = type;
             messageDiv.textContent = message;
+            messageDiv.style.position = 'fixed';
+            messageDiv.style.top = '80px';
+            messageDiv.style.right = '20px';
+            messageDiv.style.padding = '15px 20px';
+            messageDiv.style.borderRadius = '8px';
+            messageDiv.style.color = 'white';
+            messageDiv.style.fontWeight = '500';
+            messageDiv.style.zIndex = '2000';
+            messageDiv.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+            messageDiv.style.animation = 'slideIn 0.3s ease';
             
-            const container = document.querySelector('.container');
-            container.insertBefore(messageDiv, container.firstChild);
+            if (type === 'success') {
+                messageDiv.style.backgroundColor = '#28a745';
+            } else {
+                messageDiv.style.backgroundColor = '#dc3545';
+            }
+            
+            document.body.appendChild(messageDiv);
             
             setTimeout(() => {
                 messageDiv.remove();
