@@ -1303,23 +1303,55 @@
         }
         
         // Generate quiz form
+        // Generate quiz form
         function generateQuizForm(config) {
-            const question = config.question || 'Please select your answer';
-            const options = config.options || ['Option A', 'Option B', 'Option C', 'Option D'];
-            
-            return `
-                <div class="response-form">
-                    <h3>${question}</h3>
-                    <div class="poll-options">
-                        ${options.map((option, index) => `
-                            <div class="poll-option" onclick="selectQuizOption(0, ${index})" data-q="0" data-o="${index}">
-                                ${option}
+            // Check if it's multiple questions format
+            if (config.questions && Array.isArray(config.questions)) {
+                let html = '<div class="response-form">';
+                html += '<h3 style="margin-bottom: 20px;">Quiz - Answer all questions</h3>';
+                
+                config.questions.forEach((q, qIndex) => {
+                    const question = q.question || 'Question';
+                    const options = q.options || [];
+                    
+                    html += `
+                        <div style="padding: 20px; background: white; border-radius: 12px; margin-bottom: 20px; border: 2px solid #e1e5e9;">
+                            <h4 style="color: #082f49; margin-bottom: 15px;">Question ${qIndex + 1}</h4>
+                            <p style="margin-bottom: 15px; font-size: 16px; color: #333;">${question}</p>
+                            <div class="poll-options">
+                                ${options.map((option, oIndex) => `
+                                    <div class="poll-option" onclick="selectQuizOption(${qIndex}, ${oIndex})" data-q="${qIndex}" data-o="${oIndex}">
+                                        ${option}
+                                    </div>
+                                `).join('')}
                             </div>
-                        `).join('')}
+                        </div>
+                    `;
+                });
+                
+                html += '<button class="btn btn-success" onclick="submitQuizResponse()" style="margin-top: 15px; width: 100%; padding: 15px; font-size: 16px;">Submit Quiz</button>';
+                html += '</div>';
+                
+                return html;
+            } else {
+                // Old single question format (backward compatibility)
+                const question = config.question || 'Please select your answer';
+                const options = config.options || ['Option A', 'Option B', 'Option C', 'Option D'];
+                
+                return `
+                    <div class="response-form">
+                        <h3>${question}</h3>
+                        <div class="poll-options">
+                            ${options.map((option, index) => `
+                                <div class="poll-option" onclick="selectQuizOption(0, ${index})" data-q="0" data-o="${index}">
+                                    ${option}
+                                </div>
+                            `).join('')}
+                        </div>
+                        <button class="btn btn-success" onclick="submitQuizResponse()" style="margin-top: 15px;">Submit Quiz</button>
                     </div>
-                    <button class="btn btn-success" onclick="submitQuizResponse()" style="margin-top: 15px;">Submit Quiz</button>
-                </div>
-            `;
+                `;
+            }
         }
         
         // Generate word cloud form
@@ -1426,25 +1458,73 @@
         }
         
         // Submit quiz response
+        // Submit quiz response
         async function submitQuizResponse() {
-            const selectedOption = document.querySelector('.poll-option.selected');
-            if (!selectedOption) {
-                showMessage('Please select an option', 'error');
-                return;
-            }
-            
             const config = currentActivity.config || {};
-            const options = config.options || [];
-            const selectedIndex = parseInt(selectedOption.dataset.o);
-            const correctAnswer = config.correct_answer;
             
-            const responseData = {
-                selected_option: selectedOption.textContent,
-                option_index: selectedIndex,
-                is_correct: selectedIndex === correctAnswer
-            };
-            
-            await submitResponse(responseData);
+            // Check if it's multiple questions format
+            if (config.questions && Array.isArray(config.questions)) {
+                const answers = [];
+                let hasError = false;
+                
+                // Collect answers for all questions
+                for (let qIndex = 0; qIndex < config.questions.length; qIndex++) {
+                    const selectedOption = document.querySelector(`.poll-option.selected[data-q="${qIndex}"]`);
+                    
+                    if (!selectedOption) {
+                        showMessage(`Please answer question ${qIndex + 1}`, 'error');
+                        hasError = true;
+                        break;
+                    }
+                    
+                    const question = config.questions[qIndex];
+                    const selectedIndex = parseInt(selectedOption.dataset.o);
+                    const correctAnswer = question.correct_answer;
+                    const isCorrect = selectedIndex === correctAnswer;
+                    
+                    answers.push({
+                        question_index: qIndex,
+                        selected_option: selectedOption.textContent.trim(),
+                        option_index: selectedIndex,
+                        is_correct: isCorrect
+                    });
+                }
+                
+                if (hasError) return;
+                
+                // Calculate overall score
+                const correctCount = answers.filter(a => a.is_correct).length;
+                const totalQuestions = answers.length;
+                const score = totalQuestions > 0 ? Math.round((correctCount / totalQuestions) * 100) : 0;
+                
+                const responseData = {
+                    answers: answers,
+                    total_questions: totalQuestions,
+                    correct_count: correctCount,
+                    score: score
+                };
+                
+                await submitResponse(responseData);
+            } else {
+                // Old single question format (backward compatibility)
+                const selectedOption = document.querySelector('.poll-option.selected');
+                if (!selectedOption) {
+                    showMessage('Please select an option', 'error');
+                    return;
+                }
+                
+                const options = config.options || [];
+                const selectedIndex = parseInt(selectedOption.dataset.o);
+                const correctAnswer = config.correct_answer;
+                
+                const responseData = {
+                    selected_option: selectedOption.textContent,
+                    option_index: selectedIndex,
+                    is_correct: selectedIndex === correctAnswer
+                };
+                
+                await submitResponse(responseData);
+            }
         }
         
         // Submit word cloud response
@@ -1722,6 +1802,7 @@
         }
         
         // Display response data
+        // Display response data
         function displayResponseData(responseData, activityType, config) {
             let html = '';
             
@@ -1733,25 +1814,88 @@
                     </div>
                 </div>`;
             } else if (activityType === 'quiz') {
-                html += `<div style="padding: 15px; background: #f8f9fa; border-radius: 5px;">
-                    <strong>Your selected option:</strong> 
-                    <div style="margin-top: 10px; padding: 10px; background: white; border-radius: 5px; font-size: 16px;">
-                        ${responseData.selected_option || (config.options && responseData.option_index !== undefined ? config.options[responseData.option_index] : 'Not selected')}
-                    </div>
-                    ${responseData.is_correct !== undefined ? `
-                        <div style="margin-top: 10px; padding: 10px; background: ${responseData.is_correct ? '#d4edda' : '#f8d7da'}; border-radius: 5px;">
-                            <strong>Result:</strong> 
-                            <span style="color: ${responseData.is_correct ? '#155724' : '#721c24'}; font-weight: bold;">
-                                ${responseData.is_correct ? '✓ Correct' : '✗ Incorrect'}
-                            </span>
-                            ${config.explanation ? `
-                                <div style="margin-top: 10px; padding: 10px; background: white; border-radius: 5px;">
-                                    <strong>Explanation:</strong> ${config.explanation}
-                                </div>
-                            ` : ''}
+                if (responseData.answers && Array.isArray(responseData.answers)) {
+                    // Multiple questions format
+                    const questions = config.questions || [];
+                    html += '<div style="padding: 15px; background: #f8f9fa; border-radius: 5px;">';
+                    html += '<h4 style="margin-bottom: 15px; color: #082f49;">Your Answers</h4>';
+                    
+                    responseData.answers.forEach((answer, index) => {
+                        const question = questions[index];
+                        const isCorrect = answer.is_correct;
+                        const selectedOption = question && question.options && answer.option_index !== undefined 
+                            ? question.options[answer.option_index] 
+                            : answer.selected_option || 'Not selected';
+                        
+                        html += `<div style="margin-bottom: ${index < responseData.answers.length - 1 ? '20px' : '0'}; padding: 15px; background: white; border-radius: 8px; border-left: 4px solid ${isCorrect ? '#28a745' : '#dc3545'};">`;
+                        html += `<div style="font-weight: bold; color: #082f49; margin-bottom: 10px;">Question ${index + 1}</div>`;
+                        html += `<div style="margin-bottom: 10px; color: #666;">${question ? question.question : 'Unknown'}</div>`;
+                        html += `<div style="padding: 10px; background: #f8f9fa; border-radius: 5px; margin-bottom: 10px;">
+                            <strong>Your Answer:</strong> ${selectedOption}
+                        </div>`;
+                        
+                        if (isCorrect !== undefined) {
+                            html += `<div style="padding: 10px; background: ${isCorrect ? '#d4edda' : '#f8d7da'}; border-radius: 5px; margin-bottom: 10px;">
+                                <strong>Result:</strong> 
+                                <span style="color: ${isCorrect ? '#155724' : '#721c24'}; font-weight: bold;">
+                                    ${isCorrect ? '✓ Correct' : '✗ Incorrect'}
+                                </span>
+                            </div>`;
+                            
+                            // Show correct answer if wrong
+                            if (!isCorrect && question && question.correct_answer !== undefined && question.options) {
+                                html += `<div style="padding: 10px; background: #d4edda; border-radius: 5px; margin-bottom: 10px;">
+                                    <strong>Correct Answer:</strong> <span style="color: #155724;">${question.options[question.correct_answer]}</span>
+                                </div>`;
+                            }
+                            
+                            // Show explanation if available
+                            if (question && question.explanation) {
+                                html += `<div style="padding: 10px; background: #e3f2fd; border-radius: 5px;">
+                                    <strong>Explanation:</strong> ${question.explanation}
+                                </div>`;
+                            }
+                        }
+                        html += `</div>`;
+                    });
+                    
+                    // Show overall score
+                    if (responseData.total_questions && responseData.correct_count !== undefined) {
+                        const percentage = responseData.score || 0;
+                        const colorClass = percentage >= 70 ? '#28a745' : percentage >= 50 ? '#ffc107' : '#dc3545';
+                        html += `<div style="margin-top: 20px; padding: 20px; background: white; border-radius: 8px; text-align: center; border: 2px solid ${colorClass};">
+                            <h3 style="color: ${colorClass}; margin-bottom: 10px;">Overall Score</h3>
+                            <div style="font-size: 32px; font-weight: bold; color: ${colorClass};">
+                                ${responseData.correct_count}/${responseData.total_questions}
+                            </div>
+                            <div style="font-size: 24px; color: #666; margin-top: 5px;">
+                                ${percentage}%
+                            </div>
+                        </div>`;
+                    }
+                    html += '</div>';
+                } else {
+                    // Old single question format (backward compatibility)
+                    html += `<div style="padding: 15px; background: #f8f9fa; border-radius: 5px;">
+                        <strong>Your selected option:</strong> 
+                        <div style="margin-top: 10px; padding: 10px; background: white; border-radius: 5px; font-size: 16px;">
+                            ${responseData.selected_option || (config.options && responseData.option_index !== undefined ? config.options[responseData.option_index] : 'Not selected')}
                         </div>
-                    ` : ''}
-                </div>`;
+                        ${responseData.is_correct !== undefined ? `
+                            <div style="margin-top: 10px; padding: 10px; background: ${responseData.is_correct ? '#d4edda' : '#f8d7da'}; border-radius: 5px;">
+                                <strong>Result:</strong> 
+                                <span style="color: ${responseData.is_correct ? '#155724' : '#721c24'}; font-weight: bold;">
+                                    ${responseData.is_correct ? '✓ Correct' : '✗ Incorrect'}
+                                </span>
+                                ${config.explanation ? `
+                                    <div style="margin-top: 10px; padding: 10px; background: white; border-radius: 5px;">
+                                        <strong>Explanation:</strong> ${config.explanation}
+                                    </div>
+                                ` : ''}
+                            </div>
+                        ` : ''}
+                    </div>`;
+                }
             } else if (activityType === 'word_cloud') {
                 const words = responseData.words || [];
                 html += `<div style="padding: 15px; background: #f8f9fa; border-radius: 5px;">

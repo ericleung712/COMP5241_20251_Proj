@@ -927,34 +927,10 @@
                     
                     <!-- Quiz activity configuration -->
                     <div id="quizConfig" class="activity-config" style="display: none;">
-                        <div class="form-group">
-                            <label for="quizQuestion">Quiz Question:</label>
-                            <input type="text" id="quizQuestion" placeholder="e.g., Which of the following is correct?">
+                        <div id="quizQuestions">
+                            <!-- Quiz questions will be added here -->
                         </div>
-                        <div class="form-group">
-                            <label>Options:</label>
-                            <div id="quizOptions">
-                                <div class="option-item" style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
-                                    <input type="text" class="option-input" placeholder="Option A">
-                                    <label style="display: flex; align-items: center; gap: 5px;">
-                                        <input type="radio" name="correctAnswer" value="0"> Correct Answer
-                                    </label>
-                                    <button type="button" class="btn btn-danger" onclick="removeOption(this)" style="padding: 5px 10px;">Delete</button>
-                                </div>
-                                <div class="option-item" style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
-                                    <input type="text" class="option-input" placeholder="Option B">
-                                    <label style="display: flex; align-items: center; gap: 5px;">
-                                        <input type="radio" name="correctAnswer" value="1"> Correct Answer
-                                    </label>
-                                    <button type="button" class="btn btn-danger" onclick="removeOption(this)" style="padding: 5px 10px;">Delete</button>
-                                </div>
-                            </div>
-                            <button type="button" class="btn btn-secondary" onclick="addQuizOption()" style="margin-top: 10px;">Add Option</button>
-                        </div>
-                        <div class="form-group">
-                            <label for="quizExplanation">Explanation:</label>
-                            <textarea id="quizExplanation" placeholder="Explain why this answer is correct" rows="3"></textarea>
-                        </div>
+                        <button type="button" class="btn btn-success" onclick="addQuizQuestion()" style="margin-top: 10px;">Add Question</button>
                     </div>
                     
                     <!-- Word cloud activity configuration -->
@@ -1496,25 +1472,12 @@
                 `;
             }
             
-            // Reset quiz options
-            const quizOptions = document.getElementById('quizOptions');
-            if (quizOptions) {
-                quizOptions.innerHTML = `
-                    <div class="option-item" style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
-                        <input type="text" class="option-input" placeholder="Option A">
-                        <label style="display: flex; align-items: center; gap: 5px;">
-                            <input type="radio" name="correctAnswer" value="0"> Correct Answer
-                        </label>
-                        <button type="button" class="btn btn-danger" onclick="removeOption(this)" style="padding: 5px 10px;">Delete</button>
-                    </div>
-                    <div class="option-item" style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
-                        <input type="text" class="option-input" placeholder="Option B">
-                        <label style="display: flex; align-items: center; gap: 5px;">
-                            <input type="radio" name="correctAnswer" value="1"> Correct Answer
-                        </label>
-                        <button type="button" class="btn btn-danger" onclick="removeOption(this)" style="padding: 5px 10px;">Delete</button>
-                    </div>
-                `;
+            // Reset quiz questions
+            const quizQuestions = document.getElementById('quizQuestions');
+            if (quizQuestions) {
+                quizQuestions.innerHTML = '';
+                // Add one default question
+                addQuizQuestion();
             }
         }
         
@@ -1552,6 +1515,11 @@
             } else if (type === 'quiz') {
                 configSection.style.display = 'block';
                 document.getElementById('quizConfig').style.display = 'block';
+                // Initialize with one question if empty
+                const quizQuestions = document.getElementById('quizQuestions');
+                if (quizQuestions.children.length === 0) {
+                    addQuizQuestion();
+                }
             } else if (type === 'word_cloud') {
                 configSection.style.display = 'block';
                 document.getElementById('wordCloudConfig').style.display = 'block';
@@ -1578,16 +1546,98 @@
         }
         
         // Add quiz option
-        function addQuizOption() {
-            const optionsContainer = document.getElementById('quizOptions');
+        // Add new quiz question
+        function addQuizQuestion() {
+            const questionsContainer = document.getElementById('quizQuestions');
+            const questionIndex = questionsContainer.children.length;
+            
+            const questionDiv = document.createElement('div');
+            questionDiv.className = 'quiz-question-item';
+            questionDiv.dataset.questionIndex = questionIndex;
+            questionDiv.style.cssText = 'padding: 20px; border: 2px solid #e1e5e9; border-radius: 12px; margin-bottom: 20px; background: #f8f9fa;';
+            
+            questionDiv.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h4 style="margin: 0; color: #082f49;">Question ${questionIndex + 1}</h4>
+                    <button type="button" class="btn btn-danger" onclick="removeQuizQuestion(this)" style="padding: 5px 10px;">Remove Question</button>
+                </div>
+                <div class="form-group">
+                    <label>Question Text:</label>
+                    <input type="text" class="quiz-question-text" placeholder="e.g., Which of the following is correct?">
+                </div>
+                <div class="form-group">
+                    <label>Options:</label>
+                    <div class="quiz-options-container">
+                        <div class="option-item" style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
+                            <input type="text" class="option-input" placeholder="Option A">
+                            <label style="display: flex; align-items: center; gap: 5px;">
+                                <input type="radio" name="correctAnswer_${questionIndex}" value="0"> Correct Answer
+                            </label>
+                            <button type="button" class="btn btn-danger" onclick="removeOption(this)" style="padding: 5px 10px;">Delete</button>
+                        </div>
+                        <div class="option-item" style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
+                            <input type="text" class="option-input" placeholder="Option B">
+                            <label style="display: flex; align-items: center; gap: 5px;">
+                                <input type="radio" name="correctAnswer_${questionIndex}" value="1"> Correct Answer
+                            </label>
+                            <button type="button" class="btn btn-danger" onclick="removeOption(this)" style="padding: 5px 10px;">Delete</button>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-secondary" onclick="addQuizOption(this)" style="margin-top: 10px;">Add Option</button>
+                </div>
+                <div class="form-group">
+                    <label>Explanation:</label>
+                    <textarea class="quiz-explanation" placeholder="Explain why this answer is correct" rows="3"></textarea>
+                </div>
+            `;
+            
+            questionsContainer.appendChild(questionDiv);
+        }
+        
+        // Remove quiz question
+        function removeQuizQuestion(button) {
+            const questionItem = button.closest('.quiz-question-item');
+            const container = questionItem.parentElement;
+            
+            if (container.children.length > 1) {
+                questionItem.remove();
+                updateQuizQuestionNumbers();
+            } else {
+                showMessage('At least one question must be kept', 'error');
+            }
+        }
+        
+        // Update quiz question numbers
+        function updateQuizQuestionNumbers() {
+            const questions = document.querySelectorAll('.quiz-question-item');
+            questions.forEach((item, index) => {
+                item.dataset.questionIndex = index;
+                const header = item.querySelector('h4');
+                if (header) {
+                    header.textContent = `Question ${index + 1}`;
+                }
+                // Update radio button names
+                const radios = item.querySelectorAll('input[type="radio"]');
+                radios.forEach(radio => {
+                    radio.name = `correctAnswer_${index}`;
+                });
+            });
+        }
+        
+        // Add option to a specific question
+        function addQuizOption(button) {
+            const questionItem = button.closest('.quiz-question-item');
+            const optionsContainer = questionItem.querySelector('.quiz-options-container');
+            const questionIndex = questionItem.dataset.questionIndex;
             const optionCount = optionsContainer.children.length;
+            
             const optionDiv = document.createElement('div');
             optionDiv.className = 'option-item';
             optionDiv.style.cssText = 'display: flex; gap: 10px; margin-bottom: 10px; align-items: center;';
             optionDiv.innerHTML = `
                 <input type="text" class="option-input" placeholder="Option ${String.fromCharCode(65 + optionCount)}">
                 <label style="display: flex; align-items: center; gap: 5px;">
-                    <input type="radio" name="correctAnswer" value="${optionCount}"> Correct Answer
+                    <input type="radio" name="correctAnswer_${questionIndex}" value="${optionCount}"> Correct Answer
                 </label>
                 <button type="button" class="btn btn-danger" onclick="removeOption(this)" style="padding: 5px 10px;">Delete</button>
             `;
@@ -1601,10 +1651,7 @@
                 const container = optionItem.parentElement;
                 if (container.children.length > 2) {
                     optionItem.remove();
-                    // Update quiz option indices and labels
-                    if (container.id === 'quizOptions') {
-                        updateQuizOptionIndices();
-                    }
+                    updateQuizOptionIndices(container);
                 } else {
                     showMessage('At least two options must be kept', 'error');
                 }
@@ -1612,12 +1659,16 @@
         }
         
         // Update quiz option indices
-        function updateQuizOptionIndices() {
-            const options = document.querySelectorAll('#quizOptions .option-item');
+        function updateQuizOptionIndices(optionsContainer) {
+            const questionItem = optionsContainer.closest('.quiz-question-item');
+            const questionIndex = questionItem ? questionItem.dataset.questionIndex : 0;
+            const options = optionsContainer.querySelectorAll('.option-item');
+            
             options.forEach((item, index) => {
                 const radio = item.querySelector('input[type="radio"]');
                 if (radio) {
                     radio.value = index;
+                    radio.name = `correctAnswer_${questionIndex}`;
                     const input = item.querySelector('.option-input');
                     if (input) {
                         input.placeholder = `Option ${String.fromCharCode(65 + index)}`;
@@ -1715,30 +1766,49 @@
                     options: options
                 };
             } else if (selectedActivityType === 'quiz') {
-                const question = document.getElementById('quizQuestion').value.trim();
-                const options = Array.from(document.querySelectorAll('#quizOptions .option-input')).map(input => input.value.trim()).filter(v => v);
-                const correctAnswerRadio = document.querySelector('input[name="correctAnswer"]:checked');
-                const explanation = document.getElementById('quizExplanation').value.trim();
+                const questionItems = document.querySelectorAll('.quiz-question-item');
                 
-                if (!question) {
-                    showMessage('Please enter quiz question', 'error');
-                    return;
-                }
-                if (options.length < 2) {
-                    showMessage('At least 2 options are required', 'error');
-                    return;
-                }
-                if (!correctAnswerRadio) {
-                    showMessage('Please select correct answer', 'error');
+                if (questionItems.length === 0) {
+                    showMessage('Please add at least one question', 'error');
                     return;
                 }
                 
-                data.config = {
-                    question: question,
-                    options: options,
-                    correct_answer: parseInt(correctAnswerRadio.value),
-                    explanation: explanation
-                };
+                const questions = [];
+                let hasError = false;
+                
+                questionItems.forEach((questionItem, qIndex) => {
+                    const questionText = questionItem.querySelector('.quiz-question-text').value.trim();
+                    const options = Array.from(questionItem.querySelectorAll('.option-input')).map(input => input.value.trim()).filter(v => v);
+                    const correctAnswerRadio = questionItem.querySelector('input[type="radio"]:checked');
+                    const explanation = questionItem.querySelector('.quiz-explanation').value.trim();
+                    
+                    if (!questionText) {
+                        showMessage(`Please enter text for question ${qIndex + 1}`, 'error');
+                        hasError = true;
+                        return;
+                    }
+                    if (options.length < 2) {
+                        showMessage(`Question ${qIndex + 1} requires at least 2 options`, 'error');
+                        hasError = true;
+                        return;
+                    }
+                    if (!correctAnswerRadio) {
+                        showMessage(`Please select correct answer for question ${qIndex + 1}`, 'error');
+                        hasError = true;
+                        return;
+                    }
+                    
+                    questions.push({
+                        question: questionText,
+                        options: options,
+                        correct_answer: parseInt(correctAnswerRadio.value),
+                        explanation: explanation
+                    });
+                });
+                
+                if (hasError) return;
+                
+                data.config = { questions: questions };
             } else if (selectedActivityType === 'word_cloud') {
                 const prompt = document.getElementById('wordCloudPrompt').value.trim();
                 const maxWords = parseInt(document.getElementById('maxWords').value) || 10;
@@ -2007,22 +2077,45 @@
                     options: activity.options || []
                 };
             } else if (activityType === 'quiz') {
-                // Handle quiz with questions array
+                // Handle quiz with questions array (multiple questions format)
                 if (activity.questions && Array.isArray(activity.questions) && activity.questions.length > 0) {
-                    const firstQuestion = activity.questions[0];
-                    config = {
-                        question: firstQuestion.question || '',
-                        options: firstQuestion.options || [],
-                        correct_answer: firstQuestion.correct_answer,
-                        explanation: firstQuestion.explanation || ''
-                    };
+                    const questions = activity.questions.map(q => {
+                        // Ensure correct_answer is a number index
+                        let correctAnswerIndex = q.correct_answer;
+                        if (typeof correctAnswerIndex === 'string') {
+                            // Try to find the index if it's a string matching an option
+                            const foundIndex = q.options ? q.options.findIndex(opt => opt === correctAnswerIndex) : -1;
+                            correctAnswerIndex = foundIndex >= 0 ? foundIndex : 0;
+                        } else if (typeof correctAnswerIndex !== 'number') {
+                            correctAnswerIndex = 0;
+                        }
+                        
+                        return {
+                            question: q.question || '',
+                            options: q.options || [],
+                            correct_answer: correctAnswerIndex,
+                            explanation: q.explanation || ''
+                        };
+                    });
+                    
+                    config = { questions: questions };
                 } else {
-                    // Fallback to single question format
+                    // Fallback to single question format (backward compatibility)
+                    let correctAnswerIndex = activity.correct_answer;
+                    if (typeof correctAnswerIndex === 'string') {
+                        const foundIndex = activity.options ? activity.options.findIndex(opt => opt === correctAnswerIndex) : -1;
+                        correctAnswerIndex = foundIndex >= 0 ? foundIndex : 0;
+                    } else if (typeof correctAnswerIndex !== 'number') {
+                        correctAnswerIndex = 0;
+                    }
+                    
                     config = {
-                        question: activity.question || '',
-                        options: activity.options || [],
-                        correct_answer: activity.correct_answer,
-                        explanation: activity.explanation || ''
+                        questions: [{
+                            question: activity.question || '',
+                            options: activity.options || [],
+                            correct_answer: correctAnswerIndex,
+                            explanation: activity.explanation || ''
+                        }]
                     };
                 }
             } else if (activityType === 'word_cloud') {
@@ -2389,18 +2482,48 @@
             let configHtml = '';
             
             // Display different configuration information based on activity type
-            if (activity.activity_type === 'poll' || activity.activity_type === 'quiz') {
+            if (activity.activity_type === 'poll') {
                 if (config.question) {
                     configHtml += `<div class="form-group"><label>Question:</label><p style="padding: 10px; background: #f8f9fa; border-radius: 5px;">${config.question}</p></div>`;
                 }
                 if (config.options && Array.isArray(config.options)) {
                     configHtml += `<div class="form-group"><label>Options:</label><ul style="padding: 10px; background: #f8f9fa; border-radius: 5px;">${config.options.map(opt => `<li>${opt}</li>`).join('')}</ul></div>`;
                 }
-                if (config.correct_answer !== undefined) {
-                    configHtml += `<div class="form-group"><label>Correct Answer:</label><p style="padding: 10px; background: #f8f9fa; border-radius: 5px;">${config.correct_answer}</p></div>`;
-                }
-                if (config.explanation) {
-                    configHtml += `<div class="form-group"><label>Explanation:</label><p style="padding: 10px; background: #f8f9fa; border-radius: 5px;">${config.explanation}</p></div>`;
+            } else if (activity.activity_type === 'quiz') {
+                if (config.questions && Array.isArray(config.questions)) {
+                    // Multiple questions format
+                    config.questions.forEach((q, index) => {
+                        configHtml += `<div style="padding: 15px; background: #f8f9fa; border-radius: 8px; margin-bottom: 15px;">`;
+                        configHtml += `<h4 style="color: #082f49; margin-bottom: 10px;">Question ${index + 1}</h4>`;
+                        configHtml += `<div class="form-group"><label>Question Text:</label><p style="padding: 10px; background: white; border-radius: 5px;">${q.question}</p></div>`;
+                        if (q.options && Array.isArray(q.options)) {
+                            configHtml += `<div class="form-group"><label>Options:</label><ul style="padding: 10px; background: white; border-radius: 5px;">${q.options.map((opt, optIndex) => {
+                                const isCorrect = q.correct_answer === optIndex;
+                                return `<li style="color: ${isCorrect ? '#28a745' : 'inherit'}; font-weight: ${isCorrect ? 'bold' : 'normal'};">${opt} ${isCorrect ? '✓' : ''}</li>`;
+                            }).join('')}</ul></div>`;
+                        }
+                        if (q.correct_answer !== undefined) {
+                            configHtml += `<div class="form-group"><label>Correct Answer:</label><p style="padding: 10px; background: white; border-radius: 5px; color: #28a745; font-weight: bold;">Option ${String.fromCharCode(65 + q.correct_answer)}</p></div>`;
+                        }
+                        if (q.explanation) {
+                            configHtml += `<div class="form-group"><label>Explanation:</label><p style="padding: 10px; background: white; border-radius: 5px;">${q.explanation}</p></div>`;
+                        }
+                        configHtml += `</div>`;
+                    });
+                } else {
+                    // Old single question format (backward compatibility)
+                    if (config.question) {
+                        configHtml += `<div class="form-group"><label>Question:</label><p style="padding: 10px; background: #f8f9fa; border-radius: 5px;">${config.question}</p></div>`;
+                    }
+                    if (config.options && Array.isArray(config.options)) {
+                        configHtml += `<div class="form-group"><label>Options:</label><ul style="padding: 10px; background: #f8f9fa; border-radius: 5px;">${config.options.map(opt => `<li>${opt}</li>`).join('')}</ul></div>`;
+                    }
+                    if (config.correct_answer !== undefined) {
+                        configHtml += `<div class="form-group"><label>Correct Answer:</label><p style="padding: 10px; background: #f8f9fa; border-radius: 5px;">${config.correct_answer}</p></div>`;
+                    }
+                    if (config.explanation) {
+                        configHtml += `<div class="form-group"><label>Explanation:</label><p style="padding: 10px; background: #f8f9fa; border-radius: 5px;">${config.explanation}</p></div>`;
+                    }
                 }
             } else if (activity.activity_type === 'word_cloud') {
                 if (config.prompt) {
@@ -3131,14 +3254,50 @@
                         'Not selected'}
                 </div>`;
             } else if (activityType === 'quiz') {
-                html += `<div style="padding: 10px; background: #f8f9fa; border-radius: 5px;">
-                    <strong>Selected Option:</strong> ${responseData.selected_option || (config.options && responseData.option_index !== undefined ? config.options[responseData.option_index] : 'Not selected')}
-                    ${responseData.is_correct !== undefined ? `
-                        <br><strong>Is Correct:</strong> <span style="color: ${responseData.is_correct ? '#28a745' : '#dc3545'}">
-                            ${responseData.is_correct ? '✓ Correct' : '✗ Incorrect'}
-                        </span>
-                    ` : ''}
-                </div>`;
+                if (responseData.answers && Array.isArray(responseData.answers)) {
+                    // Multiple questions format
+                    const questions = config.questions || [];
+                    html += '<div style="padding: 10px; background: #f8f9fa; border-radius: 5px;">';
+                    responseData.answers.forEach((answer, index) => {
+                        const question = questions[index];
+                        const isCorrect = answer.is_correct;
+                        const selectedOption = question && question.options && answer.option_index !== undefined 
+                            ? question.options[answer.option_index] 
+                            : answer.selected_option || 'Not selected';
+                        
+                        html += `<div style="margin-bottom: ${index < responseData.answers.length - 1 ? '15px' : '0'}; padding-bottom: ${index < responseData.answers.length - 1 ? '15px' : '0'}; border-bottom: ${index < responseData.answers.length - 1 ? '1px solid #dee2e6' : 'none'};">`;
+                        html += `<strong>Question ${index + 1}:</strong> ${question ? question.question : 'Unknown'}<br>`;
+                        html += `<strong>Selected Answer:</strong> ${selectedOption}`;
+                        if (isCorrect !== undefined) {
+                            html += `<br><strong>Result:</strong> <span style="color: ${isCorrect ? '#28a745' : '#dc3545'}; font-weight: bold;">
+                                ${isCorrect ? '✓ Correct' : '✗ Incorrect'}
+                            </span>`;
+                            if (!isCorrect && question && question.correct_answer !== undefined && question.options) {
+                                html += `<br><strong>Correct Answer:</strong> <span style="color: #28a745;">${question.options[question.correct_answer]}</span>`;
+                            }
+                        }
+                        html += `</div>`;
+                    });
+                    
+                    // Calculate and display overall score
+                    const correctCount = responseData.answers.filter(a => a.is_correct).length;
+                    const totalQuestions = responseData.answers.length;
+                    const percentage = totalQuestions > 0 ? Math.round((correctCount / totalQuestions) * 100) : 0;
+                    html += `<div style="margin-top: 15px; padding-top: 15px; border-top: 2px solid #082f49; font-weight: bold; color: #082f49;">
+                        Overall Score: ${correctCount}/${totalQuestions} (${percentage}%)
+                    </div>`;
+                    html += '</div>';
+                } else {
+                    // Old single question format (backward compatibility)
+                    html += `<div style="padding: 10px; background: #f8f9fa; border-radius: 5px;">
+                        <strong>Selected Option:</strong> ${responseData.selected_option || (config.options && responseData.option_index !== undefined ? config.options[responseData.option_index] : 'Not selected')}
+                        ${responseData.is_correct !== undefined ? `
+                            <br><strong>Is Correct:</strong> <span style="color: ${responseData.is_correct ? '#28a745' : '#dc3545'}">
+                                ${responseData.is_correct ? '✓ Correct' : '✗ Incorrect'}
+                            </span>
+                        ` : ''}
+                    </div>`;
+                }
             } else if (activityType === 'word_cloud') {
                 const words = responseData.words || [];
                 html += `<div style="padding: 10px; background: #f8f9fa; border-radius: 5px;">
