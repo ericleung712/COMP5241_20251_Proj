@@ -123,23 +123,42 @@ class AIService:
             response = self.client.chat.completions.create(
                 model=self.model,
                 messages=[
-                    {"role": "system", "content": "你是一个教育技术专家，专门设计互动学习活动。"},
+                    {"role": "system", "content": "你是一个教育技术专家，专门设计互动学习活动。请只返回纯JSON格式，不要包含任何其他文字或markdown标记。"},
                     {"role": "user", "content": prompts.get(activity_type, prompts['quiz'])}
                 ],
                 max_tokens=1000,
                 temperature=0.7
             )
             
-            content = response.choices[0].message.content
-            # 尝试解析JSON
+            content = response.choices[0].message.content.strip()
+            
+            # Remove markdown code blocks if present
+            if content.startswith('```json'):
+                content = content.replace('```json', '').replace('```', '').strip()
+            elif content.startswith('```'):
+                content = content.replace('```', '').strip()
+            
+            # Try to parse JSON
             try:
-                return json.loads(content)
-            except json.JSONDecodeError:
-                # 如果无法解析JSON，返回文本格式
+                parsed_data = json.loads(content)
+                return parsed_data
+            except json.JSONDecodeError as e:
+                # Try to extract JSON from the content
+                import re
+                json_match = re.search(r'\{[\s\S]*\}', content)
+                if json_match:
+                    try:
+                        parsed_data = json.loads(json_match.group(0))
+                        return parsed_data
+                    except:
+                        pass
+                
+                # If still cannot parse, return structured format
                 return {
                     "title": f"AI生成的{activity_type}活动",
                     "description": content,
-                    "raw_content": content
+                    "raw_content": content,
+                    "parse_error": str(e)
                 }
                 
         except Exception as e:
