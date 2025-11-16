@@ -594,7 +594,8 @@ class TestMultiQuestionQuiz:
         assert create_response.status_code == 201
 
         data = json.loads(create_response.data)
-        # Note: is_ai_generated flag is not handled by the API, but the config is set
+        # Verify is_ai_generated flag is properly stored and returned
+        assert data['activity']['is_ai_generated'] == True
         assert len(data['activity']['config']['questions']) == 2
 
     def test_ai_generated_quiz_can_be_used_successfully(self, auth_client, test_course):

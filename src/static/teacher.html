@@ -2475,7 +2475,8 @@
                 activity_type: activityType,
                 course_id: aiGeneratedCourseId,
                 duration_minutes: activity.time_limit ? Math.floor(activity.time_limit / 60) : 10,
-                config: config
+                config: config,
+                is_ai_generated: true
             };
             
             console.log('Creating activity with data:', data);

@@ -79,6 +79,7 @@ def get_dashboard_data():
         # 统计信息
         total_courses = len(enrolled_courses)
         total_participations = len(participated_activities)
+        avg_score = db.session.query(db.func.avg(ActivityResponse.score)).filter(ActivityResponse.student_id == user.id).scalar() or 0
         
         # 最近参与的活动
         recent_responses = ActivityResponse.query.filter_by(student_id=user.id)\
@@ -88,7 +89,8 @@ def get_dashboard_data():
             'role': 'student',
             'stats': {
                 'total_courses': total_courses,
-                'total_participations': total_participations
+                'total_participations': total_participations,
+                'avg_score': round(avg_score, 2)
             },
             'recent_responses': [response.to_dict() for response in recent_responses]
         })
@@ -99,6 +101,15 @@ def get_dashboard_data():
         total_courses = Course.query.count()
         total_activities = Activity.query.count()
         total_responses = ActivityResponse.query.count()
+        
+        # 活跃用户（最近30天有提交响应的用户）
+        thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+        active_users = db.session.query(ActivityResponse.student_id)\
+            .filter(ActivityResponse.submitted_at >= thirty_days_ago)\
+            .distinct().count()
+        
+        # AI活动数量
+        ai_activities = Activity.query.filter(Activity.is_ai_generated == True).count()
         
         # 用户角色分布
         role_stats = db.session.query(User.role, db.func.count(User.id))\
@@ -113,7 +124,9 @@ def get_dashboard_data():
                 'total_users': total_users,
                 'total_courses': total_courses,
                 'total_activities': total_activities,
-                'total_responses': total_responses
+                'total_responses': total_responses,
+                'active_users': active_users,
+                'ai_activities': ai_activities
             },
             'role_stats': [{'role': role, 'count': count} for role, count in role_stats],
             'recent_users': [user.to_dict() for user in recent_users]
