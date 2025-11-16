@@ -49,6 +49,10 @@ def submit_response():
     )
     response.set_response_data(data['response_data'])
     
+    # 对于测验活动，从响应数据中提取分数
+    if activity.activity_type == 'quiz' and 'score' in data['response_data']:
+        response.score = data['response_data']['score']
+    
     db.session.add(response)
     db.session.commit()
     

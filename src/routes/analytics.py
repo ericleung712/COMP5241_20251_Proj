@@ -263,3 +263,123 @@ def get_course_analytics(course_id):
         'activity_stats': activity_stats,
         'student_participation': student_participation
     })
+
+@analytics_bp.route('/teacher/system-overview', methods=['GET'])
+def get_teacher_system_overview():
+    """获取教师系统概览数据分析（仅教师）"""
+    user = require_auth()
+    if not user:
+        return jsonify({'error': '未登录'}), 401
+    if user.role != 'teacher':
+        return jsonify({'error': '权限不足'}), 403
+    
+    from sqlalchemy import func
+    
+    # 获取日期范围参数
+    start_date_str = request.args.get('start_date')
+    end_date_str = request.args.get('end_date')
+    
+    # 解析日期参数
+    try:
+        if start_date_str:
+            start_date = datetime.fromisoformat(start_date_str.replace('Z', '+00:00'))
+        else:
+            start_date = datetime.utcnow().replace(day=1) - timedelta(days=365)  # 默认过去12个月
+        
+        if end_date_str:
+            end_date = datetime.fromisoformat(end_date_str.replace('Z', '+00:00'))
+        else:
+            end_date = datetime.utcnow()  # 默认当前时间
+    except ValueError:
+        return jsonify({'error': '无效的日期格式，请使用ISO格式 (YYYY-MM-DDTHH:MM:SS)'}), 400
+    
+    # 确保开始日期不晚于结束日期
+    if start_date > end_date:
+        return jsonify({'error': '开始日期不能晚于结束日期'}), 400
+    
+    # 获取教师的课程
+    courses = Course.query.filter_by(teacher_id=user.id).all()
+    
+    course_data = []
+    total_completion_rate = 0
+    total_time_spent = 0
+    total_quiz_score = 0
+    course_count = 0
+    
+    for course in courses:
+        # 课程活动总数
+        total_activities = Activity.query.filter_by(course_id=course.id).count()
+        
+        if total_activities == 0:
+            continue
+        
+        # 已完成的活动数（有响应的活动）
+        completed_activities = db.session.query(Activity.id).join(
+            ActivityResponse, Activity.id == ActivityResponse.activity_id
+        ).filter(Activity.course_id == course.id).distinct().count()
+        
+        completion_rate = (completed_activities / total_activities) * 100 if total_activities > 0 else 0
+        
+        # 时间花费统计
+        time_stats = db.session.query(
+            func.sum(ActivityResponse.time_spent_seconds).label('total_time'),
+            func.avg(ActivityResponse.time_spent_seconds).label('avg_time'),
+            func.count(ActivityResponse.student_id.distinct()).label('user_count')
+        ).filter(
+            ActivityResponse.activity_id.in_(
+                db.session.query(Activity.id).filter_by(course_id=course.id)
+            )
+        ).first()
+        
+        total_time = time_stats.total_time or 0
+        avg_time_per_user = time_stats.avg_time or 0
+        users_with_responses = time_stats.user_count or 0
+        
+        # 测验分数统计（仅测验活动）
+        quiz_stats = db.session.query(
+            func.avg(ActivityResponse.score).label('avg_score'),
+            func.count(ActivityResponse.id).label('response_count')
+        ).filter(
+            ActivityResponse.activity_id.in_(
+                db.session.query(Activity.id).filter_by(course_id=course.id, activity_type='quiz')
+            )
+        ).first()
+        
+        avg_quiz_score = quiz_stats.avg_score or 0
+        quiz_responses = quiz_stats.response_count or 0
+        
+        course_data.append({
+            'course_id': course.id,
+            'course_code': course.course_code,
+            'course_name': course.course_name,
+            'completion_rate': round(completion_rate, 2),
+            'total_activities': total_activities,
+            'completed_activities': completed_activities,
+            'total_time_spent_seconds': total_time,
+            'avg_time_per_user_seconds': round(avg_time_per_user, 2),
+            'users_with_responses': users_with_responses,
+            'avg_quiz_score': round(avg_quiz_score, 2),
+            'quiz_responses': quiz_responses
+        })
+        
+        total_completion_rate += completion_rate
+        total_time_spent += total_time
+        total_quiz_score += avg_quiz_score
+        course_count += 1
+    
+    # 系统级汇总
+    system_aggregates = {
+        'avg_completion_rate': round(total_completion_rate / course_count, 2) if course_count > 0 else 0,
+        'total_time_spent_seconds': total_time_spent,
+        'avg_quiz_score': round(total_quiz_score / course_count, 2) if course_count > 0 else 0,
+        'total_courses_analyzed': course_count
+    }
+    
+    return jsonify({
+        'system_aggregates': system_aggregates,
+        'course_breakdown': course_data,
+        'date_range': {
+            'start_date': start_date.isoformat(),
+            'end_date': end_date.isoformat()
+        }
+    })

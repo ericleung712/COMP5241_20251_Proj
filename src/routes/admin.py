@@ -304,6 +304,187 @@ def get_system_stats():
         'ai_activities': ai_activities
     })
 
+@admin_bp.route('/system-overview', methods=['GET'])
+def get_system_overview():
+    """获取系统概览数据分析（仅管理员）"""
+    admin = require_admin()
+    if not admin:
+        return jsonify({'error': '权限不足'}), 403
+    
+    from sqlalchemy import func
+    
+    # 获取日期范围参数
+    start_date_str = request.args.get('start_date')
+    end_date_str = request.args.get('end_date')
+    
+    # 解析日期参数
+    try:
+        if start_date_str:
+            start_date = datetime.fromisoformat(start_date_str.replace('Z', '+00:00'))
+        else:
+            start_date = datetime.utcnow().replace(day=1) - timedelta(days=365)  # 默认过去12个月
+        
+        if end_date_str:
+            end_date = datetime.fromisoformat(end_date_str.replace('Z', '+00:00'))
+        else:
+            end_date = datetime.utcnow()  # 默认当前时间
+    except ValueError:
+        return jsonify({'error': '无效的日期格式，请使用ISO格式 (YYYY-MM-DDTHH:MM:SS)'}), 400
+    
+    # 确保开始日期不晚于结束日期
+    if start_date > end_date:
+        return jsonify({'error': '开始日期不能晚于结束日期'}), 400
+    
+    # 获取所有课程
+    courses = Course.query.all()
+    
+    course_data = []
+    total_completion_rate = 0
+    total_time_spent = 0
+    total_quiz_score = 0
+    course_count = 0
+    
+    for course in courses:
+        # 课程活动总数
+        total_activities = Activity.query.filter_by(course_id=course.id).count()
+        
+        if total_activities == 0:
+            continue
+        
+        # 已完成的活动数（有响应的活动）
+        completed_activities = db.session.query(Activity.id).join(
+            ActivityResponse, Activity.id == ActivityResponse.activity_id
+        ).filter(Activity.course_id == course.id).distinct().count()
+        
+        completion_rate = (completed_activities / total_activities) * 100 if total_activities > 0 else 0
+        
+        # 时间花费统计
+        time_stats = db.session.query(
+            func.sum(ActivityResponse.time_spent_seconds).label('total_time'),
+            func.avg(ActivityResponse.time_spent_seconds).label('avg_time'),
+            func.count(ActivityResponse.student_id.distinct()).label('user_count')
+        ).filter(
+            ActivityResponse.activity_id.in_(
+                db.session.query(Activity.id).filter_by(course_id=course.id)
+            )
+        ).first()
+        
+        total_time = time_stats.total_time or 0
+        avg_time_per_user = time_stats.avg_time or 0
+        users_with_responses = time_stats.user_count or 0
+        
+        # 测验分数统计（仅测验活动）
+        quiz_stats = db.session.query(
+            func.avg(ActivityResponse.score).label('avg_score'),
+            func.count(ActivityResponse.id).label('response_count')
+        ).filter(
+            ActivityResponse.activity_id.in_(
+                db.session.query(Activity.id).filter_by(course_id=course.id, activity_type='quiz')
+            )
+        ).first()
+        
+        avg_quiz_score = quiz_stats.avg_score or 0
+        quiz_responses = quiz_stats.response_count or 0
+        
+        course_data.append({
+            'course_id': course.id,
+            'course_code': course.course_code,
+            'course_name': course.course_name,
+            'completion_rate': round(completion_rate, 2),
+            'total_activities': total_activities,
+            'completed_activities': completed_activities,
+            'total_time_spent_seconds': total_time,
+            'avg_time_per_user_seconds': round(avg_time_per_user, 2),
+            'users_with_responses': users_with_responses,
+            'avg_quiz_score': round(avg_quiz_score, 2),
+            'quiz_responses': quiz_responses
+        })
+        
+        total_completion_rate += completion_rate
+        total_time_spent += total_time
+        total_quiz_score += avg_quiz_score
+        course_count += 1
+    
+    # 系统级汇总
+    system_aggregates = {
+        'avg_completion_rate': round(total_completion_rate / course_count, 2) if course_count > 0 else 0,
+        'total_time_spent_seconds': total_time_spent,
+        'avg_quiz_score': round(total_quiz_score / course_count, 2) if course_count > 0 else 0,
+        'total_courses_analyzed': course_count
+    }
+    
+    # 用户活动时间序列数据
+    user_activity_data = []
+    
+    # 获取用户注册和登录数据
+    users = User.query.with_entities(
+        User.created_at,
+        User.last_login
+    ).all()
+    
+    # 创建时间序列数据（按月）
+    from collections import defaultdict
+    import calendar
+    
+    # 初始化每月数据
+    monthly_data = defaultdict(lambda: {'total_users': 0, 'active_users': 0})
+    
+    # 计算每月累计用户数
+    cumulative_users = 0
+    
+    # 生成月份列表
+    current_date = start_date.replace(day=1)
+    months_list = []
+    while current_date <= end_date:
+        months_list.append(current_date)
+        # 移动到下个月
+        if current_date.month == 12:
+            current_date = current_date.replace(year=current_date.year + 1, month=1)
+        else:
+            current_date = current_date.replace(month=current_date.month + 1)
+    
+    for month_start in months_list:
+        month_end = datetime(month_start.year, month_start.month, 
+                           calendar.monthrange(month_start.year, month_start.month)[1], 
+                           23, 59, 59)
+        
+        month_key = f"{month_start.year}-{month_start.month:02d}"
+        
+        # 当月注册的用户数
+        monthly_registrations = sum(1 for user in users 
+                                  if month_start <= user.created_at <= month_end)
+        cumulative_users += monthly_registrations
+        
+        # 当月活跃用户数（有登录记录的用户）
+        monthly_active = sum(1 for user in users 
+                           if user.last_login and month_start <= user.last_login <= month_end)
+        
+        monthly_data[month_key] = {
+            'total_users': cumulative_users,
+            'active_users': monthly_active,
+            'month': month_key
+        }
+    
+    # 转换为列表格式
+    user_activity_data = [
+        {
+            'month': key,
+            'total_users': value['total_users'],
+            'active_users': value['active_users']
+        }
+        for key, value in sorted(monthly_data.items())
+    ]
+    
+    return jsonify({
+        'system_aggregates': system_aggregates,
+        'course_breakdown': course_data,
+        'user_activity': user_activity_data,
+        'date_range': {
+            'start_date': start_date.isoformat(),
+            'end_date': end_date.isoformat()
+        }
+    })
+
 @admin_bp.route('/backup', methods=['POST'])
 def create_backup():
     """创建系统备份（仅管理员）"""
