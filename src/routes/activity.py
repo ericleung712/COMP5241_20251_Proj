@@ -5,6 +5,8 @@ from src.models.user import User
 from src.database import db
 from src.ai.ai_service import AIService
 from datetime import datetime
+import os
+from src.routes.ai_qa import extract_text_from_pdf, extract_text_from_docx, extract_text_from_txt, extract_document_content
 
 activity_bp = Blueprint('activity', __name__)
 
@@ -222,13 +224,32 @@ def generate_ai_activity():
         if course.teacher_id != user.id:
             return jsonify({'error': '权限不足'}), 403
     
+    # 处理选中的文档
+    document_ids = data.get('document_ids', [])
+    document_content = ""
+    if document_ids:
+        from src.models.document import Document
+        
+        for doc_id in document_ids:
+            document = Document.query.get(doc_id)
+            if document and document.course_id == course_id and document.is_active:
+                content = extract_document_content(document)
+                if content:
+                    document_content += f"\n\n文档：{document.title or document.filename}\n{content}"
+    
+    # 合并文档内容到课程内容
+    full_course_content = data['course_content']
+    if document_content:
+        full_course_content += "\n\n--- 从上传文档提取的内容 ---\n" + document_content
+    
     # 使用AI服务生成活动
     ai_service = AIService()
     generated_activity = ai_service.generate_activity(
         activity_type=data['activity_type'],
-        course_content=data['course_content'],
+        course_content=full_course_content,
         web_resources=data.get('web_resources', ''),
-        additional_prompt=data.get('additional_prompt', '')
+        additional_prompt=data.get('additional_prompt', ''),
+        time_limit=data.get('time_limit')
     )
     
     if 'error' in generated_activity:

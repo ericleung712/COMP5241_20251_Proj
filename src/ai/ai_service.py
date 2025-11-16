@@ -17,15 +17,17 @@ class AIService:
         self.model = "deepseek-chat"
     
     def generate_activity(self, activity_type: str, course_content: str, 
-                         web_resources: str = "", additional_prompt: str = "") -> Dict[str, Any]:
+                         web_resources: str = "", additional_prompt: str = "", time_limit: int = None) -> Dict[str, Any]:
         """根据课程内容生成学习活动"""
+        
+        time_limit_str = f"\nTime Limit: {time_limit} minutes" if time_limit else ""
         
         prompts = {
             'poll': f"""
             基于以下课程内容，生成一个投票活动：
             课程内容：{course_content}
             网络资源：{web_resources}
-            额外要求：{additional_prompt}
+            额外要求：{additional_prompt}{time_limit_str}
             
             请生成包含以下内容的JSON格式：
             {{
@@ -42,7 +44,7 @@ class AIService:
             基于以下课程内容，生成一个测验活动：
             课程内容：{course_content}
             网络资源：{web_resources}
-            额外要求：{additional_prompt}
+            额外要求：{additional_prompt}{time_limit_str}
             
             请生成包含以下内容的JSON格式：
             {{
@@ -65,7 +67,7 @@ class AIService:
             基于以下课程内容，生成一个词云活动：
             课程内容：{course_content}
             网络资源：{web_resources}
-            额外要求：{additional_prompt}
+            额外要求：{additional_prompt}{time_limit_str}
             
             请生成包含以下内容的JSON格式：
             {{
@@ -81,7 +83,7 @@ class AIService:
             基于以下课程内容，生成一个简答题活动：
             课程内容：{course_content}
             网络资源：{web_resources}
-            额外要求：{additional_prompt}
+            额外要求：{additional_prompt}{time_limit_str}
             
             请生成包含以下内容的JSON格式：
             {{
@@ -103,7 +105,7 @@ class AIService:
             基于以下课程内容，生成一个迷你游戏活动：
             课程内容：{course_content}
             网络资源：{web_resources}
-            额外要求：{additional_prompt}
+            额外要求：{additional_prompt}{time_limit_str}
             
             请生成包含以下内容的JSON格式：
             {{

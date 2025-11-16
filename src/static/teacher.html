@@ -998,8 +998,23 @@
                 </div>
                 
                 <div class="form-group">
+                    <label for="timeLimit">Time Limit (minutes, optional):</label>
+                    <input type="number" id="timeLimit" min="1" placeholder="e.g., 10">
+                </div>
+                
+                <div class="form-group">
                     <label for="courseContent">Course Content:</label>
                     <textarea id="courseContent" placeholder="Enter course content, AI will generate activities based on this" required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Include Uploaded Documents (optional):</label>
+                    <div id="documentSelection">
+                        <select id="documentDropdown0" class="document-dropdown" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 10px;">
+                            <option value="">Select documents to include their content in the prompt:</option>
+                        </select>
+                        <div id="additionalDropdowns"></div>
+                    </div>
                 </div>
                 
                 <div class="form-group">
@@ -1432,6 +1447,186 @@
         function showAIGenerator() {
             document.getElementById('createActivityModal').style.display = 'none';
             document.getElementById('aiGeneratorModal').style.display = 'block';
+            
+            // Load documents when course is selected
+            const courseSelect = document.getElementById('aiCourse');
+            courseSelect.addEventListener('change', loadDocumentsForAI);
+        }
+        
+        // Load documents for AI generator
+        async function loadDocumentsForAI() {
+            const courseId = document.getElementById('aiCourse').value;
+            const documentDropdown = document.getElementById('documentDropdown0');
+            const additionalDropdowns = document.getElementById('additionalDropdowns');
+            
+            if (!courseId) {
+                documentDropdown.innerHTML = '<option value="">Select documents to include their content in the prompt:</option>';
+                additionalDropdowns.innerHTML = '';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/documents/course/${courseId}`);
+                if (response.ok) {
+                    const documents = await response.json();
+                    // Store documents globally for dropdown management
+                    window.availableDocuments = documents;
+                    window.selectedDocuments = [];
+                    
+                    if (documents.length === 0) {
+                        documentDropdown.innerHTML = '<option value="">No documents available for this course</option>';
+                        additionalDropdowns.innerHTML = '';
+                    } else {
+                        // Populate first dropdown
+                        documentDropdown.innerHTML = '<option value="">Select documents to include their content in the prompt:</option>' +
+                            documents.map(doc => `<option value="${doc.id}">${doc.title} (${doc.file_type.toUpperCase()}, ${(doc.file_size_mb || 0).toFixed(2)} MB)</option>`).join('');
+                        
+                        // Clear additional dropdowns
+                        additionalDropdowns.innerHTML = '';
+                        
+                        // Add change event listener to first dropdown
+                        documentDropdown.addEventListener('change', handleDocumentSelection);
+                    }
+                } else {
+                    documentDropdown.innerHTML = '<option value="">Failed to load documents</option>';
+                    additionalDropdowns.innerHTML = '';
+                }
+            } catch (error) {
+                documentDropdown.innerHTML = '<option value="">Error loading documents</option>';
+                additionalDropdowns.innerHTML = '';
+            }
+        }
+        
+        // Handle document selection in dropdowns
+        function handleDocumentSelection(event) {
+            const selectedValue = event.target.value;
+            const previousValue = event.target.dataset.previousValue || '';
+            
+            if (selectedValue) {
+                // Remove previous selection if different
+                if (previousValue && previousValue !== selectedValue) {
+                    const prevIndex = window.selectedDocuments.indexOf(parseInt(previousValue));
+                    if (prevIndex > -1) {
+                        window.selectedDocuments.splice(prevIndex, 1);
+                    }
+                }
+                
+                // Add to selected documents
+                if (!window.selectedDocuments.includes(parseInt(selectedValue))) {
+                    window.selectedDocuments.push(parseInt(selectedValue));
+                }
+                
+                // Store current value as previous
+                event.target.dataset.previousValue = selectedValue;
+                
+                // Create next dropdown if needed
+                const dropdownIndex = parseInt(event.target.id.replace('documentDropdown', ''));
+                const additionalDropdowns = document.getElementById('additionalDropdowns');
+                const existingDropdowns = additionalDropdowns.querySelectorAll('.document-dropdown');
+                
+                if (dropdownIndex >= existingDropdowns.length) {
+                    addNextDocumentDropdown();
+                }
+                
+                // Update all dropdowns to exclude selected documents
+                updateAllDropdowns();
+            } else {
+                // If deselected, remove from selected
+                if (previousValue) {
+                    const index = window.selectedDocuments.indexOf(parseInt(previousValue));
+                    if (index > -1) {
+                        window.selectedDocuments.splice(index, 1);
+                    }
+                }
+                // Clear previous value
+                event.target.dataset.previousValue = '';
+                updateAllDropdowns();
+            }
+        }
+        
+        // Add next document dropdown
+        function addNextDocumentDropdown() {
+            const additionalDropdowns = document.getElementById('additionalDropdowns');
+            const dropdownCount = additionalDropdowns.querySelectorAll('.document-dropdown').length + 1; // +1 for the first dropdown
+            
+            const dropdownContainer = document.createElement('div');
+            dropdownContainer.style.cssText = 'display: flex; align-items: center; margin-bottom: 10px;';
+            
+            const select = document.createElement('select');
+            select.id = `documentDropdown${dropdownCount}`;
+            select.className = 'document-dropdown';
+            select.style.cssText = 'flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px;';
+            select.innerHTML = '<option value="">Select another document (optional):</option>';
+            
+            const removeButton = document.createElement('button');
+            removeButton.type = 'button';
+            removeButton.className = 'btn btn-danger';
+            removeButton.style.cssText = 'margin-left: 10px; padding: 8px 12px;';
+            removeButton.textContent = 'Remove';
+            removeButton.onclick = function() {
+                removeDocumentDropdown(dropdownCount);
+            };
+            
+            dropdownContainer.appendChild(select);
+            dropdownContainer.appendChild(removeButton);
+            additionalDropdowns.appendChild(dropdownContainer);
+            
+            // Add event listener
+            select.addEventListener('change', handleDocumentSelection);
+            
+            // Update this dropdown
+            updateDropdownOptions(select);
+        }
+        
+        // Remove document dropdown
+        function removeDocumentDropdown(index) {
+            const dropdownContainer = document.getElementById(`documentDropdown${index}`).parentElement;
+            const dropdown = document.getElementById(`documentDropdown${index}`);
+            const selectedValue = dropdown.value;
+            
+            // Remove from selected documents
+            if (selectedValue) {
+                const docIndex = window.selectedDocuments.indexOf(parseInt(selectedValue));
+                if (docIndex > -1) {
+                    window.selectedDocuments.splice(docIndex, 1);
+                }
+            }
+            
+            // Remove the dropdown container
+            dropdownContainer.remove();
+            
+            // Update all dropdowns
+            updateAllDropdowns();
+        }
+        
+        // Update all dropdown options
+        function updateAllDropdowns() {
+            const allDropdowns = document.querySelectorAll('.document-dropdown');
+            allDropdowns.forEach(dropdown => {
+                updateDropdownOptions(dropdown);
+            });
+        }
+        
+        // Update dropdown options for a specific dropdown
+        function updateDropdownOptions(dropdown) {
+            if (!window.availableDocuments) return;
+            
+            const currentValue = dropdown.value;
+            const availableDocs = window.availableDocuments.filter(doc => 
+                !window.selectedDocuments.includes(doc.id) || doc.id == currentValue
+            );
+            
+            // Keep the placeholder/first option
+            const firstOption = dropdown.querySelector('option:first-child');
+            const placeholderText = firstOption ? firstOption.textContent : 'Select document:';
+            
+            dropdown.innerHTML = `<option value="">${placeholderText}</option>` +
+                availableDocs.map(doc => `<option value="${doc.id}">${doc.title} (${doc.file_type.toUpperCase()}, ${(doc.file_size_mb || 0).toFixed(2)} MB)</option>`).join('');
+            
+            // Restore selected value if it was valid
+            if (currentValue && availableDocs.some(doc => doc.id == currentValue)) {
+                dropdown.value = currentValue;
+            }
         }
         
         // Close modal
@@ -1452,6 +1647,17 @@
                 });
                 // Reset option containers
                 resetActivityConfigs();
+            }
+            
+            // If it's the AI generator modal, reset the form and data
+            if (modalId === 'aiGeneratorModal') {
+                document.getElementById('aiGeneratorForm').reset();
+                document.getElementById('aiResult').innerHTML = '';
+                // Reset document dropdowns
+                document.getElementById('documentDropdown0').innerHTML = '<option value="">Select documents to include their content in the prompt:</option>';
+                document.getElementById('additionalDropdowns').innerHTML = '';
+                aiGeneratedActivityData = null;
+                aiGeneratedCourseId = null;
             }
         }
         
@@ -1892,12 +2098,17 @@
             const activityType = document.getElementById('aiActivityType').value;
             const courseId = parseInt(document.getElementById('aiCourse').value);
             
+            // Get selected document IDs
+            const selectedDocuments = window.selectedDocuments || [];
+            
             const data = {
                 activity_type: activityType,
                 course_content: document.getElementById('courseContent').value,
                 web_resources: document.getElementById('webResources').value,
                 additional_prompt: document.getElementById('additionalPrompt').value,
-                course_id: courseId
+                course_id: courseId,
+                document_ids: selectedDocuments,
+                time_limit: parseInt(document.getElementById('timeLimit').value) || null
             };
             
             // Store course ID and activity type for later use
@@ -2171,6 +2382,12 @@
                     // Reset AI data
                     aiGeneratedActivityData = null;
                     aiGeneratedCourseId = null;
+                    // Reset the AI generator form
+                    document.getElementById('aiGeneratorForm').reset();
+                    document.getElementById('aiResult').innerHTML = '';
+                    // Reset document dropdowns
+                    document.getElementById('documentDropdown0').innerHTML = '<option value="">Select documents to include their content in the prompt:</option>';
+                    document.getElementById('additionalDropdowns').innerHTML = '';
                     // Reload activities list
                     loadActivities();
                     loadDashboardData();

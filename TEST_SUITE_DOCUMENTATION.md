@@ -13,14 +13,16 @@ The test suite is organized into two main test files:
 
 ## Test Statistics
 
-- **Total Test Classes**: 6
-- **Total Test Methods**: 32
+- **Total Test Classes**: 7
+- **Total Test Methods**: 47
 - **Test Coverage Areas**:
   - Quiz creation and management
   - Student participation and responses
   - Teacher oversight and analytics
   - AI activity generation
   - JSON parsing and error handling
+  - Document dropdown API functionality
+  - Time limit inclusion in AI prompts
   - Frontend logic validation
 
 ---
@@ -98,6 +100,33 @@ Tests for handling questions array format in quiz and short answer activities:
 - **`test_quiz_multiple_questions_array`**: Tests quiz with multiple questions in array format
 - **`test_short_answer_multiple_questions_array`**: Tests short answer with multiple questions in array format
 - **`test_quiz_single_question_backward_compatibility`**: Tests backward compatibility with single question format
+
+### TestDocumentInclusion Class
+Tests for document content inclusion in AI activity generation:
+
+- **`test_generate_activity_with_document_content`**: Tests document content inclusion in AI prompts
+- **`test_document_content_formatting`**: Tests proper formatting of document content
+- **`test_generate_ai_activity_with_documents`**: Tests full API with document inclusion
+- **`test_generate_ai_activity_without_documents`**: Tests API without document inclusion
+- **`test_generate_ai_activity_invalid_document`**: Tests handling of invalid documents
+
+### TestTimeLimitInclusion Class
+Tests for time limit inclusion in AI activity generation:
+
+- **`test_generate_activity_with_time_limit`**: Tests AI service includes time limit in prompts
+- **`test_generate_activity_without_time_limit`**: Tests backward compatibility without time limits
+- **`test_generate_ai_activity_with_time_limit`**: Tests full API endpoint with time limit parameter
+
+### TestDocumentDropdownAPI Class
+Tests for document dropdown API endpoints supporting AI activity generator:
+
+- **`test_get_course_documents_teacher`**: Tests teacher access to all course documents
+- **`test_get_course_documents_student`**: Tests student access to active documents only
+- **`test_get_course_documents_unauthorized`**: Tests authentication requirements
+- **`test_get_course_documents_wrong_course_teacher`**: Tests teacher permission boundaries
+- **`test_get_course_documents_student_not_enrolled`**: Tests student enrollment requirements
+- **`test_get_course_documents_empty_course`**: Tests empty course handling
+- **`test_document_dropdown_integration_with_ai_generation`**: Tests end-to-end document selection flow
 
 ---
 
@@ -251,11 +280,11 @@ Modified `tests/conftest.py` to use monkey patching of `os.path.join` to interce
 
 ## Test Results Summary
 
-As of November 15, 2025:
+As of November 16, 2025:
 
-- **Total Tests**: 32 test methods across 6 test classes
-- **All Tests Passing**: ✅ 32/32 tests pass successfully
-- **Test Execution Time**: ~12-15 seconds for full suite (quiz tests: ~12s, AI tests: ~1s)
+- **Total Tests**: 47 test methods across 7 test classes
+- **All Tests Passing**: ✅ 47/47 tests pass successfully
+- **Test Execution Time**: ~12-15 seconds for full suite (quiz tests: ~12s, AI tests: ~3s)
 - **Database Isolation**: ✅ Tests use temporary databases, production database remains unchanged
 - **Mock Usage**: Extensive mocking of AI services and external dependencies
 
@@ -308,6 +337,6 @@ python -m pytest tests/ --tb=short -x
 
 ---
 
-*Test Suite Version: 1.0*  
-*Last Updated: November 15, 2025*  
+*Test Suite Version: 1.1*  
+*Last Updated: November 16, 2025*  
 *Coverage: Multi-Question Quiz & AI Generation Features*

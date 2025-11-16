@@ -406,3 +406,580 @@ class TestQuestionsArrayHandling:
             # Should handle single question format
             assert result['title'] == 'Single Question Quiz'
             assert 'question' in result or 'questions' in result
+
+
+class TestDocumentInclusion:
+    """Test document inclusion in AI activity generation"""
+
+    @pytest.fixture
+    def ai_service(self):
+        """Create AI service instance"""
+        return AIService()
+
+    def test_generate_activity_with_document_content(self, ai_service):
+        """Test that document content is properly included in AI prompts"""
+        mock_response = {
+            "title": "Test Activity with Documents",
+            "description": "Activity generated with document content",
+            "question": "What is the main topic?",
+            "options": ["Topic A", "Topic B", "Topic C", "Topic D"],
+            "correct_answer": "Topic A"
+        }
+
+        with patch.object(ai_service.client.chat.completions, 'create') as mock_create:
+            mock_create.return_value.choices[0].message.content = json.dumps(mock_response)
+
+            # Test with document content appended
+            course_content = "Basic course content"
+            document_content = "\n\n文档：Sample Document\nThis is extracted text from a document about advanced topics."
+
+            full_content = course_content + "\n\n--- 从上传文档提取的内容 ---\n" + document_content
+
+            result = ai_service.generate_activity(
+                'poll',
+                full_content,
+                'Web resources'
+            )
+
+            assert result['title'] == 'Test Activity with Documents'
+            assert result['description'] == 'Activity generated with document content'
+
+    def test_document_content_formatting(self, ai_service):
+        """Test that document content is properly formatted when appended"""
+        # Test the content formatting logic directly
+        course_content = "Original course content"
+        document_content = "文档：Test Doc\nExtracted content here."
+
+        expected_full_content = course_content + "\n\n--- 从上传文档提取的内容 ---\n" + document_content
+
+        assert expected_full_content == "Original course content\n\n--- 从上传文档提取的内容 ---\n文档：Test Doc\nExtracted content here."
+
+    @patch('src.routes.activity.extract_document_content')
+    @patch('src.models.document.Document')
+    def test_generate_ai_activity_with_documents(self, mock_document_class, mock_extract_content, auth_client, test_course):
+        """Test the full endpoint with document inclusion"""
+        client = auth_client['teacher']
+        
+        # Setup mocks
+        mock_doc = Mock()
+        mock_doc.id = 1
+        mock_doc.course_id = test_course  # test_course is already the ID
+        mock_doc.is_active = True
+        mock_doc.title = "Test Document"
+        mock_doc.filename = "test.pdf"
+
+        mock_document_class.query.get.return_value = mock_doc
+        mock_extract_content.return_value = "Extracted document content about Python programming."
+
+        # Mock AI service response
+        mock_response = {
+            "title": "Document-Enhanced Activity",
+            "description": "Activity with document content",
+            "question": "What is Python?",
+            "options": ["Snake", "Programming Language", "Coffee", "Book"],
+            "correct_answer": "Programming Language"
+        }
+
+        mock_ai_instance = Mock()
+        mock_ai_instance.generate_activity.return_value = mock_response
+
+        with patch('src.routes.activity.AIService', return_value=mock_ai_instance) as mock_ai_service_class:
+
+            # Make request with document_ids
+            response = client.post('/api/activities/ai/generate', json={
+                'activity_type': 'poll',
+                'course_content': 'Basic Python concepts',
+                'course_id': test_course,
+                'document_ids': [1]
+            })
+
+            print(f"Response status: {response.status_code}")
+            print(f"Response data: {response.get_data(as_text=True)}")
+            
+            assert response.status_code == 200
+            data = response.get_json()
+
+            # Verify AI service was called with enhanced content
+            mock_ai_instance.generate_activity.assert_called_once()
+            call_args = mock_ai_instance.generate_activity.call_args
+
+            # Check that document content was appended
+            enhanced_content = call_args.kwargs['course_content']
+            assert 'Basic Python concepts' in enhanced_content
+            assert '--- 从上传文档提取的内容 ---' in enhanced_content
+            assert 'Extracted document content about Python programming' in enhanced_content
+
+            assert data['message'] == 'AI活动生成成功'
+            assert data['generated_activity']['title'] == 'Document-Enhanced Activity'
+
+    @patch('src.routes.activity.extract_document_content')
+    @patch('src.models.document.Document')
+    def test_generate_ai_activity_without_documents(self, mock_document_class, mock_extract_content, auth_client, test_course):
+        """Test the endpoint works normally without document_ids"""
+        client = auth_client['teacher']
+        
+        # Mock AI service response
+        mock_response = {
+            "title": "Regular Activity",
+            "description": "Activity without documents",
+            "question": "What is 2+2?",
+            "options": ["3", "4", "5", "6"],
+            "correct_answer": "4"
+        }
+
+        mock_ai_instance = Mock()
+        mock_ai_instance.generate_activity.return_value = mock_response
+
+        with patch('src.routes.activity.AIService', return_value=mock_ai_instance) as mock_ai_service_class:
+            mock_ai_instance = Mock()
+            mock_ai_service_class.return_value = mock_ai_instance
+            mock_ai_instance.generate_activity.return_value = mock_response
+
+            # Make request without document_ids
+            response = client.post('/api/activities/ai/generate', json={
+                'activity_type': 'poll',
+                'course_content': 'Basic math',
+                'course_id': test_course
+            })
+
+            assert response.status_code == 200
+            data = response.get_json()
+
+            # Verify AI service was called with original content only
+            mock_ai_instance.generate_activity.assert_called_once()
+            call_args = mock_ai_instance.generate_activity.call_args
+
+            # Check that content was not enhanced
+            content = call_args.kwargs['course_content']
+            assert content == 'Basic math'
+            assert '--- 从上传文档提取的内容 ---' not in content
+
+            # Verify extract_content was not called
+            mock_extract_content.assert_not_called()
+
+            assert data['message'] == 'AI活动生成成功'
+            assert data['generated_activity']['title'] == 'Regular Activity'
+
+    @patch('src.routes.activity.extract_document_content')
+    @patch('src.models.document.Document')
+    def test_generate_ai_activity_invalid_document(self, mock_document_class, mock_extract_content, auth_client, test_course):
+        """Test that invalid documents are ignored"""
+        client = auth_client['teacher']
+        
+        # Setup mock for invalid document (wrong course)
+        mock_doc = Mock()
+        mock_doc.id = 1
+        mock_doc.course_id = 999  # Different course
+        mock_doc.is_active = True
+
+        mock_document_class.query.get.return_value = mock_doc
+
+        # Mock AI service response
+        mock_response = {
+            "title": "Activity with Invalid Doc",
+            "description": "Should ignore invalid document",
+            "question": "Test question?",
+            "options": ["A", "B", "C", "D"],
+            "correct_answer": "A"
+        }
+
+        mock_ai_instance = Mock()
+        mock_ai_instance.generate_activity.return_value = mock_response
+
+        with patch('src.routes.activity.AIService', return_value=mock_ai_instance) as mock_ai_service_class:
+            mock_ai_instance = Mock()
+            mock_ai_service_class.return_value = mock_ai_instance
+            mock_ai_instance.generate_activity.return_value = mock_response
+
+            # Make request with invalid document ID
+            response = client.post('/api/activities/ai/generate', json={
+                'activity_type': 'poll',
+                'course_content': 'Test content',
+                'course_id': test_course,
+                'document_ids': [1]  # Invalid document
+            })
+
+            assert response.status_code == 200
+            data = response.get_json()
+
+            # Verify AI service was called with original content only (invalid doc ignored)
+            mock_ai_instance.generate_activity.assert_called_once()
+            call_args = mock_ai_instance.generate_activity.call_args
+
+            content = call_args.kwargs['course_content']
+            assert content == 'Test content'
+            assert '--- 从上传文档提取的内容 ---' not in content
+
+            # Verify extract_content was not called for invalid document
+            mock_extract_content.assert_not_called()
+
+
+class TestTimeLimitInclusion:
+    """Test time limit inclusion in AI activity generation"""
+
+    @pytest.fixture
+    def ai_service(self):
+        """Create AI service instance"""
+        return AIService()
+
+    def test_generate_activity_with_time_limit(self, ai_service):
+        """Test that time limit is included in AI prompts"""
+        mock_response = {
+            "title": "Test Activity with Time Limit",
+            "description": "Activity with time constraint",
+            "question": "What is the answer?",
+            "options": ["A", "B", "C", "D"],
+            "correct_answer": "A"
+        }
+
+        with patch.object(ai_service.client.chat.completions, 'create') as mock_create:
+            mock_create.return_value.choices[0].message.content = json.dumps(mock_response)
+
+            result = ai_service.generate_activity(
+                'poll',
+                'Test course content',
+                'Web resources',
+                'Additional prompt',
+                15  # 15 minutes time limit
+            )
+
+            assert result['title'] == 'Test Activity with Time Limit'
+
+            # Verify the prompt included time limit
+            call_args = mock_create.call_args
+            messages = call_args.kwargs['messages']
+            prompt_content = messages[1]['content']
+            
+            assert 'Time Limit: 15 minutes' in prompt_content
+
+    def test_generate_activity_without_time_limit(self, ai_service):
+        """Test that activities work normally without time limit"""
+        mock_response = {
+            "title": "Test Activity without Time Limit",
+            "description": "Activity without time constraint",
+            "question": "What is the answer?",
+            "options": ["A", "B", "C", "D"],
+            "correct_answer": "A"
+        }
+
+        with patch.object(ai_service.client.chat.completions, 'create') as mock_create:
+            mock_create.return_value.choices[0].message.content = json.dumps(mock_response)
+
+            result = ai_service.generate_activity(
+                'poll',
+                'Test course content',
+                'Web resources',
+                'Additional prompt'
+                # No time_limit parameter
+            )
+
+            assert result['title'] == 'Test Activity without Time Limit'
+
+            # Verify the prompt did not include time limit
+            call_args = mock_create.call_args
+            messages = call_args.kwargs['messages']
+            prompt_content = messages[1]['content']
+            
+            assert 'Time Limit:' not in prompt_content
+
+    @patch('src.routes.activity.extract_document_content')
+    @patch('src.models.document.Document')
+    def test_generate_ai_activity_with_time_limit(self, mock_document_class, mock_extract_content, auth_client, test_course):
+        """Test the full endpoint with time limit inclusion"""
+        client = auth_client['teacher']
+        
+        # Mock AI service response
+        mock_response = {
+            "title": "Time-Limited Activity",
+            "description": "Activity with time limit",
+            "question": "Answer quickly!",
+            "options": ["Fast", "Slow", "Medium", "Unknown"],
+            "correct_answer": "Fast"
+        }
+
+        mock_ai_instance = Mock()
+        mock_ai_instance.generate_activity.return_value = mock_response
+
+        with patch('src.routes.activity.AIService', return_value=mock_ai_instance) as mock_ai_service_class:
+            mock_ai_instance = Mock()
+            mock_ai_service_class.return_value = mock_ai_instance
+            mock_ai_instance.generate_activity.return_value = mock_response
+
+            # Make request with time_limit
+            response = client.post('/api/activities/ai/generate', json={
+                'activity_type': 'poll',
+                'course_content': 'Test content for timed activity',
+                'course_id': test_course,
+                'time_limit': 10  # 10 minutes
+            })
+
+            assert response.status_code == 200
+            data = response.get_json()
+
+            # Verify AI service was called with time_limit
+            mock_ai_instance.generate_activity.assert_called_once()
+            call_args = mock_ai_instance.generate_activity.call_args
+
+            # Check that time_limit was passed
+            assert call_args.kwargs['time_limit'] == 10
+
+            assert data['message'] == 'AI活动生成成功'
+            assert data['generated_activity']['title'] == 'Time-Limited Activity'
+
+
+class TestDocumentDropdownAPI:
+    """Test document dropdown API endpoints for AI activity generator"""
+
+    def test_get_course_documents_teacher(self, auth_client, test_course, test_users, app):
+        """Test that teachers can get all documents for their course"""
+        client = auth_client['teacher']
+
+        with app.app_context():
+            # Create test documents
+            from src.models.document import Document
+            from src.database import db
+
+            doc1 = Document(
+                course_id=test_course,
+                uploader_id=test_users['teacher_id'],
+                filename='test_doc1.pdf',
+                stored_filename='stored_test_doc1.pdf',
+                file_path='/uploads/stored_test_doc1.pdf',
+                file_size=1024000,  # 1MB
+                file_type='pdf',
+                title='Test Document 1',
+                is_active=True
+            )
+
+            doc2 = Document(
+                course_id=test_course,
+                uploader_id=test_users['teacher_id'],
+                filename='test_doc2.docx',
+                stored_filename='stored_test_doc2.docx',
+                file_path='/uploads/stored_test_doc2.docx',
+                file_size=2048000,  # 2MB
+                file_type='docx',
+                title='Test Document 2',
+                is_active=False  # Inactive document
+            )
+
+            db.session.add(doc1)
+            db.session.add(doc2)
+            db.session.commit()
+
+            # Test getting documents
+            response = client.get(f'/api/documents/course/{test_course}')
+            assert response.status_code == 200
+
+            documents = response.get_json()
+            assert len(documents) == 2  # Teachers see all documents including inactive
+
+            # Check document structure
+            doc_data = documents[0]
+            assert 'id' in doc_data
+            assert 'title' in doc_data
+            assert 'file_type' in doc_data
+            assert 'file_size_mb' in doc_data
+            assert 'is_active' in doc_data
+
+            # Verify file size calculation (doc2 comes first due to creation order)
+            assert doc_data['file_size_mb'] == 1.95  # 2MB
+
+            # Clean up
+            db.session.delete(doc1)
+            db.session.delete(doc2)
+            db.session.commit()
+
+    def test_get_course_documents_student(self, auth_client, test_course, test_users, app):
+        """Test that students can only see active documents"""
+        teacher_client = auth_client['teacher']
+        student_client = auth_client['student1']
+
+        with app.app_context():
+            # Create test documents
+            from src.models.document import Document
+            from src.database import db
+
+            doc1 = Document(
+                course_id=test_course,
+                uploader_id=test_users['teacher_id'],
+                filename='active_doc.pdf',
+                stored_filename='stored_active_doc.pdf',
+                file_path='/uploads/stored_active_doc.pdf',
+                file_size=1024000,
+                file_type='pdf',
+                title='Active Document',
+                is_active=True
+            )
+
+            doc2 = Document(
+                course_id=test_course,
+                uploader_id=test_users['teacher_id'],
+                filename='inactive_doc.pdf',
+                stored_filename='stored_inactive_doc.pdf',
+                file_path='/uploads/stored_inactive_doc.pdf',
+                file_size=2048000,
+                file_type='pdf',
+                title='Inactive Document',
+                is_active=False
+            )
+
+            db.session.add(doc1)
+            db.session.add(doc2)
+            db.session.commit()
+
+            # Test student can only see active documents
+            response = student_client.get(f'/api/documents/course/{test_course}')
+            assert response.status_code == 200
+
+            documents = response.get_json()
+            assert len(documents) == 1  # Students only see active documents
+            assert documents[0]['title'] == 'Active Document'
+            assert documents[0]['is_active'] == True
+
+            # Clean up
+            db.session.delete(doc1)
+            db.session.delete(doc2)
+            db.session.commit()
+
+    def test_get_course_documents_unauthorized(self, client, test_course):
+        """Test that unauthorized users cannot access course documents"""
+        # Test without authentication
+        response = client.get(f'/api/documents/course/{test_course}')
+        assert response.status_code == 401
+
+    def test_get_course_documents_wrong_course_teacher(self, auth_client, test_users, app):
+        """Test that teachers cannot access documents from courses they don't own"""
+        client = auth_client['teacher']
+
+        with app.app_context():
+            # Create another course with different teacher
+            from src.models.course import Course
+            from src.database import db
+
+            other_course = Course(
+                course_name='Other Course',
+                course_code='OTHER101',
+                teacher_id=999,  # Different teacher ID
+                semester='Fall 2025',
+                academic_year='2025-2026'
+            )
+            db.session.add(other_course)
+            db.session.commit()
+
+            # Try to access documents from other course
+            response = client.get(f'/api/documents/course/{other_course.id}')
+            assert response.status_code == 403
+
+            # Clean up
+            db.session.delete(other_course)
+            db.session.commit()
+
+    def test_get_course_documents_student_not_enrolled(self, auth_client, test_users, app):
+        """Test that students cannot access documents from courses they're not enrolled in"""
+        student_client = auth_client['student1']
+
+        with app.app_context():
+            # Create another course
+            from src.models.course import Course
+            from src.database import db
+
+            other_course = Course(
+                course_name='Other Course',
+                course_code='OTHER101',
+                teacher_id=999,
+                semester='Fall 2025',
+                academic_year='2025-2026'
+            )
+            db.session.add(other_course)
+            db.session.commit()
+
+            # Try to access documents from course not enrolled in
+            response = student_client.get(f'/api/documents/course/{other_course.id}')
+            assert response.status_code == 403
+
+            # Clean up
+            db.session.delete(other_course)
+            db.session.commit()
+
+    def test_get_course_documents_empty_course(self, auth_client, test_course):
+        """Test getting documents from a course with no documents"""
+        client = auth_client['teacher']
+
+        # Course should have no documents initially
+        response = client.get(f'/api/documents/course/{test_course}')
+        assert response.status_code == 200
+
+        documents = response.get_json()
+        assert len(documents) == 0
+        assert documents == []
+
+    def test_document_dropdown_integration_with_ai_generation(self, auth_client, test_course, test_users, app):
+        """Test the complete flow: load documents -> select -> generate AI activity"""
+        client = auth_client['teacher']
+
+        with app.app_context():
+            # Create test document
+            from src.models.document import Document
+            from src.database import db
+
+            doc = Document(
+                course_id=test_course,
+                uploader_id=test_users['teacher_id'],
+                filename='integration_test.pdf',
+                stored_filename='stored_integration_test.pdf',
+                file_path='/uploads/stored_integration_test.pdf',
+                file_size=1024000,
+                file_type='pdf',
+                title='Integration Test Document',
+                is_active=True
+            )
+            db.session.add(doc)
+            db.session.commit()
+
+            # Step 1: Load documents (simulating dropdown load)
+            response = client.get(f'/api/documents/course/{test_course}')
+            assert response.status_code == 200
+            documents = response.get_json()
+            assert len(documents) == 1
+            assert documents[0]['title'] == 'Integration Test Document'
+
+            # Step 2: Generate AI activity with document selection
+            mock_response = {
+                "title": "Document-Enhanced Activity",
+                "description": "Activity with selected document content",
+                "question": "What is the main topic?",
+                "options": ["Topic A", "Topic B", "Topic C", "Topic D"],
+                "correct_answer": "Topic A"
+            }
+
+            mock_ai_instance = Mock()
+            mock_ai_instance.generate_activity.return_value = mock_response
+
+            with patch('src.routes.activity.AIService', return_value=mock_ai_instance) as mock_ai_service_class:
+                with patch('src.routes.activity.extract_document_content', return_value='Extracted content from integration test document'):
+                    # Make request with document_ids (simulating dropdown selection)
+                    response = client.post('/api/activities/ai/generate', json={
+                        'activity_type': 'poll',
+                        'course_content': 'Basic course content',
+                        'course_id': test_course,
+                        'document_ids': [doc.id]
+                    })
+
+                    assert response.status_code == 200
+                    data = response.get_json()
+
+                    # Verify AI service was called with enhanced content
+                    mock_ai_instance.generate_activity.assert_called_once()
+                    call_args = mock_ai_instance.generate_activity.call_args
+
+                    enhanced_content = call_args.kwargs['course_content']
+                    assert 'Basic course content' in enhanced_content
+                    assert '--- 从上传文档提取的内容 ---' in enhanced_content
+                    assert 'Extracted content from integration test document' in enhanced_content
+
+                    assert data['message'] == 'AI活动生成成功'
+
+            # Clean up
+            db.session.delete(doc)
+            db.session.commit()
