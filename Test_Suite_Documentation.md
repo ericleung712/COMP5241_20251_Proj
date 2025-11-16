@@ -2,23 +2,25 @@
 
 ## Overview
 
-This document provides a comprehensive overview of the automated test suite for the Smart Classroom Platform, covering both multi-question quiz functionality and AI generation features.
+This document provides a comprehensive overview of the automated test suite for the Smart Classroom Platform, covering multi-question quiz functionality, AI generation features, and analytics endpoints.
 
 ## Test Structure
 
-The test suite is organized into two main test files:
+The test suite is organized into three main test files:
 
 ### 1. `tests/test_quiz.py` - Multi-Question Quiz Tests
 ### 2. `tests/test_ai_generation.py` - AI Generation Feature Tests
+### 3. `tests/test_analytics.py` - Analytics Endpoints Tests
 
 ## Test Statistics
 
-- **Total Test Classes**: 7
-- **Total Test Methods**: 47
+- **Total Test Classes**: 8
+- **Total Test Methods**: 55
 - **Test Coverage Areas**:
   - Quiz creation and management
   - Student participation and responses
   - Teacher oversight and analytics
+  - Teacher dashboard analytics and performance charts
   - AI activity generation
   - JSON parsing and error handling
   - Document dropdown API functionality
@@ -130,6 +132,33 @@ Tests for document dropdown API endpoints supporting AI activity generator:
 
 ---
 
+## 3. Analytics Endpoints Tests (`test_analytics.py`)
+
+### TestAnalytics Class
+Tests for analytics API endpoints including teacher dashboard analytics and system overview:
+
+#### Authentication and Authorization Tests
+- **`test_teacher_system_overview_requires_auth`**: Verifies unauthenticated requests return 401
+- **`test_teacher_system_overview_requires_teacher_role`**: Ensures only teachers can access teacher analytics endpoints
+
+#### Teacher System Overview Tests
+- **`test_teacher_system_overview_with_data`**: Tests successful data retrieval with populated courses and activities
+- **`test_teacher_system_overview_empty_courses`**: Tests behavior when teacher has no courses
+- **`test_teacher_system_overview_with_date_range`**: Tests date range filtering functionality
+- **`test_teacher_system_overview_invalid_date_range`**: Tests validation of invalid date parameters
+
+#### Dashboard Data Tests
+- **`test_teacher_dashboard_data`**: Tests teacher dashboard data endpoint with course and activity statistics
+- **`test_student_dashboard_data`**: Tests student dashboard data endpoint with enrollment and participation data
+
+#### Test Features
+- **Authentication Testing**: Comprehensive checks for auth requirements and proper HTTP status codes
+- **Authorization Testing**: Role-based access control validation for teacher-specific endpoints
+- **Data Filtering**: Ensures teacher-specific data isolation and course ownership validation
+- **Date Range Validation**: Tests optional date filtering with ISO format validation
+- **Edge Cases**: Empty data scenarios, invalid inputs, and error conditions
+- **API Response Validation**: Verifies correct JSON structure, data accuracy, and aggregations
+
 ## Test Fixtures
 
 ### Core Fixtures (`conftest.py`)
@@ -189,6 +218,11 @@ python -m pytest tests/test_quiz.py -v
 python -m pytest tests/test_ai_generation.py -v
 ```
 
+#### Run Analytics Tests Only:
+```bash
+python -m pytest tests/test_analytics.py -v
+```
+
 ### Running Specific Test Classes
 
 #### Run Multi-Question Quiz Tests:
@@ -204,6 +238,11 @@ python -m pytest tests/test_ai_generation.py::TestAIGeneration -v
 #### Run JSON Parsing Tests:
 ```bash
 python -m pytest tests/test_ai_generation.py::TestJSONParsing -v
+```
+
+#### Run Analytics Tests:
+```bash
+python -m pytest tests/test_analytics.py::TestAnalytics -v
 ```
 
 ### Running Individual Tests
@@ -258,6 +297,7 @@ Modified `tests/conftest.py` to use monkey patching of `os.path.join` to interce
 - ✅ Student quiz participation and submission
 - ✅ Immediate feedback and scoring
 - ✅ Teacher response viewing and analytics
+- ✅ Teacher dashboard analytics and performance charts
 - ✅ AI activity generation for all types
 - ✅ JSON parsing with multiple formats
 - ✅ Error handling and validation
@@ -268,7 +308,8 @@ Modified `tests/conftest.py` to use monkey patching of `os.path.join` to interce
 - ✅ Response submission endpoints
 - ✅ Activity status management
 - ✅ AI generation endpoints
-- ✅ Analytics and reporting
+- ✅ Analytics and reporting endpoints
+- ✅ Teacher dashboard analytics endpoints
 
 ### Data Validation
 - ✅ Quiz configuration validation
@@ -282,9 +323,9 @@ Modified `tests/conftest.py` to use monkey patching of `os.path.join` to interce
 
 As of November 16, 2025:
 
-- **Total Tests**: 47 test methods across 7 test classes
-- **All Tests Passing**: ✅ 47/47 tests pass successfully
-- **Test Execution Time**: ~12-15 seconds for full suite (quiz tests: ~12s, AI tests: ~3s)
+- **Total Tests**: 55 test methods across 8 test classes
+- **All Tests Passing**: ✅ 55/55 tests pass successfully
+- **Test Execution Time**: ~12-15 seconds for full suite (quiz tests: ~12s, AI tests: ~3s, analytics tests: ~3s)
 - **Database Isolation**: ✅ Tests use temporary databases, production database remains unchanged
 - **Mock Usage**: Extensive mocking of AI services and external dependencies
 
@@ -337,6 +378,6 @@ python -m pytest tests/ --tb=short -x
 
 ---
 
-*Test Suite Version: 1.1*  
+*Test Suite Version: 1.2*  
 *Last Updated: November 16, 2025*  
-*Coverage: Multi-Question Quiz & AI Generation Features*
+*Coverage: Multi-Question Quiz, AI Generation Features & Analytics Endpoints*

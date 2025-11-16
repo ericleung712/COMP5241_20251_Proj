@@ -6,6 +6,7 @@
     <title>Admin Dashboard - Smart Classroom Platform</title>
     <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
     <script src="/static/js/i18n.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         /* General styles */
         * {
@@ -376,23 +377,23 @@
             }
         }
         
-        @media (max-width: 768px) {
-            .dashboard-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            
-            .header {
-                flex-direction: column;
-                gap: 15px;
-            }
-            
-            .admin-actions {
-                grid-template-columns: 1fr;
-            }
+        .chart-switch-btn {
+            margin-right: 10px;
+            background-color: #f8f9fa;
+            color: #082f49;
+            border: 2px solid #e1e5e9;
+        }
+        
+        .chart-switch-btn.active {
+            background-color: #083d5d;
+            color: white;
+            border-color: #083d5d;
+        }
+        
+        .chart-switch-btn:hover {
+            background-color: #0b4b70;
+            color: white;
+            border-color: #0b4b70;
         }
     </style>
 </head>
@@ -490,7 +491,46 @@
         <!-- System Overview -->
         <section class="card">
             <h2>System Overview</h2>
-            <div id="systemOverview" class="loading">Loading...</div>
+            <div style="margin-bottom: 20px;">
+                <div style="display: flex; gap: 15px; align-items: center; margin-bottom: 15px;">
+                    <div style="display: flex; flex-direction: column;">
+                        <label for="startDate" style="font-size: 0.9em; font-weight: 500; margin-bottom: 5px;">Start Date:</label>
+                        <input type="date" id="startDate" style="padding: 8px; border: 2px solid #e1e5e9; border-radius: 6px; font-size: 14px;">
+                    </div>
+                    <div style="display: flex; flex-direction: column;">
+                        <label for="endDate" style="font-size: 0.9em; font-weight: 500; margin-bottom: 5px;">End Date:</label>
+                        <input type="date" id="endDate" style="padding: 8px; border: 2px solid #e1e5e9; border-radius: 6px; font-size: 14px;">
+                    </div>
+                    <div style="display: flex; align-items: end; gap: 10px;">
+                        <button class="primary" onclick="loadSystemOverview()" style="padding: 8px 16px; height: 38px;">Apply Date Range</button>
+                        <button class="primary" onclick="clearDateRange()" style="padding: 8px 16px; height: 38px; background-color: #6c757d;">Clear</button>
+                    </div>
+                </div>
+                <div>
+                    <button id="completionBtn" class="primary chart-switch-btn active" onclick="switchChart('completion')">Completion Rates</button>
+                    <button id="timeBtn" class="primary chart-switch-btn" onclick="switchChart('time')">Time Spent</button>
+                    <button id="quizBtn" class="primary chart-switch-btn" onclick="switchChart('quiz')">Quiz Scores</button>
+                    <button id="userActivityBtn" class="primary chart-switch-btn" onclick="switchChart('userActivity')">User Activity</button>
+                </div>
+            </div>
+            <div id="systemOverview">
+                <div id="completionChartContainer" class="chart-container">
+                    <div class="chart-title">Course Completion Rates</div>
+                    <canvas id="completionRateChart"></canvas>
+                </div>
+                <div id="timeChartContainer" class="chart-container" style="display: none;">
+                    <div class="chart-title">Time Spent on Modules (Average per User)</div>
+                    <canvas id="timeSpentChart"></canvas>
+                </div>
+                <div id="quizChartContainer" class="chart-container" style="display: none;">
+                    <div class="chart-title">Quiz Scores</div>
+                    <canvas id="quizScoreChart"></canvas>
+                </div>
+                <div id="userActivityChartContainer" class="chart-container" style="display: none;">
+                    <div class="chart-title">User Activity Over Time</div>
+                    <canvas id="userActivityChart"></canvas>
+                </div>
+            </div>
         </section>
     </main>
 
@@ -704,11 +744,17 @@
 
     <script>
         let currentUser = null;
+        let systemOverviewData = null;
+        let currentChart = 'completion';
         
         // Initialize on page load
         window.onload = async function() {
+            // Set default date range (last 12 months)
+            setDefaultDateRange();
+            
             await checkAuth();
             await loadDashboardData();
+            await loadSystemOverview();
             // Auto-load users, courses, and activities lists
             await loadUsers();
             await loadCourses();
@@ -729,7 +775,9 @@
         // Check authentication status
         async function checkAuth() {
             try {
-                const response = await fetch('/api/auth/profile');
+                const response = await fetch('/api/auth/profile', {
+                    credentials: 'include'
+                });
                 if (response.ok) {
                     currentUser = await response.json();
                     if (currentUser.role !== 'admin') {
@@ -748,7 +796,9 @@
         // Load dashboard data
         async function loadDashboardData() {
             try {
-                const response = await fetch('/api/analytics/dashboard');
+                const response = await fetch('/api/analytics/dashboard', {
+                    credentials: 'include'
+                });
                 if (response.ok) {
                     const data = await response.json();
                     document.getElementById('totalUsers').textContent = data.stats.total_users;
@@ -806,6 +856,369 @@
             `).join('');
             
             container.innerHTML = html;
+        }
+        
+        // Set default date range (last 12 months)
+        function setDefaultDateRange() {
+            const now = new Date();
+            const oneYearAgo = new Date();
+            oneYearAgo.setFullYear(now.getFullYear() - 1);
+            
+            // Format dates as YYYY-MM-DD for input fields
+            const formatDate = (date) => {
+                return date.toISOString().split('T')[0];
+            };
+            
+            document.getElementById('startDate').value = formatDate(oneYearAgo);
+            document.getElementById('endDate').value = formatDate(now);
+        }
+        
+        // Clear date range
+        function clearDateRange() {
+            document.getElementById('startDate').value = '';
+            document.getElementById('endDate').value = '';
+            // Reload with default date range
+            loadSystemOverview();
+        }
+        
+        // Load system overview data
+        async function loadSystemOverview() {
+            try {
+                // Show loading state
+                document.getElementById('systemOverview').innerHTML = '<div class="loading">Loading system overview...</div>';
+                
+                // Get date range from inputs
+                const startDate = document.getElementById('startDate').value;
+                const endDate = document.getElementById('endDate').value;
+                
+                // Build query parameters
+                const params = new URLSearchParams();
+                if (startDate) {
+                    params.append('start_date', startDate);
+                }
+                if (endDate) {
+                    params.append('end_date', endDate);
+                }
+                
+                // Fetch system overview data
+                const response = await fetch(`/api/admin/system-overview?${params.toString()}`, {
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    systemOverviewData = await response.json();
+                    
+                    // Restore chart containers HTML
+                    document.getElementById('systemOverview').innerHTML = `
+                        <div id="completionChartContainer" class="chart-container">
+                            <div class="chart-title">Course Completion Rates</div>
+                            <canvas id="completionRateChart"></canvas>
+                        </div>
+                        <div id="timeChartContainer" class="chart-container" style="display: none;">
+                            <div class="chart-title">Time Spent on Modules (Average per User)</div>
+                            <canvas id="timeSpentChart"></canvas>
+                        </div>
+                        <div id="quizChartContainer" class="chart-container" style="display: none;">
+                            <div class="chart-title">Quiz Scores</div>
+                            <canvas id="quizScoreChart"></canvas>
+                        </div>
+                        <div id="userActivityChartContainer" class="chart-container" style="display: none;">
+                            <div class="chart-title">User Activity Over Time</div>
+                            <canvas id="userActivityChart"></canvas>
+                        </div>
+                    `;
+                    
+                    // Render the current chart
+                    switchChart(currentChart);
+                } else {
+                    const error = await response.json();
+                    document.getElementById('systemOverview').innerHTML = `<div class="error">Failed to load system overview: ${error.error}</div>`;
+                }
+            } catch (error) {
+                console.error('Failed to load system overview:', error);
+                document.getElementById('systemOverview').innerHTML = '<div class="error">Failed to load system overview</div>';
+            }
+        }
+        
+        // Switch between charts
+        function switchChart(chartType) {
+            if (!systemOverviewData) return;
+            
+            // Update button states
+            document.querySelectorAll('.chart-switch-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById(chartType + 'Btn').classList.add('active');
+            
+            // Hide all chart containers
+            document.getElementById('completionChartContainer').style.display = 'none';
+            document.getElementById('timeChartContainer').style.display = 'none';
+            document.getElementById('quizChartContainer').style.display = 'none';
+            document.getElementById('userActivityChartContainer').style.display = 'none';
+            
+            // Show selected chart container
+            document.getElementById(chartType + 'ChartContainer').style.display = 'block';
+            
+            // Render the selected chart if not already rendered
+            currentChart = chartType;
+            switch (chartType) {
+                case 'completion':
+                    renderCompletionRateChart(systemOverviewData);
+                    break;
+                case 'time':
+                    renderTimeSpentChart(systemOverviewData);
+                    break;
+                case 'quiz':
+                    renderQuizScoreChart(systemOverviewData);
+                    break;
+                case 'userActivity':
+                    renderUserActivityChart(systemOverviewData);
+                    break;
+            }
+        }
+        
+        // Render completion rate chart
+        function renderCompletionRateChart(data) {
+            const canvas = document.getElementById('completionRateChart');
+            if (canvas.chart) {
+                canvas.chart.destroy();
+            }
+            
+            const ctx = canvas.getContext('2d');
+            const courseNames = data.course_breakdown.map(course => course.course_code);
+            const completionRates = data.course_breakdown.map(course => course.completion_rate);
+            
+            canvas.chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: courseNames,
+                    datasets: [{
+                        label: 'Completion Rate (%)',
+                        data: completionRates,
+                        backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Course Code'
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            title: {
+                                display: true,
+                                text: 'Completion Rate (%)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Render time spent chart
+        function renderTimeSpentChart(data) {
+            const canvas = document.getElementById('timeSpentChart');
+            if (canvas.chart) {
+                canvas.chart.destroy();
+            }
+            
+            const ctx = canvas.getContext('2d');
+            const courseNames = data.course_breakdown.map(course => course.course_code);
+            const avgTimes = data.course_breakdown.map(course => course.avg_time_per_user_seconds / 60); // Convert to minutes
+            
+            canvas.chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: courseNames,
+                    datasets: [{
+                        label: 'Average Time Spent (minutes)',
+                        data: avgTimes,
+                        backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Course Code'
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Average Time Spent (minutes)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Render quiz score chart
+        function renderQuizScoreChart(data) {
+            const canvas = document.getElementById('quizScoreChart');
+            if (canvas.chart) {
+                canvas.chart.destroy();
+            }
+            
+            const ctx = canvas.getContext('2d');
+            const courseLabels = ['Courses']; // Single label for all bars
+            const courseNames = data.course_breakdown.map(course => course.course_name);
+            const courseCodes = data.course_breakdown.map(course => course.course_code);
+            const avgScores = data.course_breakdown.map(course => course.avg_quiz_score);
+            
+            // Create separate datasets for each course to enable individual legend toggling
+            const datasets = data.course_breakdown.map((course, index) => ({
+                label: `${course.course_code} - ${course.course_name}`,
+                data: [course.avg_quiz_score],
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.6)',
+                    'rgba(54, 162, 235, 0.6)',
+                    'rgba(255, 205, 86, 0.6)',
+                    'rgba(75, 192, 192, 0.6)',
+                    'rgba(153, 102, 255, 0.6)',
+                    'rgba(255, 159, 64, 0.6)'
+                ][index % 6],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 205, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)'
+                ][index % 6],
+                borderWidth: 1
+            }));
+            
+            canvas.chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: courseLabels,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Courses'
+                            },
+                            ticks: {
+                                display: false // Hide x-axis ticks since we only have one label
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            title: {
+                                display: true,
+                                text: 'Average Quiz Score (%)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Average Quiz Scores by Course',
+                            position: 'top'
+                        },
+                        legend: {
+                            display: true,
+                            position: 'right',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 15,
+                                boxWidth: 12,
+                                boxHeight: 12
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                title: function(context) {
+                                    return context[0].dataset.label;
+                                },
+                                label: function(context) {
+                                    return `Score: ${context.parsed.y}%`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Render user activity chart
+        function renderUserActivityChart(data) {
+            const canvas = document.getElementById('userActivityChart');
+            if (canvas.chart) {
+                canvas.chart.destroy();
+            }
+            
+            const ctx = canvas.getContext('2d');
+            const months = data.user_activity.map(item => item.month);
+            const totalUsers = data.user_activity.map(item => item.total_users);
+            const activeUsers = data.user_activity.map(item => item.active_users);
+            
+            canvas.chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: months,
+                    datasets: [{
+                        label: 'Total Users',
+                        data: totalUsers,
+                        backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 2,
+                        fill: false,
+                        tension: 0.1
+                    }, {
+                        label: 'Active Users',
+                        data: activeUsers,
+                        backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 2,
+                        fill: false,
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Month'
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Number of Users'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    }
+                }
+            });
         }
         
         // Show user management
