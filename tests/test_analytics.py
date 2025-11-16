@@ -311,3 +311,110 @@ def test_student_dashboard_data(student_client):
     stats = data['stats']
     assert 'total_courses' in stats
     assert 'total_participations' in stats
+    assert 'avg_score' in stats
+
+
+def test_student_dashboard_data_with_responses(student_client, teacher_test_data):
+    """Test student dashboard data with responses to verify avg_score calculation."""
+    # Use the student from teacher_test_data who has responses with scores 85.0 and 92.0
+    # Average should be (85.0 + 92.0) / 2 = 88.5
+    with student_client:
+        with student_client.session_transaction() as sess:
+            sess['user_id'] = teacher_test_data['student_id']
+        
+        response = student_client.get('/api/analytics/dashboard')
+        assert response.status_code == 200
+
+        data = response.get_json()
+        stats = data['stats']
+        assert 'avg_score' in stats
+        assert stats['avg_score'] == 88.5  # (85.0 + 92.0) / 2
+
+
+@pytest.fixture
+def admin_client(app, client, admin_user):
+    """Create authenticated admin client."""
+    with client:
+        with client.session_transaction() as sess:
+            sess['user_id'] = admin_user
+        return client
+
+
+@pytest.fixture
+def admin_user(app):
+    """Create an admin user."""
+    with app.app_context():
+        admin = User(
+            username='test_admin',
+            email='test_admin@example.com',
+            full_name='Test Admin',
+            role='admin'
+        )
+        admin.set_password('password123')
+        db.session.add(admin)
+        db.session.commit()
+        return admin.id
+
+
+def test_admin_dashboard_data(admin_client):
+    """Test admin dashboard data endpoint."""
+    response = admin_client.get('/api/analytics/dashboard')
+    assert response.status_code == 200
+
+    data = response.get_json()
+    assert 'role' in data
+    assert data['role'] == 'admin'
+    assert 'stats' in data
+    assert 'role_stats' in data
+    assert 'recent_users' in data
+
+    stats = data['stats']
+    assert 'total_users' in stats
+    assert 'total_courses' in stats
+    assert 'total_activities' in stats
+    assert 'total_responses' in stats
+    assert 'active_users' in stats
+    assert 'ai_activities' in stats
+
+
+def test_admin_dashboard_ai_activities_count(admin_client, teacher_test_data):
+    """Test that admin dashboard correctly counts AI-generated activities."""
+    with admin_client:
+        # Create some AI-generated activities
+        teacher_id = teacher_test_data['teacher_id']
+        course_id = teacher_test_data['course1_id']
+        
+        # Create AI activity
+        ai_activity = Activity(
+            title='AI Generated Quiz',
+            description='Test AI-generated quiz',
+            activity_type='quiz',
+            course_id=course_id,
+            creator_id=teacher_id,
+            status='active',
+            is_ai_generated=True
+        )
+        
+        # Create regular activity
+        regular_activity = Activity(
+            title='Regular Quiz',
+            description='Test regular quiz',
+            activity_type='quiz',
+            course_id=course_id,
+            creator_id=teacher_id,
+            status='active',
+            is_ai_generated=False
+        )
+        
+        db.session.add_all([ai_activity, regular_activity])
+        db.session.commit()
+        
+        # Get admin dashboard data
+        response = admin_client.get('/api/analytics/dashboard')
+        assert response.status_code == 200
+        
+        data = response.get_json()
+        stats = data['stats']
+        
+        # Should count only AI activities
+        assert stats['ai_activities'] == 1

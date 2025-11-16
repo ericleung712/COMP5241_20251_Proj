@@ -96,7 +96,8 @@ def create_activity():
         activity_type=data['activity_type'],
         course_id=data['course_id'],
         creator_id=user.id,
-        duration_minutes=data.get('duration_minutes', 10)
+        duration_minutes=data.get('duration_minutes', 10),
+        is_ai_generated=data.get('is_ai_generated', False)
     )
     
     # 设置活动配置

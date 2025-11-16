@@ -14,8 +14,8 @@ The test suite is organized into three main test files:
 
 ## Test Statistics
 
-- **Total Test Classes**: 8
-- **Total Test Methods**: 55
+- **Total Test Classes**: 9
+- **Total Test Methods**: 63
 - **Test Coverage Areas**:
   - Quiz creation and management
   - Student participation and responses
@@ -26,6 +26,9 @@ The test suite is organized into three main test files:
   - Document dropdown API functionality
   - Time limit inclusion in AI prompts
   - Frontend logic validation
+  - AI activity tracking and analytics
+  - Student average score calculations
+  - Admin dashboard metrics (active users, AI activities)
 
 ---
 
@@ -150,6 +153,9 @@ Tests for analytics API endpoints including teacher dashboard analytics and syst
 #### Dashboard Data Tests
 - **`test_teacher_dashboard_data`**: Tests teacher dashboard data endpoint with course and activity statistics
 - **`test_student_dashboard_data`**: Tests student dashboard data endpoint with enrollment and participation data
+- **`test_student_dashboard_data_with_responses`**: Tests student dashboard with average score calculation from quiz responses
+- **`test_admin_dashboard_data`**: Tests admin dashboard data endpoint with system-wide statistics
+- **`test_admin_dashboard_ai_activities_count`**: Tests that admin dashboard correctly counts AI-generated activities
 
 #### Test Features
 - **Authentication Testing**: Comprehensive checks for auth requirements and proper HTTP status codes
@@ -158,6 +164,8 @@ Tests for analytics API endpoints including teacher dashboard analytics and syst
 - **Date Range Validation**: Tests optional date filtering with ISO format validation
 - **Edge Cases**: Empty data scenarios, invalid inputs, and error conditions
 - **API Response Validation**: Verifies correct JSON structure, data accuracy, and aggregations
+- **AI Activity Tracking**: Tests proper counting and flagging of AI-generated activities
+- **Student Analytics**: Tests average score calculations and dashboard metrics
 
 ## Test Fixtures
 
@@ -302,6 +310,9 @@ Modified `tests/conftest.py` to use monkey patching of `os.path.join` to interce
 - ✅ JSON parsing with multiple formats
 - ✅ Error handling and validation
 - ✅ Backward compatibility
+- ✅ AI activity tracking and database flagging
+- ✅ Student average score calculations
+- ✅ Admin dashboard metrics (active users, AI activities)
 
 ### API Coverage
 - ✅ Activity creation endpoints
@@ -310,12 +321,17 @@ Modified `tests/conftest.py` to use monkey patching of `os.path.join` to interce
 - ✅ AI generation endpoints
 - ✅ Analytics and reporting endpoints
 - ✅ Teacher dashboard analytics endpoints
+- ✅ Student dashboard with average score metrics
+- ✅ Admin dashboard with active users and AI activities tracking
 
 ### Data Validation
 - ✅ Quiz configuration validation
 - ✅ Response data structure validation
 - ✅ Score calculation validation
 - ✅ User permission validation
+- ✅ AI activity flag validation
+- ✅ Average score calculation accuracy
+- ✅ Admin dashboard metrics accuracy
 
 ---
 
@@ -323,9 +339,9 @@ Modified `tests/conftest.py` to use monkey patching of `os.path.join` to interce
 
 As of November 16, 2025:
 
-- **Total Tests**: 55 test methods across 8 test classes
-- **All Tests Passing**: ✅ 55/55 tests pass successfully
-- **Test Execution Time**: ~12-15 seconds for full suite (quiz tests: ~12s, AI tests: ~3s, analytics tests: ~3s)
+- **Total Tests**: 63 test methods across 9 test classes
+- **All Tests Passing**: ✅ 63/63 tests pass successfully
+- **Test Execution Time**: ~38 seconds for full suite (quiz tests: ~12s, AI tests: ~3s, analytics tests: ~8s)
 - **Database Isolation**: ✅ Tests use temporary databases, production database remains unchanged
 - **Mock Usage**: Extensive mocking of AI services and external dependencies
 
@@ -378,6 +394,6 @@ python -m pytest tests/ --tb=short -x
 
 ---
 
-*Test Suite Version: 1.2*  
+*Test Suite Version: 1.3*  
 *Last Updated: November 16, 2025*  
-*Coverage: Multi-Question Quiz, AI Generation Features & Analytics Endpoints*
+*Coverage: Multi-Question Quiz, AI Generation Features, Analytics Endpoints & Dashboard Metrics*

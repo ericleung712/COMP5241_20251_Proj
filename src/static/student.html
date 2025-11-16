@@ -1034,6 +1034,7 @@
                     const data = await response.json();
                     document.getElementById('totalCourses').textContent = data.stats.total_courses;
                     document.getElementById('totalParticipations').textContent = data.stats.total_participations;
+                    document.getElementById('avgScore').textContent = data.stats.avg_score || 0;
                     
                     // Display recent participations
                     displayRecentResponses(data.recent_responses);
