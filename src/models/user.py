@@ -20,6 +20,9 @@ class User(db.Model):
     courses_enrolled = db.relationship('Course', secondary='course_enrollments', backref='students')
     activities_created = db.relationship('Activity', backref='creator', lazy=True)
     responses = db.relationship('ActivityResponse', backref='student', lazy=True)
+    forum_posts = db.relationship('ForumPost', backref='user', lazy=True)
+    forum_replies = db.relationship('ForumReply', backref='user', lazy=True)
+    forum_reads = db.relationship('UserForumRead', backref='user', lazy=True)
     
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)

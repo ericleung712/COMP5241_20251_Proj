@@ -6,6 +6,7 @@ from src.models.activity import Activity
 from src.models.response import ActivityResponse
 from src.models.analytics import Leaderboard, ActivityAnalytics
 from src.models.document import Document
+from src.models.forum import ForumPost, ForumReply, UserForumRead
 from src.routes.auth import auth_bp
 from src.routes.course import course_bp
 from src.routes.activity import activity_bp
@@ -14,6 +15,7 @@ from src.routes.analytics import analytics_bp
 from src.routes.admin import admin_bp
 from src.routes.document import document_bp
 from src.routes.ai_qa import ai_qa_bp
+from src.routes.forum import forum_bp
 import os
 
 def create_app():
@@ -40,6 +42,7 @@ def create_app():
     app.register_blueprint(admin_bp, url_prefix='/api/admin')
     app.register_blueprint(document_bp, url_prefix='/api/documents')
     app.register_blueprint(ai_qa_bp, url_prefix='/api/ai-qa')
+    app.register_blueprint(forum_bp, url_prefix='/api/forum')
     
     # 主页路由
     @app.route('/')

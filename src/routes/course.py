@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify, session
 from src.models.course import Course, course_enrollments
 from src.models.user import User
+from src.models.forum import ForumPost, ForumReply, UserForumRead
 from src.database import db
 from datetime import datetime
 from src.utils.email_validator import validate_polyu_email
@@ -15,6 +16,27 @@ def require_auth():
     if not user_id:
         return None
     return User.query.get(user_id)
+
+def check_forum_unread(user_id, course_id):
+    """检查用户在指定课程论坛是否有未读内容"""
+    # 获取用户的最后阅读时间
+    read_record = UserForumRead.query.filter_by(user_id=user_id, course_id=course_id).first()
+    last_read_at = read_record.last_read_at if read_record else datetime.min
+    
+    # 检查是否有新的帖子或回复 (排除用户自己的内容)
+    has_new_posts = ForumPost.query.filter(
+        ForumPost.course_id == course_id,
+        ForumPost.created_at > last_read_at,
+        ForumPost.user_id != user_id  # 排除用户自己的帖子
+    ).count() > 0
+    
+    has_new_replies = ForumReply.query.join(ForumPost).filter(
+        ForumPost.course_id == course_id,
+        ForumReply.created_at > last_read_at,
+        ForumReply.user_id != user_id  # 排除用户自己的回复
+    ).count() > 0
+    
+    return has_new_posts or has_new_replies
 
 @course_bp.route('/', methods=['GET'])
 def get_courses():
@@ -37,7 +59,14 @@ def get_courses():
     else:
         return jsonify({'error': '权限不足'}), 403
     
-    return jsonify([course.to_dict() for course in courses])
+    # 为每个课程添加论坛未读状态
+    courses_data = []
+    for course in courses:
+        course_dict = course.to_dict()
+        course_dict['forum_unread'] = check_forum_unread(user.id, course.id)
+        courses_data.append(course_dict)
+    
+    return jsonify(courses_data)
 
 @course_bp.route('/available', methods=['GET'])
 def get_available_courses():
