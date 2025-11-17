@@ -1155,6 +1155,54 @@
         </div>
     </div>
 
+    <!-- Forum modal -->
+    <div id="forumModal" class="modal">
+        <div class="modal-content" style="max-width: 1000px;">
+            <span class="close" onclick="closeModal('forumModal')">&times;</span>
+            <h2>💬 Course Forum</h2>
+            <div id="forumCourseInfo" style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                <p><strong>Course:</strong> <span id="forumCourseName">Loading...</span></p>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <button class="btn btn-primary" onclick="document.getElementById('createPostModal').style.display='block'">Create New Post</button>
+            </div>
+            <div id="forumPostsList" style="max-height: 500px; overflow-y: auto; border: 1px solid #e1e5e9; border-radius: 8px; padding: 15px; background: #fff;">
+                <div class="loading">Loading forum posts...</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Create post modal -->
+    <div id="createPostModal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <span class="close" onclick="closeModal('createPostModal')">&times;</span>
+            <h2>Create New Post</h2>
+            <div style="margin-bottom: 20px;">
+                <label for="postTitle" style="display: block; margin-bottom: 5px; font-weight: bold;">Title:</label>
+                <input type="text" id="postTitle" class="form-control" placeholder="Enter post title" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+            </div>
+            <div style="margin-bottom: 20px;">
+                <label for="postContent" style="display: block; margin-bottom: 5px; font-weight: bold;">Content:</label>
+                <textarea id="postContent" class="form-control" placeholder="Enter post content" rows="8" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; resize: vertical;"></textarea>
+            </div>
+            <div style="text-align: right;">
+                <button class="btn btn-secondary" onclick="closeModal('createPostModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="createForumPost()" style="margin-left: 10px;">Create Post</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Post details modal -->
+    <div id="postDetailsModal" class="modal">
+        <div class="modal-content" style="max-width: 1000px;">
+            <span class="close" onclick="closeModal('postDetailsModal')">&times;</span>
+            <h2>Post Details</h2>
+            <div id="postDetailsContent" style="max-height: 600px; overflow-y: auto;">
+                <div class="loading">Loading post details...</div>
+            </div>
+        </div>
+    </div>
+
     <script>
         let currentUser = null;
         let selectedActivityType = '';
@@ -1491,6 +1539,9 @@
                         <button class="btn btn-secondary" onclick="viewCourse(${course.id})">View Details</button>
                         <button class="btn btn-primary" onclick="showDocumentManagement(${course.id})">Manage Documents</button>
                         <button class="btn btn-success" onclick="showAIAssistant(${course.id})">🤖 AI Assistant</button>
+                        <button class="btn btn-info" onclick="openForumModal(${course.id}, '${course.course_name} (${course.course_code})')" data-course-id="${course.id}">
+                            💬 Forum${course.forum_unread ? ' ❗' : ''}
+                        </button>
                     </div>
                 </div>
             `).join('');
@@ -1772,6 +1823,11 @@
                 document.getElementById('additionalDropdowns').innerHTML = '';
                 aiGeneratedActivityData = null;
                 aiGeneratedCourseId = null;
+            }
+            
+            // If it's the post details modal, reset the viewing post ID
+            if (modalId === 'postDetailsModal') {
+                currentViewingPostId = null;
             }
         }
         
@@ -3647,6 +3703,322 @@
             }
             
             return html;
+        }
+
+        // Forum functions
+        let currentForumCourseId = null;
+        let currentViewingPostId = null;
+
+        async function openForumModal(courseId, courseName) {
+            currentForumCourseId = courseId;
+            document.getElementById('forumCourseName').textContent = courseName;
+            document.getElementById('forumModal').style.display = 'block';
+            await loadForumPosts(courseId);
+            await markForumAsRead(courseId);
+        }
+
+        async function loadForumPosts(courseId, page = 1, perPage = 10) {
+            const postsList = document.getElementById('forumPostsList');
+            postsList.innerHTML = '<div class="loading">Loading forum posts...</div>';
+            
+            try {
+                const response = await fetch(`/api/forum/${courseId}?page=${page}&per_page=${perPage}`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const data = await response.json();
+                postsList.innerHTML = '';
+                
+                if (data.posts.length === 0) {
+                    postsList.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">No posts yet. Be the first to create one!</p>';
+                    return;
+                }
+                
+                data.posts.forEach(post => {
+                    const postElement = document.createElement('div');
+                    postElement.className = 'forum-post';
+                    postElement.style.cssText = `
+                        border: 1px solid #e1e5e9;
+                        border-radius: 8px;
+                        padding: 15px;
+                        margin-bottom: 15px;
+                        background: #fff;
+                    `;
+                    
+                    postElement.innerHTML = `
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+                            <div>
+                                <h4 style="margin: 0; color: #333;">${post.title}</h4>
+                                <small style="color: #666;">By ${post.user_name || 'Unknown'} on ${new Date(post.created_at).toLocaleString()}</small>
+                            </div>
+                            <div>
+                                ${post.is_pinned ? '<span style="background: #ffc107; color: #000; padding: 2px 6px; border-radius: 3px; font-size: 12px;">📌 Pinned</span>' : ''}
+                            </div>
+                        </div>
+                        <div style="margin-bottom: 10px; color: #555;">${post.content}</div>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <button class="btn btn-sm btn-outline-primary" onclick="loadPostDetails(${post.id})">View Replies (${post.reply_count})</button>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="replyToPost(${post.id})">Reply</button>
+                            ${post.can_delete ? `<button class="btn btn-sm btn-outline-danger" onclick="deletePost(${post.id})">Delete</button>` : ''}
+                        </div>
+                    `;
+                    
+                    postsList.appendChild(postElement);
+                });
+                
+                // Add pagination if needed
+                if (data.total_pages > 1) {
+                    const pagination = document.createElement('div');
+                    pagination.style.cssText = 'text-align: center; margin-top: 20px;';
+                    pagination.innerHTML = `
+                        <button class="btn btn-sm btn-outline-primary" ${page <= 1 ? 'disabled' : ''} onclick="loadForumPosts(${courseId}, ${page - 1})">Previous</button>
+                        <span style="margin: 0 10px;">Page ${page} of ${data.total_pages}</span>
+                        <button class="btn btn-sm btn-outline-primary" ${page >= data.total_pages ? 'disabled' : ''} onclick="loadForumPosts(${courseId}, ${page + 1})">Next</button>
+                    `;
+                    postsList.appendChild(pagination);
+                }
+                
+            } catch (error) {
+                postsList.innerHTML = `<div style="padding: 20px; background: #f8d7da; border-radius: 8px; color: #dc3545;">Error loading posts: ${error.message}</div>`;
+            }
+        }
+
+        async function createForumPost() {
+            const title = document.getElementById('postTitle').value.trim();
+            const content = document.getElementById('postContent').value.trim();
+            
+            if (!title || !content) {
+                alert('Please fill in both title and content.');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/forum/${currentForumCourseId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        title: title,
+                        content: content
+                    })
+                });
+                
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                // Clear form and close modal
+                document.getElementById('postTitle').value = '';
+                document.getElementById('postContent').value = '';
+                closeModal('createPostModal');
+                
+                // Reload posts
+                await loadForumPosts(currentForumCourseId);
+                
+            } catch (error) {
+                alert(`Error creating post: ${error.message}`);
+            }
+        }
+
+        async function replyToPost(postId) {
+            const replyContent = prompt('Enter your reply:');
+            if (!replyContent || !replyContent.trim()) return;
+            
+            try {
+                const response = await fetch(`/api/forum/post/${postId}/reply`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        content: replyContent.trim()
+                    })
+                });
+                
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                // Reload posts to show updated reply count
+                await loadForumPosts(currentForumCourseId);
+                
+                // If the post details modal is currently open and showing this post, reload it too
+                const postDetailsModal = document.getElementById('postDetailsModal');
+                if (postDetailsModal && postDetailsModal.style.display === 'block' && currentViewingPostId === postId) {
+                    await loadPostDetails(postId);
+                }
+                
+            } catch (error) {
+                alert(`Error posting reply: ${error.message}`);
+            }
+        }
+
+        async function loadPostDetails(postId) {
+            currentViewingPostId = postId;
+            const container = document.getElementById('postDetailsContent');
+            container.innerHTML = '<div class="loading">Loading post details...</div>';
+            document.getElementById('postDetailsModal').style.display = 'block';
+            
+            try {
+                const response = await fetch(`/api/forum/post/${postId}/replies`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const data = await response.json();
+                displayPostDetails(data.post, data.replies);
+                
+            } catch (error) {
+                container.innerHTML = `<div style="padding: 20px; background: #f8d7da; border-radius: 8px; color: #dc3545;">Error loading post details: ${error.message}</div>`;
+            }
+        }
+
+        function displayPostDetails(post, replies) {
+            const container = document.getElementById('postDetailsContent');
+            
+            let html = `
+                <div style="border: 1px solid #e1e5e9; border-radius: 8px; padding: 20px; margin-bottom: 20px; background: white;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+                        <div>
+                            <h3 style="margin: 0 0 10px 0; color: #082f49;">${post.title}</h3>
+                            <small style="color: #666;">By ${post.user_name || 'Unknown'} on ${new Date(post.created_at).toLocaleString()}</small>
+                        </div>
+                        <div>
+                            ${post.is_pinned ? '<span style="background: #ffc107; color: #000; padding: 4px 8px; border-radius: 3px; font-size: 12px;">📌 Pinned</span>' : ''}
+                        </div>
+                    </div>
+                    <div style="color: #333; line-height: 1.6; margin-bottom: 15px;">${post.content.replace(/\n/g, '<br>')}</div>
+                    <div style="border-top: 1px solid #e1e5e9; padding-top: 15px;">
+                        <button class="btn btn-sm btn-outline-secondary" onclick="replyToPost(${post.id})">Reply to Post</button>
+                        ${post.can_delete ? `<button class="btn btn-sm btn-outline-danger" onclick="deletePost(${post.id})" style="margin-left: 10px;">Delete Post</button>` : ''}
+                    </div>
+                </div>
+            `;
+            
+            if (replies.length === 0) {
+                html += '<p style="text-align: center; padding: 20px; color: #666;">No replies yet. Be the first to reply!</p>';
+            } else {
+                html += '<h4 style="margin-bottom: 15px; color: #082f49;">Replies</h4>';
+                html += '<div class="replies-container">';
+                
+                // Display threaded replies
+                replies.forEach(reply => {
+                    html += renderReply(reply, 0);
+                });
+                
+                html += '</div>';
+            }
+            
+            container.innerHTML = html;
+        }
+
+        function renderReply(reply, depth) {
+            const indent = depth * 30; // 30px indent per level
+            const maxDepth = 2; // Limit nesting depth to 3 layers (depth 0, 1, 2)
+            
+            let html = `
+                <div class="reply" style="margin-left: ${indent}px; border: 1px solid #e1e5e9; border-radius: 8px; padding: 15px; margin-bottom: 10px; background: #f8f9fa;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+                        <div>
+                            <strong style="color: #082f49;">${reply.user_name || 'Unknown'}</strong>
+                            <small style="color: #666; margin-left: 10px;">${new Date(reply.created_at).toLocaleString()}</small>
+                        </div>
+                    </div>
+                    <div style="color: #333; line-height: 1.5; margin-bottom: 10px;">${reply.content.replace(/\n/g, '<br>')}</div>
+                    <div style="display: flex; gap: 10px;">
+                        ${depth < maxDepth ? `<button class="btn btn-sm btn-outline-secondary" onclick="replyToReply(${reply.id}, '${reply.user_name || 'Unknown'}')">Reply</button>` : '<small style="color: #999; font-style: italic;">Maximum reply depth reached</small>'}
+                        ${reply.can_delete ? `<button class="btn btn-sm btn-outline-danger" onclick="deleteReply(${reply.id})">Delete</button>` : ''}
+                    </div>
+                </div>
+            `;
+            
+            // Render child replies
+            if (reply.child_replies && reply.child_replies.length > 0) {
+                reply.child_replies.forEach(childReply => {
+                    html += renderReply(childReply, depth + 1);
+                });
+            }
+            
+            return html;
+        }
+
+        async function replyToReply(parentReplyId, parentAuthorName) {
+            const replyContent = prompt(`Reply to ${parentAuthorName}:`);
+            if (!replyContent || !replyContent.trim()) return;
+            
+            try {
+                const response = await fetch(`/api/forum/post/${currentViewingPostId}/reply`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        content: replyContent.trim(),
+                        parent_reply_id: parentReplyId
+                    })
+                });
+                
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                // Reload the post details to show the new reply
+                await loadPostDetails(currentViewingPostId);
+                
+            } catch (error) {
+                alert(`Error posting reply: ${error.message}`);
+            }
+        }
+
+        async function markForumAsRead(courseId) {
+            try {
+                await fetch(`/api/forum/${courseId}/mark-read`, { method: 'POST' });
+                // Update the forum button to remove notification indicator
+                const forumBtn = document.querySelector(`[data-course-id="${courseId}"] .forum-btn`);
+                if (forumBtn) {
+                    forumBtn.innerHTML = '💬 Forum';
+                }
+            } catch (error) {
+                console.error('Error marking forum as read:', error);
+            }
+        }
+
+        async function deletePost(postId) {
+            if (!confirm('Are you sure you want to delete this post? This action cannot be undone.')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/forum/post/${postId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                // Reload the forum posts to show the updated content
+                await loadForumPosts(currentForumCourseId);
+                
+                // If the post details modal is currently open and showing this post, reload it too
+                const postDetailsModal = document.getElementById('postDetailsModal');
+                if (postDetailsModal && postDetailsModal.style.display === 'block' && currentViewingPostId === postId) {
+                    await loadPostDetails(postId);
+                }
+                
+            } catch (error) {
+                alert(`Error deleting post: ${error.message}`);
+            }
+        }
+
+        async function deleteReply(replyId) {
+            if (!confirm('Are you sure you want to delete this reply? This action cannot be undone.')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/forum/reply/${replyId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                // Reload the post details to show the updated content
+                if (currentViewingPostId) {
+                    await loadPostDetails(currentViewingPostId);
+                }
+                
+            } catch (error) {
+                alert(`Error deleting reply: ${error.message}`);
+            }
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
         }
     </script>
 </body>

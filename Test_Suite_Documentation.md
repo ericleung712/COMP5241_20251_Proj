@@ -6,16 +6,17 @@ This document provides a comprehensive overview of the automated test suite for 
 
 ## Test Structure
 
-The test suite is organized into three main test files:
+The test suite is organized into four main test files:
 
 ### 1. `tests/test_quiz.py` - Multi-Question Quiz Tests
 ### 2. `tests/test_ai_generation.py` - AI Generation Feature Tests
 ### 3. `tests/test_analytics.py` - Analytics Endpoints Tests
+### 4. `tests/test_forum.py` - Forum Functionality Tests
 
 ## Test Statistics
 
-- **Total Test Classes**: 9
-- **Total Test Methods**: 63
+- **Total Test Classes**: 10
+- **Total Test Methods**: 72
 - **Test Coverage Areas**:
   - Quiz creation and management
   - Student participation and responses
@@ -29,6 +30,12 @@ The test suite is organized into three main test files:
   - AI activity tracking and analytics
   - Student average score calculations
   - Admin dashboard metrics (active users, AI activities)
+  - Forum post and reply creation
+  - Threaded replies and depth limits
+  - Forum search and notifications
+  - Teacher forum access and permissions
+  - Forum unread status calculation
+  - Soft delete functionality for posts and replies
 
 ---
 
@@ -226,9 +233,81 @@ python -m pytest tests/test_quiz.py -v
 python -m pytest tests/test_ai_generation.py -v
 ```
 
-#### Run Analytics Tests Only:
+#### Run Analytics Tests:
 ```bash
-python -m pytest tests/test_analytics.py -v
+python -m pytest tests/test_analytics.py::TestAnalytics -v
+```
+
+#### Run Forum Tests:
+```bash
+python -m pytest tests/test_forum.py::TestForumRoutes -v
+```
+
+---
+
+## 4. Forum Functionality Tests (`test_forum.py`)
+
+### TestForumModels Class
+Tests for forum data models and relationships:
+
+- **`test_forum_post_creation`**: Validates forum post creation with proper relationships
+- **`test_forum_reply_creation`**: Tests reply creation and user attribution
+- **`test_threaded_replies`**: Verifies threaded reply relationships and child reply access
+- **`test_user_forum_read`**: Tests user forum read tracking with unique constraints
+
+### TestForumRoutes Class
+Comprehensive tests for forum API endpoints:
+
+#### Authentication and Authorization Tests
+- **`test_get_forum_posts_unauthorized`**: Verifies authentication requirements
+- **`test_get_forum_posts_no_access`**: Tests permission checks for course access
+
+#### Forum Post Management Tests
+- **`test_create_forum_post`**: Tests teacher forum post creation
+- **`test_create_forum_post_student`**: Tests student forum post creation
+- **`test_create_forum_post_invalid_data`**: Validates input data requirements
+- **`test_get_forum_posts`**: Tests forum post retrieval and listing
+- **`test_update_forum_post`**: Tests post editing functionality
+- **`test_update_forum_post_no_permission`**: Verifies permission controls
+- **`test_delete_forum_post`**: Tests post deletion with proper authorization
+
+#### Reply Functionality Tests
+- **`test_create_forum_reply`**: Tests basic reply creation
+- **`test_threaded_replies_api`**: Tests threaded reply API responses
+- **`test_create_reply_to_reply`**: Tests nested reply creation
+- **`test_create_reply_to_reply_invalid_parent`**: Validates parent reply existence
+- **`test_create_reply_to_reply_wrong_post`**: Tests cross-post reply prevention
+- **`test_reply_depth_limit`**: Enforces 3-level reply depth limit
+
+#### Forum Features Tests
+- **`test_forum_search`**: Tests search functionality across titles and content
+- **`test_forum_notifications`**: Tests unread notification system
+- **`test_forum_notifications_exclude_own_content`**: Verifies own content exclusion
+- **`test_forum_pagination`**: Tests pagination for large forum datasets
+
+#### Soft Delete Tests
+- **`test_soft_delete_forum_post_by_owner`**: Tests post owner can soft delete their own posts
+- **`test_soft_delete_forum_reply_by_owner`**: Tests reply owner can soft delete their own replies
+- **`test_soft_delete_forum_post_by_teacher`**: Tests teachers can soft delete any post in their courses
+- **`test_soft_delete_forum_reply_by_teacher`**: Tests teachers can soft delete any reply in their courses
+- **`test_soft_delete_forum_post_no_permission`**: Tests users cannot delete posts they don't own or aren't teachers for
+- **`test_soft_delete_forum_reply_no_permission`**: Tests users cannot delete replies they don't own or aren't teachers for
+- **`test_soft_delete_preserves_reply_count`**: Tests that soft deleting posts/replies preserves reply counts and threading
+
+### Test Features
+- **Authentication Testing**: Comprehensive checks for auth requirements and proper HTTP status codes
+- **Authorization Testing**: Role-based access control for forum operations
+- **Data Validation**: Ensures proper forum data structure and relationships
+- **Threading Logic**: Validates nested reply creation and depth limits
+- **Search Functionality**: Tests content and title search capabilities
+- **Notification System**: Verifies unread status calculation and mark-as-read functionality
+- **Pagination**: Tests large dataset handling with proper pagination
+- **Permission Controls**: Ensures teachers and students have appropriate forum access
+- **User Attribution**: Tests proper user name display in forum content
+
+#### Run Forum Tests Only:
+```bash
+python -m pytest tests/test_forum.py -v
 ```
 
 ### Running Specific Test Classes
@@ -313,6 +392,12 @@ Modified `tests/conftest.py` to use monkey patching of `os.path.join` to interce
 - ✅ AI activity tracking and database flagging
 - ✅ Student average score calculations
 - ✅ Admin dashboard metrics (active users, AI activities)
+- ✅ Forum post and reply creation
+- ✅ Threaded replies with depth limits
+- ✅ Forum search and pagination
+- ✅ Teacher forum access and permissions
+- ✅ Forum unread status calculation and display
+- ✅ Soft delete functionality for forum posts and replies
 
 ### API Coverage
 - ✅ Activity creation endpoints
@@ -337,11 +422,11 @@ Modified `tests/conftest.py` to use monkey patching of `os.path.join` to interce
 
 ## Test Results Summary
 
-As of November 16, 2025:
+As of November 17, 2025:
 
-- **Total Tests**: 63 test methods across 9 test classes
-- **All Tests Passing**: ✅ 63/63 tests pass successfully
-- **Test Execution Time**: ~38 seconds for full suite (quiz tests: ~12s, AI tests: ~3s, analytics tests: ~8s)
+- **Total Tests**: 72 test methods across 10 test classes
+- **All Tests Passing**: ✅ 72/72 tests pass successfully
+- **Test Execution Time**: ~45 seconds for full suite (quiz tests: ~12s, AI tests: ~3s, analytics tests: ~8s, forum tests: ~10s)
 - **Database Isolation**: ✅ Tests use temporary databases, production database remains unchanged
 - **Mock Usage**: Extensive mocking of AI services and external dependencies
 
@@ -394,6 +479,6 @@ python -m pytest tests/ --tb=short -x
 
 ---
 
-*Test Suite Version: 1.3*  
-*Last Updated: November 16, 2025*  
-*Coverage: Multi-Question Quiz, AI Generation Features, Analytics Endpoints & Dashboard Metrics*
+*Test Suite Version: 1.4*  
+*Last Updated: November 17, 2025*  
+*Coverage: Multi-Question Quiz, AI Generation Features, Analytics Endpoints, Dashboard Metrics & Forum Functionality*

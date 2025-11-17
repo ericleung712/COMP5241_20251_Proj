@@ -16,6 +16,8 @@ class Course(db.Model):
     
     # 关系
     activities = db.relationship('Activity', backref='course', lazy=True, cascade='all, delete-orphan')
+    forum_posts = db.relationship('ForumPost', backref='course', lazy=True, cascade='all, delete-orphan')
+    forum_reads = db.relationship('UserForumRead', backref='course', lazy=True, cascade='all, delete-orphan')
     
     def __repr__(self):
         return f'<Course {self.course_code}: {self.course_name}>'
