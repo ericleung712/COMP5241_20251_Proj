@@ -10,24 +10,31 @@ A Flask-based smart classroom interaction platform with AI integration. Supports
 - AI integration: Automatically generate learning activities based on course content
 - Real-time monitoring: View student participation and activity progress
 - Data analysis: Get detailed learning analytics reports
+- Multi-question quiz creation and management: Teachers can create quizzes with multiple questions, view student responses, and analyze results with detailed feedback and statistics.
+- Forum management: Teachers and students can participate in course forums, including post creation, threaded replies, unread status tracking, and soft delete functionality.
+- Teacher dashboard analytics: Performance box with interactive quiz score charts, course filtering, and real-time data loading.
 
 ### Student Features
 - Course enrollment: Register for courses of interest
 - Activity participation: Participate in various interactive learning activities
 - Real-time feedback: Receive immediate learning feedback
 - Progress tracking: View personal learning progress and grades
+- Multi-question quiz participation: Students can answer all questions in a single quiz session and receive immediate feedback and scores.
+- Forum participation: Students can create posts, reply in threads, and track unread forum content.
 
 ### AI Features
 - Smart activity generation: Automatically generate learning activities based on course content
 - Answer analysis: Automatically analyze student responses and identify similar answers
 - Personalized feedback: Generate personalized learning feedback for each student
 - Learning insights: Provide learning data insights and suggestions
+- AI generator supports multi-question quizzes, polls, word clouds, short answers, and mini games, with robust JSON parsing and document/time limit inclusion.
 
 ### Admin Features
 - User management: Manage teacher, student, and administrator accounts
 - System monitoring: Monitor system usage and performance
 - Data backup: System data backup and recovery
 - Leaderboard: Course leaderboards and learning incentives
+- Dashboard enhancements: Active users count, AI activities tracking, and comprehensive analytics endpoints.
 
 ## Technology Stack
 
@@ -37,6 +44,7 @@ A Flask-based smart classroom interaction platform with AI integration. Supports
 - SQLite: Lightweight database
 - OpenAI API: AI functionality integration
 - Werkzeug: Password security handling
+- PostgreSQL: Cloud database support (Supabase), automatic DATABASE_URL detection.
 
 ### Frontend
 - HTML5: Semantic markup
@@ -49,32 +57,42 @@ A Flask-based smart classroom interaction platform with AI integration. Supports
 smart-classroom-platform/
 ├── src/
 │   ├── models/              # Data models
-│   │   ├── user.py         # User model
-│   │   ├── course.py       # Course model
-│   │   ├── activity.py     # Activity model
-│   │   ├── response.py     # Response model
-│   │   └── analytics.py    # Analytics model
+│   │   ├── user.py          # User model
+│   │   ├── course.py        # Course model
+│   │   ├── activity.py      # Activity model
+│   │   ├── response.py      # Response model
+│   │   ├── analytics.py     # Analytics model
 │   ├── routes/              # API routes
-│   │   ├── auth.py         # Authentication routes
-│   │   ├── course.py       # Course routes
-│   │   ├── activity.py     # Activity routes
-│   │   ├── response.py     # Response routes
-│   │   ├── analytics.py   # Analytics routes
-│   │   └── admin.py        # Admin routes
+│   │   ├── auth.py          # Authentication routes
+│   │   ├── course.py        # Course routes
+│   │   ├── activity.py      # Activity routes
+│   │   ├── response.py      # Response routes
+│   │   ├── analytics.py     # Analytics routes
+│   │   ├── admin.py         # Admin routes
+│   │   ├── forum.py
 │   ├── ai/                  # AI functionality
-│   │   └── ai_service.py   # AI service
+│   │   └── ai_service.py    # AI service
 │   ├── static/              # Static files
-│   │   ├── index.html      # Home page
-│   │   ├── teacher.html    # Teacher interface
-│   │   ├── student.html    # Student interface
-│   │   └── admin.html      # Admin interface
-│   └── database.py         # Database configuration
-├── database/                # Database files
-├── main.py                 # Application entry point
-├── wsgi.py                 # WSGI configuration
-├── requirements.txt        # Dependencies
-├── Procfile               # Heroku deployment
-└── README.md              # Project documentation
+│   │   ├── index.html       # Home Page
+│   │   ├── teacher.html     # Teacher interface
+│   │   ├── student.html     # Student interface
+│   │   ├── admin.html       # Admin interface
+│   └── database.py          # Database configuration
+├── database/                # Database files (app.db, *.json)
+├── uploads/                 # File uploads
+├── main.py                  # Application entry point
+├── wsgi.py                  # WSGI configuration (for Vercel/Gunicorn)
+├── requirements.txt         # Dependencies
+├── Procfile                 # Heroku deployment
+├── vercel.json              # Vercel deployment configuration
+├── README.md                # Project documentation
+├── Test_Suite_Documentation.md # Test coverage and documentation
+├── PostgreSQL_Migration_Summary.md # PostgreSQL migration summary
+├── Features_and_Bug_Fixes_Summary.md # Recent features and bug fixes summary
+├── Multiple quiz questions feature.md # Multi-question quiz feature documentation
+├── Forum_Features_Update.md # Forum features update documentation
+├── AI generation feature.md # AI generation features and fixes
+└── vercel_deploy_changes_20251118.md # Vercel deployment changes log
 ```
 
 ## Getting Started
@@ -176,23 +194,28 @@ The application will start at `http://localhost:5000`.
 - Activity creation: Manually create or AI-generate learning activities
 - Real-time monitoring: View activity progress and student participation
 - Data analysis: View detailed learning analytics reports
+- Multi-question quiz creation and analytics
+- Forum management and unread status tracking
 
 ### Student Interface
 - Course browsing: View available courses for enrollment
 - Activity participation: Participate in various learning activities
 - Grade viewing: View personal grades and feedback
 - Progress tracking: View learning progress and participation statistics
+- Multi-question quiz participation and feedback
+- Forum participation and unread status tracking
 
 ### Admin Interface
 - User management: Manage all user accounts
 - System monitoring: Monitor system usage
 - Data management: System data backup and recovery
 - Statistical analysis: View overall system statistics
+- Dashboard enhancements: Active users count, AI activities tracking
 
 ## AI Functionality
 
 ### Activity Generation
-The system can automatically generate learning activities based on course content. Supported activity types include polls, quizzes, word clouds, short answer questions, and mini games. Teachers can review and optimize AI-generated content before publishing.
+The system can automatically generate learning activities based on course content. Supported activity types include polls, quizzes, word clouds, short answer questions, and mini games. Teachers can review and optimize AI-generated content before publishing. The AI generator supports multi-question quizzes and robust JSON parsing, document inclusion, and time limit settings.
 
 ### Answer Analysis
 Automatically analyze student responses to identify similarities and common themes. The system provides learning insights and improvement suggestions based on response patterns.
@@ -211,6 +234,12 @@ The platform is designed with mobile-first principles, featuring adaptive layout
 2. Set environment variables
 3. Push code to Heroku
 4. Start the application
+
+### Vercel Deployment
+1. Connect your GitHub repository to Vercel
+2. Vercel will automatically detect `vercel.json` and deploy the Flask app using `wsgi.py` as the entry point
+3. Set environment variables (e.g., DATABASE_URL, OPENAI_API_KEY)
+4. After deployment, Vercel will provide a public URL
 
 ### Docker Deployment
 ```dockerfile

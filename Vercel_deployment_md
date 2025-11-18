@@ -1,0 +1,28 @@
+# Vercel 部署設定更新紀錄
+
+## 2025-11-18
+
+### 主要變更
+1. 新增並更新 `vercel.json` 配置檔：
+   - 入口檔案由 `main.py` 改為 `wsgi.py`。
+   - `builds` 設定：
+     ```json
+     {
+       "src": "wsgi.py",
+       "use": "@vercel/python"
+     }
+     ```
+   - `routes` 設定：
+     ```json
+     {
+       "src": "/(.*)",
+       "dest": "wsgi.py"
+     }
+     ```
+2. 目的：
+   - 讓 Vercel 以 `wsgi.py` 作為 Flask 應用入口，符合標準 WSGI 部署流程。
+   - 提升雲端部署相容性與穩定性。
+
+---
+
+如需更多自訂部署設定，請參考 Vercel 官方文件或洽詢開發者。
