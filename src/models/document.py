@@ -35,6 +35,8 @@ class Document(db.Model):
             'uploader_id': self.uploader_id,
             'uploader_name': self.uploader.full_name if self.uploader else None,
             'filename': self.filename,
+            'stored_filename': self.stored_filename,  # Include for migration
+            'file_path': self.file_path,  # Include for migration
             'file_size': self.file_size,
             'file_size_mb': round(self.file_size / (1024 * 1024), 2),
             'file_type': self.file_type,

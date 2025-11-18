@@ -1,0 +1,119 @@
+[
+  {
+    "id": 1,
+    "activity_id": 1,
+    "activity_title": "Course preferences",
+    "student_id": 3,
+    "student_name": "wanglili",
+    "student_username": "wanglili",
+    "response_data": {
+      "selected_option": "\n                                Machine learning\n                            ",
+      "option_index": "1"
+    },
+    "ai_analysis": {},
+    "similarity_score": null,
+    "score": null,
+    "feedback": null,
+    "submitted_at": "2025-11-06T10:46:05.058476",
+    "time_spent_seconds": 286
+  },
+  {
+    "id": 2,
+    "activity_id": 2,
+    "activity_title": "Software Engineering Fundamentals Quiz",
+    "student_id": 5,
+    "student_name": "Student",
+    "student_username": "Student",
+    "response_data": {
+      "answers": [
+        {
+          "question_index": 0,
+          "selected_option": "An iterative development approach that emphasizes flexibility and customer collaboration",
+          "option_index": 1,
+          "is_correct": false
+        },
+        {
+          "question_index": 1,
+          "selected_option": "To automatically generate documentation for software projects",
+          "option_index": 1,
+          "is_correct": false
+        }
+      ],
+      "total_questions": 2,
+      "correct_count": 0,
+      "score": 0
+    },
+    "ai_analysis": {},
+    "similarity_score": null,
+    "score": 0.0,
+    "feedback": null,
+    "submitted_at": "2025-11-16T15:07:14.202163",
+    "time_spent_seconds": 289
+  },
+  {
+    "id": 3,
+    "activity_id": 3,
+    "activity_title": "Software Engineering Fundamentals Quiz",
+    "student_id": 5,
+    "student_name": "Student",
+    "student_username": "Student",
+    "response_data": {
+      "answers": [
+        {
+          "question_index": 0,
+          "selected_option": "Debugging",
+          "option_index": 3,
+          "is_correct": true
+        },
+        {
+          "question_index": 1,
+          "selected_option": "To track changes and manage different versions of source code",
+          "option_index": 1,
+          "is_correct": true
+        }
+      ],
+      "total_questions": 2,
+      "correct_count": 2,
+      "score": 100
+    },
+    "ai_analysis": {},
+    "similarity_score": null,
+    "score": 100.0,
+    "feedback": null,
+    "submitted_at": "2025-11-16T15:08:42.294974",
+    "time_spent_seconds": 140
+  },
+  {
+    "id": 4,
+    "activity_id": 4,
+    "activity_title": "Software Engineering Fundamentals Quiz",
+    "student_id": 5,
+    "student_name": "Student",
+    "student_username": "Student",
+    "response_data": {
+      "answers": [
+        {
+          "question_index": 0,
+          "selected_option": "Agile",
+          "option_index": 1,
+          "is_correct": true
+        },
+        {
+          "question_index": 1,
+          "selected_option": "To track changes and manage different versions of code",
+          "option_index": 1,
+          "is_correct": true
+        }
+      ],
+      "total_questions": 2,
+      "correct_count": 2,
+      "score": 100
+    },
+    "ai_analysis": {},
+    "similarity_score": null,
+    "score": 100.0,
+    "feedback": null,
+    "submitted_at": "2025-11-16T15:18:18.675985",
+    "time_spent_seconds": 265
+  }
+]

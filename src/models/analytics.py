@@ -10,7 +10,7 @@ class Leaderboard(db.Model):
     description = db.Column(db.Text, nullable=True)
     
     # 排行榜配置
-    config = db.Column(db.Text, nullable=True)  # JSON格式存储配置
+    config = db.Column(db.JSON, nullable=True)  # JSON格式存储配置
     
     # 时间范围
     start_date = db.Column(db.DateTime, nullable=True)
@@ -24,13 +24,11 @@ class Leaderboard(db.Model):
     
     def set_config(self, config_dict):
         """设置排行榜配置"""
-        self.config = json.dumps(config_dict)
+        self.config = config_dict
     
     def get_config(self):
         """获取排行榜配置"""
-        if self.config:
-            return json.loads(self.config)
-        return {}
+        return self.config or {}
     
     def __repr__(self):
         return f'<Leaderboard {self.name}>'
@@ -56,33 +54,29 @@ class ActivityAnalytics(db.Model):
     activity_id = db.Column(db.Integer, db.ForeignKey('activity.id'), nullable=False)
     
     # 分析数据（JSON格式）
-    analytics_data = db.Column(db.Text, nullable=False)
+    analytics_data = db.Column(db.JSON, nullable=False)
     
     # AI生成的分析报告
-    ai_report = db.Column(db.Text, nullable=True)
+    ai_report = db.Column(db.JSON, nullable=True)
     
     # 分析时间
     analyzed_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     def set_analytics_data(self, data_dict):
         """设置分析数据"""
-        self.analytics_data = json.dumps(data_dict)
+        self.analytics_data = data_dict
     
     def get_analytics_data(self):
         """获取分析数据"""
-        if self.analytics_data:
-            return json.loads(self.analytics_data)
-        return {}
+        return self.analytics_data or {}
     
     def set_ai_report(self, report_dict):
         """设置AI报告"""
-        self.ai_report = json.dumps(report_dict)
+        self.ai_report = report_dict
     
     def get_ai_report(self):
         """获取AI报告"""
-        if self.ai_report:
-            return json.loads(self.ai_report)
-        return {}
+        return self.ai_report or {}
     
     def __repr__(self):
         return f'<ActivityAnalytics {self.activity.title}>'

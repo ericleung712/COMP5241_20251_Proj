@@ -369,7 +369,7 @@ def get_teacher_system_overview():
             'total_activities': total_activities,
             'completed_activities': completed_activities,
             'total_time_spent_seconds': total_time,
-            'avg_time_per_user_seconds': round(avg_time_per_user, 2),
+            'avg_time_per_user_seconds': float(round(avg_time_per_user, 2)),
             'users_with_responses': users_with_responses,
             'avg_quiz_score': round(avg_quiz_score, 2),
             'quiz_responses': quiz_responses

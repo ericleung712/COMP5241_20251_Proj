@@ -1,0 +1,32 @@
+[
+  {
+    "id": 1,
+    "course_code": "comp5241",
+    "course_name": "SOFTWARE ENGINEERINGAND DEVELOPMENT",
+    "description": "SOFTWARE ENGINEERINGAND DEVELOPMENT",
+    "teacher_id": 2,
+    "teacher_name": "Xavier",
+    "semester": "Fall 2024",
+    "academic_year": "2024-25",
+    "is_active": true,
+    "student_count": 1,
+    "activity_count": 1,
+    "created_at": "2025-10-10T20:36:58.995958",
+    "updated_at": "2025-11-06T10:39:08.408090"
+  },
+  {
+    "id": 2,
+    "course_code": "COMP5241",
+    "course_name": "Software Engineering",
+    "description": "",
+    "teacher_id": 4,
+    "teacher_name": "Teacher",
+    "semester": "Fall 2025",
+    "academic_year": "2025-26",
+    "is_active": true,
+    "student_count": 1,
+    "activity_count": 4,
+    "created_at": "2025-11-16T15:06:08.055955",
+    "updated_at": "2025-11-16T15:06:08.055960"
+  }
+]

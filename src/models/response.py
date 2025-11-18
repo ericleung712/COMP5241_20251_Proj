@@ -9,10 +9,10 @@ class ActivityResponse(db.Model):
     student_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     
     # 响应内容（JSON格式存储不同类型的答案）
-    response_data = db.Column(db.Text, nullable=False)
+    response_data = db.Column(db.JSON, nullable=False)
     
     # AI分析结果
-    ai_analysis = db.Column(db.Text, nullable=True)  # AI对答案的分析
+    ai_analysis = db.Column(db.JSON, nullable=True)  # AI对答案的分析
     similarity_score = db.Column(db.Float, nullable=True)  # 与其他答案的相似度
     
     # 评分和反馈
@@ -25,23 +25,19 @@ class ActivityResponse(db.Model):
     
     def set_response_data(self, data_dict):
         """设置响应数据"""
-        self.response_data = json.dumps(data_dict)
+        self.response_data = data_dict
     
     def get_response_data(self):
         """获取响应数据"""
-        if self.response_data:
-            return json.loads(self.response_data)
-        return {}
+        return self.response_data or {}
     
     def set_ai_analysis(self, analysis_dict):
         """设置AI分析结果"""
-        self.ai_analysis = json.dumps(analysis_dict)
+        self.ai_analysis = analysis_dict
     
     def get_ai_analysis(self):
         """获取AI分析结果"""
-        if self.ai_analysis:
-            return json.loads(self.ai_analysis)
-        return {}
+        return self.ai_analysis or {}
     
     def __repr__(self):
         return f'<ActivityResponse {self.student.username} -> {self.activity.title}>'

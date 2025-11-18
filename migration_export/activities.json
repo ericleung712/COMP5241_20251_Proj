@@ -1,0 +1,247 @@
+[
+  {
+    "id": 1,
+    "title": "Course preferences",
+    "description": "Choose the course direction",
+    "activity_type": "poll",
+    "course_id": 1,
+    "course_name": "SOFTWARE ENGINEERINGAND DEVELOPMENT",
+    "creator_id": 2,
+    "creator_name": "Xavier",
+    "config": {
+      "question": "Which aspect do you think our course focuses on?",
+      "options": [
+        "Software programming",
+        "Machine learning",
+        "network"
+      ]
+    },
+    "is_ai_generated": false,
+    "ai_prompt": null,
+    "ai_refined": false,
+    "status": "active",
+    "start_time": "2025-11-06T10:45:35.698723",
+    "end_time": "2025-11-06T11:45:35.698723",
+    "duration_minutes": 60,
+    "response_count": 1,
+    "created_at": "2025-11-06T10:45:32.408620",
+    "updated_at": "2025-11-06T10:45:35.699225"
+  },
+  {
+    "id": 2,
+    "title": "Software Engineering Fundamentals Quiz",
+    "description": "Test your knowledge of basic software engineering concepts and principles",
+    "activity_type": "quiz",
+    "course_id": 2,
+    "course_name": "Software Engineering",
+    "creator_id": 4,
+    "creator_name": "Teacher",
+    "config": {
+      "questions": [
+        {
+          "question": "Which of the following best describes the Waterfall model in software engineering?",
+          "options": [
+            "A linear sequential development approach where each phase must be completed before the next begins",
+            "An iterative development approach that emphasizes flexibility and customer collaboration",
+            "A model that combines elements of both sequential and iterative development",
+            "A development approach focused exclusively on rapid prototyping"
+          ],
+          "correct_answer": 0,
+          "explanation": "The Waterfall model is a linear sequential development approach where progress flows steadily downward through phases like requirements, design, implementation, testing, and maintenance."
+        },
+        {
+          "question": "What is the primary purpose of version control systems like Git in software engineering?",
+          "options": [
+            "To track changes in source code and enable collaboration among developers",
+            "To automatically generate documentation for software projects",
+            "To optimize code performance and reduce execution time",
+            "To convert source code into executable machine code"
+          ],
+          "correct_answer": 0,
+          "explanation": "Version control systems like Git are used to track changes in source code, manage different versions of software, and facilitate collaboration among multiple developers working on the same project."
+        }
+      ]
+    },
+    "is_ai_generated": false,
+    "ai_prompt": null,
+    "ai_refined": false,
+    "status": "completed",
+    "start_time": "2025-11-16T15:06:54.658557",
+    "end_time": "2025-11-16T15:08:14.566161",
+    "duration_minutes": 10,
+    "response_count": 1,
+    "created_at": "2025-11-16T15:06:47.138523",
+    "updated_at": "2025-11-16T15:08:14.566768"
+  },
+  {
+    "id": 3,
+    "title": "Software Engineering Fundamentals Quiz",
+    "description": "Test your knowledge of basic software engineering concepts and principles",
+    "activity_type": "quiz",
+    "course_id": 2,
+    "course_name": "Software Engineering",
+    "creator_id": 4,
+    "creator_name": "Teacher",
+    "config": {
+      "questions": [
+        {
+          "question": "Which of the following is NOT a phase in the traditional software development lifecycle?",
+          "options": [
+            "Requirements Analysis",
+            "Implementation",
+            "Maintenance",
+            "Debugging"
+          ],
+          "correct_answer": 3,
+          "explanation": "Debugging is an activity that occurs during implementation and testing phases, but it is not considered a separate phase in the traditional SDLC which typically includes Requirements, Design, Implementation, Testing, and Maintenance."
+        },
+        {
+          "question": "What is the primary purpose of version control systems like Git in software engineering?",
+          "options": [
+            "To compile source code into executable programs",
+            "To track changes and manage different versions of source code",
+            "To automatically fix bugs in the code",
+            "To generate user documentation"
+          ],
+          "correct_answer": 1,
+          "explanation": "Version control systems like Git are primarily used to track changes to source code over time, allowing multiple developers to collaborate, manage different versions, and revert to previous states when needed."
+        }
+      ]
+    },
+    "is_ai_generated": false,
+    "ai_prompt": null,
+    "ai_refined": false,
+    "status": "active",
+    "start_time": "2025-11-16T15:08:13.119759",
+    "end_time": "2025-11-16T15:18:13.119759",
+    "duration_minutes": 10,
+    "response_count": 1,
+    "created_at": "2025-11-16T15:08:11.396922",
+    "updated_at": "2025-11-16T15:08:13.120053"
+  },
+  {
+    "id": 4,
+    "title": "Software Engineering Fundamentals Quiz",
+    "description": "Test your knowledge of basic software engineering concepts and principles",
+    "activity_type": "quiz",
+    "course_id": 2,
+    "course_name": "Software Engineering",
+    "creator_id": 4,
+    "creator_name": "Teacher",
+    "config": {
+      "questions": [
+        {
+          "question": "Which software development methodology emphasizes iterative development and customer collaboration?",
+          "options": [
+            "Waterfall",
+            "Agile",
+            "Spiral",
+            "V-Model"
+          ],
+          "correct_answer": 1,
+          "explanation": "Agile methodology focuses on iterative development, frequent delivery, and close collaboration with customers throughout the development process."
+        },
+        {
+          "question": "What is the primary purpose of version control systems like Git in software engineering?",
+          "options": [
+            "To compile source code",
+            "To track changes and manage different versions of code",
+            "To debug programs",
+            "To design user interfaces"
+          ],
+          "correct_answer": 1,
+          "explanation": "Version control systems help developers track changes to source code over time, manage different versions, and collaborate effectively with team members."
+        }
+      ]
+    },
+    "is_ai_generated": false,
+    "ai_prompt": null,
+    "ai_refined": false,
+    "status": "active",
+    "start_time": "2025-11-16T15:17:56.386669",
+    "end_time": "2025-11-16T15:27:56.386669",
+    "duration_minutes": 10,
+    "response_count": 1,
+    "created_at": "2025-11-16T15:17:54.043286",
+    "updated_at": "2025-11-16T15:17:56.387331"
+  },
+  {
+    "id": 5,
+    "title": "Software Engineering Fundamentals Quiz",
+    "description": "Test your knowledge of software engineering principles, methodologies, and best practices. This quiz covers key concepts from software development lifecycle, requirements engineering, design patterns, testing, and project management.",
+    "activity_type": "quiz",
+    "course_id": 2,
+    "course_name": "Software Engineering",
+    "creator_id": 4,
+    "creator_name": "Teacher",
+    "config": {
+      "questions": [
+        {
+          "question": "Which software development methodology emphasizes iterative development and customer collaboration?",
+          "options": [
+            "Waterfall Model",
+            "Agile Methodology",
+            "Spiral Model",
+            "V-Model"
+          ],
+          "correct_answer": 1,
+          "explanation": "Agile Methodology focuses on iterative development, frequent delivery, and close collaboration with customers throughout the development process."
+        },
+        {
+          "question": "What is the primary purpose of version control systems like Git in software engineering?",
+          "options": [
+            "Code compilation",
+            "Team collaboration and code management",
+            "Bug tracking",
+            "Performance optimization"
+          ],
+          "correct_answer": 1,
+          "explanation": "Version control systems manage changes to source code over time, enabling multiple developers to collaborate while maintaining code history and integrity."
+        },
+        {
+          "question": "Which testing level focuses on individual units or components of software?",
+          "options": [
+            "Integration Testing",
+            "System Testing",
+            "Unit Testing",
+            "Acceptance Testing"
+          ],
+          "correct_answer": 2,
+          "explanation": "Unit testing verifies that individual units or components of the software work correctly in isolation from other parts."
+        },
+        {
+          "question": "What does the SOLID principle in object-oriented design represent?",
+          "options": [
+            "Software optimization guidelines",
+            "Security protocols",
+            "Design patterns for scalability",
+            "Five design principles for maintainable code"
+          ],
+          "correct_answer": 3,
+          "explanation": "SOLID is an acronym for five design principles (Single Responsibility, Open-Closed, Liskov Substitution, Interface Segregation, Dependency Inversion) that make software designs more understandable, flexible, and maintainable."
+        },
+        {
+          "question": "In software requirements engineering, what is the difference between functional and non-functional requirements?",
+          "options": [
+            "Functional requirements describe what the system should do, while non-functional describe how well it should perform",
+            "Functional requirements are technical, while non-functional are business-oriented",
+            "There is no significant difference",
+            "Functional requirements are optional, while non-functional are mandatory"
+          ],
+          "correct_answer": 0,
+          "explanation": "Functional requirements specify what the system should do (features and functions), while non-functional requirements specify how well the system should perform (performance, security, usability, etc.)."
+        }
+      ]
+    },
+    "is_ai_generated": true,
+    "ai_prompt": null,
+    "ai_refined": false,
+    "status": "active",
+    "start_time": "2025-11-16T15:34:19.458278",
+    "end_time": "2025-11-16T16:24:19.458278",
+    "duration_minutes": 50,
+    "response_count": 0,
+    "created_at": "2025-11-16T15:34:05.058946",
+    "updated_at": "2025-11-16T15:34:19.458921"
+  }
+]

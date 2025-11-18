@@ -9,10 +9,11 @@ from src.database import db
 @pytest.fixture
 def teacher_user(app):
     """Create a teacher user."""
+    import time
     with app.app_context():
         teacher = User(
-            username='test_teacher',
-            email='test_teacher@example.com',
+            username=f'test_teacher_{int(time.time())}',
+            email=f'test_teacher_{int(time.time())}@example.com',
             full_name='Test Teacher',
             role='teacher'
         )
@@ -34,10 +35,11 @@ def teacher_client(app, client, teacher_user):
 @pytest.fixture
 def student_user(app):
     """Create a student user."""
+    import time
     with app.app_context():
         student = User(
-            username='test_student',
-            email='test_student@example.com',
+            username=f'test_student_{int(time.time())}',
+            email=f'test_student_{int(time.time())}@example.com',
             full_name='Test Student',
             role='student'
         )
@@ -59,6 +61,7 @@ def student_client(app, client, student_user):
 @pytest.fixture
 def teacher_test_data(app, teacher_user, student_user):
     """Create test data for teacher analytics."""
+    import time
     with app.app_context():
         teacher_id = teacher_user
         student_id = student_user
@@ -66,7 +69,7 @@ def teacher_test_data(app, teacher_user, student_user):
         # Create courses for the teacher
         course1 = Course(
             course_name='Teacher Course 1',
-            course_code='TCOURSE1',
+            course_code=f'TCOURSE1_{int(time.time())}',
             description='Test course 1 for teacher',
             teacher_id=teacher_id,
             semester='Fall 2025',
@@ -74,7 +77,7 @@ def teacher_test_data(app, teacher_user, student_user):
         )
         course2 = Course(
             course_name='Teacher Course 2',
-            course_code='TCOURSE2',
+            course_code=f'TCOURSE2_{int(time.time())}',
             description='Test course 2 for teacher',
             teacher_id=teacher_id,
             semester='Fall 2025',
@@ -83,8 +86,8 @@ def teacher_test_data(app, teacher_user, student_user):
 
         # Create a course for another teacher (should not be visible)
         other_teacher = User(
-            username='other_teacher',
-            email='other_teacher@example.com',
+            username=f'other_teacher_{int(time.time())}',
+            email=f'other_teacher_{int(time.time())}@example.com',
             full_name='Other Teacher',
             role='teacher'
         )
@@ -94,7 +97,7 @@ def teacher_test_data(app, teacher_user, student_user):
 
         other_course = Course(
             course_name='Other Teacher Course',
-            course_code='OTCOURSE',
+            course_code=f'OTCOURSE_{int(time.time())}',
             description='Course from other teacher',
             teacher_id=other_teacher.id,
             semester='Fall 2025',
@@ -229,10 +232,8 @@ def test_teacher_system_overview_with_data(teacher_client, teacher_test_data):
         assert 0 <= course['avg_quiz_score'] <= 100
         assert course['quiz_responses'] >= 0
 
-        # Ensure only teacher's courses are included
-        assert course['course_code'] in ['TCOURSE1', 'TCOURSE2']
-
-
+        # Ensure only teacher's courses are included (check that course codes start with TCOURSE)
+        assert course['course_code'].startswith('TCOURSE')
 def test_teacher_system_overview_empty_courses(teacher_client):
     """Test teacher system overview when teacher has no courses."""
     response = teacher_client.get('/api/analytics/teacher/system-overview')
@@ -343,10 +344,11 @@ def admin_client(app, client, admin_user):
 @pytest.fixture
 def admin_user(app):
     """Create an admin user."""
+    import time
     with app.app_context():
         admin = User(
-            username='test_admin',
-            email='test_admin@example.com',
+            username=f'test_admin_{int(time.time())}',
+            email=f'test_admin_{int(time.time())}@example.com',
             full_name='Test Admin',
             role='admin'
         )
@@ -380,6 +382,12 @@ def test_admin_dashboard_data(admin_client):
 def test_admin_dashboard_ai_activities_count(admin_client, teacher_test_data):
     """Test that admin dashboard correctly counts AI-generated activities."""
     with admin_client:
+        # Get initial count
+        response = admin_client.get('/api/analytics/dashboard')
+        assert response.status_code == 200
+        initial_data = response.get_json()
+        initial_count = initial_data['stats']['ai_activities']
+        
         # Create some AI-generated activities
         teacher_id = teacher_test_data['teacher_id']
         course_id = teacher_test_data['course1_id']
@@ -409,12 +417,12 @@ def test_admin_dashboard_ai_activities_count(admin_client, teacher_test_data):
         db.session.add_all([ai_activity, regular_activity])
         db.session.commit()
         
-        # Get admin dashboard data
+        # Get admin dashboard data after creating activities
         response = admin_client.get('/api/analytics/dashboard')
         assert response.status_code == 200
         
         data = response.get_json()
         stats = data['stats']
         
-        # Should count only AI activities
-        assert stats['ai_activities'] == 1
+        # Should count only AI activities (should be initial_count + 1)
+        assert stats['ai_activities'] == initial_count + 1

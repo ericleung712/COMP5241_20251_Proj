@@ -121,14 +121,25 @@ class TestForumRoutes:
         response = client.get('/api/forum/1')
         assert response.status_code == 401
 
-    def test_get_forum_posts_no_access(self, auth_client):
+    def test_get_forum_posts_no_access(self, auth_client, test_users):
         """测试无权限用户访问论坛"""
-        # 创建一个不属于任何人的课程
+        # 创建一个不属于任何人的课程 - 使用另一个教师ID
         with auth_client['teacher'].application.app_context():
+            # Create another teacher user for this test
+            other_teacher = User(
+                username='other_teacher',
+                email='other@example.com',
+                full_name='Other Teacher',
+                role='teacher'
+            )
+            other_teacher.set_password('password123')
+            db.session.add(other_teacher)
+            db.session.commit()
+            
             course = Course(
                 course_name='Private Course',
                 course_code='PRIV101',
-                teacher_id=999,  # 不存在的教师
+                teacher_id=other_teacher.id,  # Different teacher
                 semester='Fall 2025',
                 academic_year='2025-26'
             )
@@ -177,19 +188,19 @@ class TestForumRoutes:
         response = auth_client['teacher'].post(f'/api/forum/{test_course}', json=data)
         assert response.status_code == 400
 
-    def test_get_forum_posts(self, auth_client, test_course):
+    def test_get_forum_posts(self, auth_client, test_course, test_users):
         """测试获取论坛帖子"""
         # 先创建一些帖子
         with auth_client['teacher'].application.app_context():
             post1 = ForumPost(
                 course_id=test_course,
-                user_id=1,  # teacher
+                user_id=test_users['teacher_id'],  # teacher
                 title='Post 1',
                 content='Content 1'
             )
             post2 = ForumPost(
                 course_id=test_course,
-                user_id=2,  # student1
+                user_id=test_users['student1_id'],  # student1
                 title='Post 2',
                 content='Content 2'
             )
@@ -204,13 +215,13 @@ class TestForumRoutes:
         assert len(data['posts']) >= 2
         assert data['posts'][0]['title'] in ['Post 1', 'Post 2']
 
-    def test_update_forum_post(self, auth_client, test_course):
+    def test_update_forum_post(self, auth_client, test_course, test_users):
         """测试更新帖子"""
         # 创建帖子
         with auth_client['teacher'].application.app_context():
             post = ForumPost(
                 course_id=test_course,
-                user_id=1,  # teacher
+                user_id=test_users['teacher_id'],  # teacher
                 title='Original Title',
                 content='Original content'
             )
@@ -232,13 +243,13 @@ class TestForumRoutes:
             assert updated_post.title == 'Updated Title'
             assert updated_post.content == 'Updated content'
 
-    def test_update_forum_post_no_permission(self, auth_client, test_course):
+    def test_update_forum_post_no_permission(self, auth_client, test_course, test_users):
         """测试无权限更新帖子"""
         # 创建帖子（教师创建）
         with auth_client['teacher'].application.app_context():
             post = ForumPost(
                 course_id=test_course,
-                user_id=1,  # teacher
+                user_id=test_users['teacher_id'],  # teacher
                 title='Teacher Post',
                 content='Content'
             )
@@ -251,13 +262,13 @@ class TestForumRoutes:
         response = auth_client['student1'].put(f'/api/forum/post/{post_id}', json=update_data)
         assert response.status_code == 403
 
-    def test_delete_forum_post(self, auth_client, test_course):
+    def test_delete_forum_post(self, auth_client, test_course, test_users):
         """测试软删除帖子"""
         # 创建帖子
         with auth_client['teacher'].application.app_context():
             post = ForumPost(
                 course_id=test_course,
-                user_id=1,  # teacher
+                user_id=test_users['teacher_id'],  # teacher
                 title='Post to Delete',
                 content='Content'
             )
@@ -276,13 +287,13 @@ class TestForumRoutes:
             assert deleted_post.content == 'The post is deleted by the teacher'
             assert deleted_post.title == 'Post to Delete'  # 标题保持不变
 
-    def test_create_forum_reply(self, auth_client, test_course):
+    def test_create_forum_reply(self, auth_client, test_course, test_users):
         """测试创建回复"""
         # 创建帖子
         with auth_client['teacher'].application.app_context():
             post = ForumPost(
                 course_id=test_course,
-                user_id=1,
+                user_id=test_users['teacher_id'],
                 title='Post for Reply',
                 content='Content'
             )
@@ -304,13 +315,13 @@ class TestForumRoutes:
             updated_post = ForumPost.query.get(post_id)
             assert updated_post.reply_count == 1
 
-    def test_threaded_replies_api(self, auth_client, test_course):
+    def test_threaded_replies_api(self, auth_client, test_course, test_users):
         """测试线程化回复API"""
         # 创建帖子和回复
         with auth_client['teacher'].application.app_context():
             post = ForumPost(
                 course_id=test_course,
-                user_id=1,
+                user_id=test_users['teacher_id'],
                 title='Threaded Post',
                 content='Content'
             )
@@ -319,7 +330,7 @@ class TestForumRoutes:
 
             parent_reply = ForumReply(
                 post_id=post.id,
-                user_id=2,  # student1
+                user_id=test_users['student1_id'],  # student1
                 content='Parent reply'
             )
             db.session.add(parent_reply)
@@ -327,7 +338,7 @@ class TestForumRoutes:
 
             child_reply = ForumReply(
                 post_id=post.id,
-                user_id=3,  # student2
+                user_id=test_users['student2_id'],  # student2
                 content='Child reply',
                 parent_reply_id=parent_reply.id
             )
@@ -346,13 +357,13 @@ class TestForumRoutes:
         assert 'child_replies' in data['replies'][0]
         assert len(data['replies'][0]['child_replies']) == 1
 
-    def test_create_reply_to_reply(self, auth_client, test_course):
+    def test_create_reply_to_reply(self, auth_client, test_course, test_users):
         """测试回复其他回复的功能"""
         # 创建帖子
         with auth_client['teacher'].application.app_context():
             post = ForumPost(
                 course_id=test_course,
-                user_id=1,
+                user_id=test_users['teacher_id'],
                 title='Post for Nested Reply',
                 content='Content'
             )
@@ -389,13 +400,13 @@ class TestForumRoutes:
         assert len(parent_reply['child_replies']) == 1
         assert parent_reply['child_replies'][0]['content'] == 'Reply to parent reply'
 
-    def test_create_reply_to_reply_invalid_parent(self, auth_client, test_course):
+    def test_create_reply_to_reply_invalid_parent(self, auth_client, test_course, test_users):
         """测试回复不存在的父回复"""
         # 创建帖子
         with auth_client['teacher'].application.app_context():
             post = ForumPost(
                 course_id=test_course,
-                user_id=1,
+                user_id=test_users['teacher_id'],
                 title='Post for Invalid Parent',
                 content='Content'
             )
@@ -412,19 +423,19 @@ class TestForumRoutes:
         assert response.status_code == 400
         assert 'Parent reply does not exist' in response.get_json()['error']
 
-    def test_create_reply_to_reply_wrong_post(self, auth_client, test_course):
+    def test_create_reply_to_reply_wrong_post(self, auth_client, test_course, test_users):
         """测试回复其他帖子的回复"""
         # 创建两个帖子
         with auth_client['teacher'].application.app_context():
             post1 = ForumPost(
                 course_id=test_course,
-                user_id=1,
+                user_id=test_users['teacher_id'],
                 title='Post 1',
                 content='Content 1'
             )
             post2 = ForumPost(
                 course_id=test_course,
-                user_id=1,
+                user_id=test_users['teacher_id'],
                 title='Post 2',
                 content='Content 2'
             )
@@ -434,7 +445,7 @@ class TestForumRoutes:
             # 在post1上创建回复
             reply = ForumReply(
                 post_id=post1.id,
-                user_id=2,
+                user_id=test_users['student1_id'],
                 content='Reply on post 1'
             )
             db.session.add(reply)
@@ -451,19 +462,19 @@ class TestForumRoutes:
         assert response.status_code == 400
         assert 'Parent reply does not exist' in response.get_json()['error']
 
-    def test_forum_search(self, auth_client, test_course):
+    def test_forum_search(self, auth_client, test_course, test_users):
         """测试论坛搜索功能"""
         # 创建帖子
         with auth_client['teacher'].application.app_context():
             post1 = ForumPost(
                 course_id=test_course,
-                user_id=1,
+                user_id=test_users['teacher_id'],
                 title='Python Programming',
                 content='Learn Python basics'
             )
             post2 = ForumPost(
                 course_id=test_course,
-                user_id=1,
+                user_id=test_users['teacher_id'],
                 title='JavaScript Tips',
                 content='Advanced JS techniques'
             )
@@ -484,7 +495,7 @@ class TestForumRoutes:
         assert len(data['posts']) == 1
         assert data['posts'][0]['title'] == 'JavaScript Tips'
 
-    def test_forum_notifications(self, auth_client, test_course):
+    def test_forum_notifications(self, auth_client, test_course, test_users):
         """测试论坛通知功能"""
         # 初始状态应该没有未读
         response = auth_client['student1'].get(f'/api/forum/{test_course}/notifications')
@@ -496,7 +507,7 @@ class TestForumRoutes:
         with auth_client['teacher'].application.app_context():
             post = ForumPost(
                 course_id=test_course,
-                user_id=1,
+                user_id=test_users['teacher_id'],
                 title='New Post',
                 content='New content'
             )
@@ -519,7 +530,7 @@ class TestForumRoutes:
         data = response.get_json()
         assert data['has_unread'] == False
 
-    def test_forum_notifications_exclude_own_content(self, auth_client, test_course):
+    def test_forum_notifications_exclude_own_content(self, auth_client, test_course, test_users):
         """测试论坛通知不包括用户自己的内容"""
         # 标记为已读以确保干净的状态
         response = auth_client['student1'].post(f'/api/forum/{test_course}/mark-read')
@@ -543,7 +554,7 @@ class TestForumRoutes:
         with auth_client['student1'].application.app_context():
             post = ForumPost(
                 course_id=test_course,
-                user_id=2,  # student1
+                user_id=test_users['student1_id'],  # student1
                 title='Post for Reply',
                 content='Content'
             )
@@ -565,7 +576,7 @@ class TestForumRoutes:
         with auth_client['teacher'].application.app_context():
             teacher_post = ForumPost(
                 course_id=test_course,
-                user_id=1,  # teacher
+                user_id=test_users['teacher_id'],  # teacher
                 title='Teacher Post',
                 content='Content from teacher'
             )
@@ -578,13 +589,13 @@ class TestForumRoutes:
         data = response.get_json()
         assert data['has_unread'] == True
 
-    def test_reply_depth_limit(self, auth_client, test_course):
+    def test_reply_depth_limit(self, auth_client, test_course, test_users):
         """测试回复深度限制为3层"""
         # 创建帖子
         with auth_client['teacher'].application.app_context():
             post = ForumPost(
                 course_id=test_course,
-                user_id=1,
+                user_id=test_users['teacher_id'],
                 title='Post for Depth Test',
                 content='Content'
             )
@@ -631,7 +642,7 @@ class TestForumRoutes:
         assert response.status_code == 400
         assert 'Maximum nesting depth (3 levels) exceeded' in response.get_json()['error']
 
-    def test_forum_pagination(self, auth_client, test_course):
+    def test_forum_pagination(self, auth_client, test_course, test_users):
         """测试分页功能"""
         # 创建多个帖子
         with auth_client['teacher'].application.app_context():
@@ -639,7 +650,7 @@ class TestForumRoutes:
             for i in range(5):
                 post = ForumPost(
                     course_id=test_course,
-                    user_id=1,
+                    user_id=test_users['teacher_id'],
                     title=f'Post {i+1}',
                     content=f'Content {i+1}'
                 )
@@ -740,13 +751,13 @@ class TestForumRoutes:
         assert test_course_data is not None
         assert test_course_data['forum_unread'] == False
 
-    def test_teacher_forum_reply_functionality(self, auth_client, test_course):
+    def test_teacher_forum_reply_functionality(self, auth_client, test_course, test_users):
         """测试教师的论坛回复功能"""
         # 创建帖子
         with auth_client['teacher'].application.app_context():
             post = ForumPost(
                 course_id=test_course,
-                user_id=1,  # teacher
+                user_id=test_users['teacher_id'],  # teacher
                 title='Post for Teacher Reply Test',
                 content='Content'
             )
@@ -806,13 +817,13 @@ class TestForumRoutes:
         assert deleted_post['content'] == 'The post is deleted by owner'
         assert deleted_post['title'] == 'Post to Delete'  # Title remains unchanged
 
-    def test_soft_delete_forum_reply_by_owner(self, auth_client, test_course):
+    def test_soft_delete_forum_reply_by_owner(self, auth_client, test_course, test_users):
         """Test that reply owner can soft delete their own reply"""
         # Create a post first
         with auth_client['teacher'].application.app_context():
             post = ForumPost(
                 course_id=test_course,
-                user_id=1,  # teacher
+                user_id=test_users['teacher_id'],  # teacher
                 title='Post for Reply Delete',
                 content='Content'
             )
@@ -858,13 +869,13 @@ class TestForumRoutes:
         deleted_post = next(p for p in posts if p['id'] == post_id)
         assert deleted_post['content'] == 'The post is deleted by the teacher'
 
-    def test_soft_delete_forum_reply_by_teacher(self, auth_client, test_course):
+    def test_soft_delete_forum_reply_by_teacher(self, auth_client, test_course, test_users):
         """Test that teacher can soft delete any reply in their course"""
         # Create a post and reply as student1
         with auth_client['teacher'].application.app_context():
             post = ForumPost(
                 course_id=test_course,
-                user_id=1,  # teacher
+                user_id=test_users['teacher_id'],  # teacher
                 title='Post for Teacher Delete',
                 content='Content'
             )
@@ -874,7 +885,7 @@ class TestForumRoutes:
             
             reply = ForumReply(
                 post_id=post_id,
-                user_id=2,  # student1
+                user_id=test_users['student1_id'],  # student1
                 content='Student reply'
             )
             db.session.add(reply)
@@ -913,13 +924,13 @@ class TestForumRoutes:
         post = next(p for p in posts if p['id'] == post_id)
         assert post['content'] == 'Student content'
 
-    def test_soft_delete_forum_reply_no_permission(self, auth_client, test_course):
+    def test_soft_delete_forum_reply_no_permission(self, auth_client, test_course, test_users):
         """Test that users cannot soft delete replies they don't own"""
         # Create a post and reply as student1
         with auth_client['teacher'].application.app_context():
             post = ForumPost(
                 course_id=test_course,
-                user_id=1,  # teacher
+                user_id=test_users['teacher_id'],  # teacher
                 title='Post for Permission Test',
                 content='Content'
             )
@@ -929,7 +940,7 @@ class TestForumRoutes:
             
             reply = ForumReply(
                 post_id=post_id,
-                user_id=2,  # student1
+                user_id=test_users['student1_id'],  # student1
                 content='Student reply'
             )
             db.session.add(reply)
@@ -948,13 +959,13 @@ class TestForumRoutes:
         reply = self._find_reply_in_threaded_structure(replies, reply_id)
         assert reply['content'] == 'Student reply'
 
-    def test_soft_delete_preserves_reply_count(self, auth_client, test_course):
+    def test_soft_delete_preserves_reply_count(self, auth_client, test_course, test_users):
         """Test that soft deleting a reply preserves the post's reply count"""
         # Create a post first
         with auth_client['teacher'].application.app_context():
             post = ForumPost(
                 course_id=test_course,
-                user_id=1,  # teacher
+                user_id=test_users['teacher_id'],  # teacher
                 title='Post for Count Test',
                 content='Content'
             )
