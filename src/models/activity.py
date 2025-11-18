@@ -12,7 +12,7 @@ class Activity(db.Model):
     creator_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     
     # 活动配置（JSON格式存储）
-    config = db.Column(db.Text, nullable=True)  # 存储活动特定配置
+    config = db.Column(db.JSON, nullable=True)  # 存储活动特定配置
     
     # AI生成相关
     is_ai_generated = db.Column(db.Boolean, default=False)
@@ -33,13 +33,11 @@ class Activity(db.Model):
     
     def set_config(self, config_dict):
         """设置活动配置"""
-        self.config = json.dumps(config_dict)
+        self.config = config_dict
     
     def get_config(self):
         """获取活动配置"""
-        if self.config:
-            return json.loads(self.config)
-        return {}
+        return self.config or {}
     
     def __repr__(self):
         return f'<Activity {self.title} ({self.activity_type})>'

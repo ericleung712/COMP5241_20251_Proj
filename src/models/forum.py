@@ -73,3 +73,11 @@ class UserForumRead(db.Model):
     
     def __repr__(self):
         return f"UserForumRead(user={self.user_id}, course={self.course_id})"
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'course_id': self.course_id,
+            'last_read_at': self.last_read_at.isoformat() if self.last_read_at else None
+        }

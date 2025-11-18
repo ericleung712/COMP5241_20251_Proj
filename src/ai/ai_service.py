@@ -1,14 +1,16 @@
 import openai
 import json
 from typing import Dict, List, Any
+from dotenv import load_dotenv
 import os
 
 class AIService:
     """AI服务类 - 处理各种AI功能"""
     
     def __init__(self):
+        load_dotenv()  # Load environment variables from .env
         # 设置DeepSeek API密钥和端点
-        self.api_key = os.getenv('DEEPSEEK_API_KEY', 'sk-ca7c5b2dbdb84e5b8c2d7281ebc355e2')
+        self.api_key = os.getenv('DEEPSEEK_API_KEY')
         # 配置OpenAI客户端以使用DeepSeek API
         self.client = openai.OpenAI(
             api_key=self.api_key,

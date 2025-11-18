@@ -1,0 +1,19 @@
+[
+  {
+    "id": 1,
+    "course_id": 1,
+    "course_name": "SOFTWARE ENGINEERINGAND DEVELOPMENT",
+    "uploader_id": 2,
+    "uploader_name": "Xavier",
+    "filename": "project_overivew.pdf",
+    "file_size": 227298,
+    "file_size_mb": 0.22,
+    "file_type": "pdf",
+    "title": "proj",
+    "description": "",
+    "is_active": true,
+    "download_count": 2,
+    "created_at": "2025-11-06T09:43:56.100279",
+    "updated_at": "2025-11-06T09:44:35.356819"
+  }
+]

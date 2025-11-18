@@ -10,9 +10,36 @@ from src.database import db
 def admin_user(app):
     """Create an admin user."""
     with app.app_context():
+        # Clear existing data first to ensure clean state
+        from src.models.user import User
+        from src.models.course import Course, course_enrollments
+        from src.models.activity import Activity
+        from src.models.response import ActivityResponse
+        from src.models.analytics import Leaderboard, ActivityAnalytics
+        from src.models.document import Document
+        from src.models.forum import ForumPost, ForumReply, UserForumRead
+        from src.database import db
+        
+        # Clear in correct order to respect foreign keys
+        db.session.query(UserForumRead).delete()
+        db.session.query(ForumReply).delete()
+        db.session.query(ForumPost).delete()
+        db.session.query(ActivityResponse).delete()
+        db.session.query(ActivityAnalytics).delete()
+        db.session.query(Activity).delete()
+        db.session.query(Document).delete()
+        db.session.query(Leaderboard).delete()
+        db.session.query(course_enrollments).delete()
+        db.session.query(Course).delete()
+        db.session.query(User).delete()
+        db.session.commit()
+        
+        import uuid
+        unique_username = f'test_admin_{uuid.uuid4().hex[:8]}'
+        
         admin = User(
-            username='test_admin',
-            email='test_admin@example.com',
+            username=unique_username,
+            email=f'{unique_username}@example.com',
             full_name='Test Admin',
             role='admin'
         )
@@ -35,10 +62,13 @@ def admin_client(app, client, admin_user):
 def test_data_for_overview(app, admin_user):
     """Create test data for system overview."""
     with app.app_context():
+        import uuid
+        unique_id = uuid.uuid4().hex[:8]
+        
         # Create teacher
         teacher = User(
-            username='teacher_overview',
-            email='teacher_overview@example.com',
+            username=f'teacher_overview_{unique_id}',
+            email=f'teacher_overview_{unique_id}@example.com',
             full_name='Teacher Overview',
             role='teacher'
         )
@@ -49,7 +79,7 @@ def test_data_for_overview(app, admin_user):
         # Create courses
         course1 = Course(
             course_name='Course 1',
-            course_code='COURSE1',
+            course_code=f'COURSE1_{unique_id}',
             description='Test course 1',
             teacher_id=teacher.id,
             semester='Fall 2025',
@@ -57,7 +87,7 @@ def test_data_for_overview(app, admin_user):
         )
         course2 = Course(
             course_name='Course 2',
-            course_code='COURSE2',
+            course_code=f'COURSE2_{unique_id}',
             description='Test course 2',
             teacher_id=teacher.id,
             semester='Fall 2025',
@@ -68,16 +98,16 @@ def test_data_for_overview(app, admin_user):
 
         # Create students
         student1 = User(
-            username='student_overview1',
-            email='student_overview1@example.com',
+            username=f'student_overview1_{unique_id}',
+            email=f'student_overview1_{unique_id}@example.com',
             full_name='Student Overview 1',
             role='student'
         )
         student1.set_password('password123')
 
         student2 = User(
-            username='student_overview2',
-            email='student_overview2@example.com',
+            username=f'student_overview2_{unique_id}',
+            email=f'student_overview2_{unique_id}@example.com',
             full_name='Student Overview 2',
             role='student'
         )

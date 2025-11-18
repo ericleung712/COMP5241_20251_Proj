@@ -1,0 +1,57 @@
+[
+  {
+    "id": 1,
+    "username": "admin",
+    "email": "admin@polyu.edu.hk",
+    "role": "admin",
+    "student_id": null,
+    "full_name": "System Administrator",
+    "department": "IT Services",
+    "created_at": "2025-10-10T20:29:41.119038",
+    "last_login": "2025-11-16T15:34:24.524408"
+  },
+  {
+    "id": 2,
+    "username": "Xavier",
+    "email": "Xavier@connect.polyu.hk",
+    "role": "teacher",
+    "student_id": null,
+    "full_name": "Xavier",
+    "department": "comp",
+    "created_at": "2025-10-10T20:35:17.353046",
+    "last_login": "2025-11-07T16:56:27.412028"
+  },
+  {
+    "id": 3,
+    "username": "wanglili",
+    "email": "24085316G@connect.polyu.hk",
+    "role": "student",
+    "student_id": "24085316G",
+    "full_name": "wanglili",
+    "department": "comp",
+    "created_at": "2025-10-10T20:38:56.957675",
+    "last_login": "2025-11-07T16:47:01.829366"
+  },
+  {
+    "id": 4,
+    "username": "Teacher",
+    "email": "25008061g@connect.polyu.hk",
+    "role": "teacher",
+    "student_id": null,
+    "full_name": "Teacher",
+    "department": "COMP",
+    "created_at": "2025-11-16T14:55:53.264923",
+    "last_login": "2025-11-16T15:33:12.551482"
+  },
+  {
+    "id": 5,
+    "username": "Student",
+    "email": "25008062g@connect.polyu.hk",
+    "role": "student",
+    "student_id": "25008062g",
+    "full_name": "Student",
+    "department": "COMP",
+    "created_at": "2025-11-16T14:56:49.436662",
+    "last_login": "2025-11-16T15:18:13.231278"
+  }
+]

@@ -7,44 +7,64 @@ from src.models.user import User
 from src.models.course import Course, course_enrollments
 from src.models.activity import Activity
 from src.models.response import ActivityResponse
+from src.models.analytics import Leaderboard, ActivityAnalytics
+from src.models.document import Document
+from src.models.forum import ForumPost, ForumReply, UserForumRead
 from flask import session
 
 
 @pytest.fixture
 def app():
     """Create and configure a test app instance."""
-    # Create a temporary database file
-    db_fd, db_path = tempfile.mkstemp()
-
-    # Monkey patch os.path.join to return our temporary path when creating database path
-    import os.path
-    original_join = os.path.join
-
-    def patched_join(*args):
-        if len(args) >= 3 and args[-2:] == ('database', 'app.db'):
-            # Return temporary database path instead of production database
-            return db_path
-        return original_join(*args)
-
-    os.path.join = patched_join
-
-    try:
+    import os
+    database_url = os.environ.get('DATABASE_URL')
+    
+    if database_url and database_url.startswith('postgresql'):
+        # Use PostgreSQL from environment
+        print("Using PostgreSQL database for tests")
         app = create_app()
         app.config['TESTING'] = True
         app.config['SECRET_KEY'] = 'test-secret-key'
-
-        # Create the database and tables
+        
         with app.app_context():
             db.create_all()
-
+        
         yield app
-    finally:
-        # Restore original os.path.join
-        os.path.join = original_join
+        
+        # Note: In production, you might want to clean up test data
+    else:
+        # Use temporary SQLite for tests
+        db_fd, db_path = tempfile.mkstemp()
 
-    # Close and remove the temporary database
-    os.close(db_fd)
-    os.unlink(db_path)
+        # Monkey patch os.path.join to return our temporary path when creating database path
+        import os.path
+        original_join = os.path.join
+
+        def patched_join(*args):
+            if len(args) >= 3 and args[-2:] == ('database', 'app.db'):
+                # Return temporary database path instead of production database
+                return db_path
+            return original_join(*args)
+
+        os.path.join = patched_join
+
+        try:
+            app = create_app()
+            app.config['TESTING'] = True
+            app.config['SECRET_KEY'] = 'test-secret-key'
+
+            # Create the database and tables
+            with app.app_context():
+                db.create_all()
+
+            yield app
+        finally:
+            # Restore original os.path.join
+            os.path.join = original_join
+
+        # Close and remove the temporary database
+        os.close(db_fd)
+        os.unlink(db_path)
 
 
 @pytest.fixture
@@ -63,9 +83,15 @@ def runner(app):
 def test_users(app):
     """Create test users."""
     with app.app_context():
-        # Clear existing data
+        # Clear existing data in correct order to respect foreign keys
+        db.session.query(UserForumRead).delete()
+        db.session.query(ForumReply).delete()
+        db.session.query(ForumPost).delete()
         db.session.query(ActivityResponse).delete()
+        db.session.query(ActivityAnalytics).delete()
         db.session.query(Activity).delete()
+        db.session.query(Document).delete()  # Delete documents before courses
+        db.session.query(Leaderboard).delete()
         db.session.query(course_enrollments).delete()
         db.session.query(Course).delete()
         db.session.query(User).delete()

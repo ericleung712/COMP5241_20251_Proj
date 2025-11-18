@@ -35,9 +35,10 @@ class User(db.Model):
     
     def to_dict(self):
         return {
-            'id': self.id,
+            'id': self.id,  # Include for migration
             'username': self.username,
             'email': self.email,
+            'password_hash': self.password_hash,  # Include for migration
             'role': self.role,
             'student_id': self.student_id,
             'full_name': self.full_name,

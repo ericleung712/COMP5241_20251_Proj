@@ -390,13 +390,13 @@ def get_system_overview():
             'course_id': course.id,
             'course_code': course.course_code,
             'course_name': course.course_name,
-            'completion_rate': round(completion_rate, 2),
+            'completion_rate': float(round(completion_rate, 2)),
             'total_activities': total_activities,
             'completed_activities': completed_activities,
             'total_time_spent_seconds': total_time,
-            'avg_time_per_user_seconds': round(avg_time_per_user, 2),
+            'avg_time_per_user_seconds': float(round(avg_time_per_user, 2)),
             'users_with_responses': users_with_responses,
-            'avg_quiz_score': round(avg_quiz_score, 2),
+            'avg_quiz_score': float(round(avg_quiz_score, 2)),
             'quiz_responses': quiz_responses
         })
         
@@ -407,9 +407,9 @@ def get_system_overview():
     
     # 系统级汇总
     system_aggregates = {
-        'avg_completion_rate': round(total_completion_rate / course_count, 2) if course_count > 0 else 0,
+        'avg_completion_rate': float(round(total_completion_rate / course_count, 2)) if course_count > 0 else 0.0,
         'total_time_spent_seconds': total_time_spent,
-        'avg_quiz_score': round(total_quiz_score / course_count, 2) if course_count > 0 else 0,
+        'avg_quiz_score': float(round(total_quiz_score / course_count, 2)) if course_count > 0 else 0.0,
         'total_courses_analyzed': course_count
     }
     

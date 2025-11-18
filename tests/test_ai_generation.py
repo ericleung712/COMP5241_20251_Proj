@@ -853,14 +853,26 @@ class TestDocumentDropdownAPI:
         client = auth_client['teacher']
 
         with app.app_context():
-            # Create another course with different teacher
+            # Create another teacher
+            from src.models.user import User
             from src.models.course import Course
             from src.database import db
+            import time
+
+            other_teacher = User(
+                username=f'other_teacher_{int(time.time())}',
+                email=f'other_teacher_{int(time.time())}@example.com',
+                full_name='Other Teacher',
+                role='teacher'
+            )
+            other_teacher.set_password('password123')
+            db.session.add(other_teacher)
+            db.session.commit()
 
             other_course = Course(
                 course_name='Other Course',
-                course_code='OTHER101',
-                teacher_id=999,  # Different teacher ID
+                course_code=f'OTHER101_{int(time.time())}',
+                teacher_id=other_teacher.id,  # Use the actual teacher ID
                 semester='Fall 2025',
                 academic_year='2025-2026'
             )
@@ -873,6 +885,7 @@ class TestDocumentDropdownAPI:
 
             # Clean up
             db.session.delete(other_course)
+            db.session.delete(other_teacher)
             db.session.commit()
 
     def test_get_course_documents_student_not_enrolled(self, auth_client, test_users, app):
@@ -880,14 +893,26 @@ class TestDocumentDropdownAPI:
         student_client = auth_client['student1']
 
         with app.app_context():
-            # Create another course
+            # Create another teacher
+            from src.models.user import User
             from src.models.course import Course
             from src.database import db
+            import time
+
+            other_teacher = User(
+                username=f'other_teacher_{int(time.time())}',
+                email=f'other_teacher_{int(time.time())}@example.com',
+                full_name='Other Teacher',
+                role='teacher'
+            )
+            other_teacher.set_password('password123')
+            db.session.add(other_teacher)
+            db.session.commit()
 
             other_course = Course(
                 course_name='Other Course',
-                course_code='OTHER101',
-                teacher_id=999,
+                course_code=f'OTHER101_{int(time.time())}',
+                teacher_id=other_teacher.id,
                 semester='Fall 2025',
                 academic_year='2025-2026'
             )
@@ -900,6 +925,7 @@ class TestDocumentDropdownAPI:
 
             # Clean up
             db.session.delete(other_course)
+            db.session.delete(other_teacher)
             db.session.commit()
 
     def test_get_course_documents_empty_course(self, auth_client, test_course):

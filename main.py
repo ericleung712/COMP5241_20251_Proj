@@ -17,16 +17,20 @@ from src.routes.document import document_bp
 from src.routes.ai_qa import ai_qa_bp
 from src.routes.forum import forum_bp
 import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 def create_app():
     app = Flask(__name__, static_folder='src/static', template_folder='src/static')
     
-    # 确保数据库目录存在
+    # 确保数据库目录存在（仅SQLite备用）
     os.makedirs('database', exist_ok=True)
     
-    # 配置数据库 - 使用绝对路径
+    # 配置数据库 - 使用环境变量或SQLite备用
     db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'database', 'app.db')
-    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', f'sqlite:///{db_path}')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['SECRET_KEY'] = 'smart-classroom-secret-key-2024'
     
