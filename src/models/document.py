@@ -10,7 +10,7 @@ class Document(db.Model):
     uploader_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     filename = db.Column(db.String(255), nullable=False)  # 原始文件名
     stored_filename = db.Column(db.String(255), nullable=False)  # 存储的文件名
-    file_path = db.Column(db.String(500), nullable=False)  # 文件存储路径
+    file_path = db.Column(db.String(500), nullable=False)  # Supabase存储路径 (course_id/stored_filename)
     file_size = db.Column(db.Integer, nullable=False)  # 文件大小（字节）
     file_type = db.Column(db.String(50), nullable=False)  # 文件类型（pdf, docx, etc.）
     title = db.Column(db.String(200), nullable=True)  # 文档标题

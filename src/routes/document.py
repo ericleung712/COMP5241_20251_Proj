@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, session, send_file, send_from_directory
+from flask import Blueprint, request, jsonify, session, redirect
 from src.models.document import Document
 from src.models.course import Course, course_enrollments
 from src.models.user import User
@@ -7,6 +7,7 @@ from datetime import datetime
 import os
 import uuid
 from werkzeug.utils import secure_filename
+from src.utils.supabase_storage import supabase, BUCKET_NAME
 
 document_bp = Blueprint('document', __name__)
 
@@ -25,12 +26,6 @@ def require_auth():
 def allowed_file(filename):
     """检查文件扩展名是否允许"""
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-def get_upload_folder():
-    """获取上传文件夹路径"""
-    upload_folder = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'uploads')
-    os.makedirs(upload_folder, exist_ok=True)
-    return upload_folder
 
 @document_bp.route('/course/<int:course_id>', methods=['GET'])
 def get_course_documents(course_id):
@@ -101,11 +96,20 @@ def upload_document(course_id):
         # 生成唯一文件名
         file_ext = file.filename.rsplit('.', 1)[1].lower()
         stored_filename = f"{uuid.uuid4().hex}.{file_ext}"
-        upload_folder = get_upload_folder()
-        file_path = os.path.join(upload_folder, stored_filename)
         
-        # 保存文件
-        file.save(file_path)
+        # 上传到Supabase
+        supabase_path = f"{course_id}/{stored_filename}"
+        file_data = file.read()  # Read file data
+        
+        try:
+            bucket = supabase.storage.from_(BUCKET_NAME)
+            response = bucket.upload(
+                supabase_path, 
+                file_data, 
+                file_options={"content-type": f"application/{file_ext}"}
+            )
+        except Exception as upload_error:
+            return jsonify({'error': f'上传到Supabase失败: {str(upload_error)}'}), 500
         
         # 获取标题和描述
         title = request.form.get('title', '').strip() or file.filename
@@ -117,7 +121,7 @@ def upload_document(course_id):
             uploader_id=user.id,
             filename=secure_filename(file.filename),
             stored_filename=stored_filename,
-            file_path=file_path,
+            file_path=supabase_path,  # Store Supabase path
             file_size=file_size,
             file_type=file_ext,
             title=title,
@@ -196,21 +200,25 @@ def download_document(document_id):
     else:
         return jsonify({'error': '权限不足'}), 403
     
-    # 检查文件是否存在
-    if not os.path.exists(document.file_path):
+    # 检查文件是否存在（通过Supabase）
+    try:
+        bucket = supabase.storage.from_(BUCKET_NAME)
+        # Check if file exists
+        bucket.info(document.file_path)
+    except Exception:
         return jsonify({'error': '文件不存在'}), 404
     
     # 更新下载次数
     document.download_count += 1
     db.session.commit()
     
-    # 返回文件
-    return send_file(
-        document.file_path,
-        as_attachment=True,
-        download_name=document.filename,
-        mimetype='application/octet-stream'
-    )
+    # 生成签名URL
+    try:
+        signed_url_dict = bucket.create_signed_url(document.file_path, expires_in=3600)  # 1 hour expiry
+        signed_url = signed_url_dict['signedURL']
+        return redirect(signed_url)
+    except Exception as e:
+        return jsonify({'error': f'生成下载链接失败: {str(e)}'}), 500
 
 @document_bp.route('/<int:document_id>', methods=['PUT'])
 def update_document(document_id):
@@ -253,11 +261,11 @@ def delete_document(document_id):
         return jsonify({'error': '权限不足'}), 403
     
     # 删除文件
-    if os.path.exists(document.file_path):
-        try:
-            os.remove(document.file_path)
-        except Exception as e:
-            pass  # 即使文件删除失败，也继续删除数据库记录
+    try:
+        bucket = supabase.storage.from_(BUCKET_NAME)
+        bucket.remove([document.file_path])
+    except Exception as e:
+        pass  # 即使文件删除失败，也继续删除数据库记录
     
     # 删除数据库记录
     db.session.delete(document)
